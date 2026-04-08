@@ -1,0 +1,131 @@
+/* RESET PROPRE */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* VARIABLES MODERNES */
+:root {
+  --bg: #0f172a;
+  --text: #0f172a;
+  --primary: #6366f1;
+  --light: #ffffff;
+  --blur: blur(14px);
+}
+
+/* BODY */
+body {
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  background: #f8fafc;
+}
+
+/* HEADER MODERNE */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  padding: 20px 40px;
+}
+
+/* NAV */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* MENU DESKTOP */
+.menu {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.menu li a {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Hover moderne avec underline animé */
+.menu li a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  left: 0;
+  bottom: -4px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.menu li a:hover::after {
+  width: 100%;
+}
+
+.menu li a:hover {
+  color: var(--primary);
+}
+
+/* BOUTON BURGER */
+.bouton {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  display: none;
+  margin-left: auto;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+  .bouton {
+    display: block;
+  }
+
+  .menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 4rem 2rem;
+    height: 100vh;
+    width: 75%;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.4s ease;
+    z-index: 1000;
+  }
+
+  .menu.ouvert {
+    transform: translateX(0);
+  }
+
+  .menu li a {
+    font-size: 1.2rem;
+  }
+
+  /* Bouton fermer */
+  .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+}
