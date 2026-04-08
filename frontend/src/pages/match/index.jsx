@@ -1,14 +1,38 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import {
   FaMapMarkerAlt,
   FaHeart,
   FaComments,
   FaEye,
   FaUserCircle,
+  FaTimes,
 } from "react-icons/fa";
 
+// ======================================
+// Topbar animations
+const slideDown = keyframes`
+  from { transform: translateY(-100%); opacity: 0;}
+  to { transform: translateY(0); opacity: 1;}
+`;
+
+const TopBar = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  background: ${({ type }) => (type === "error" ? "#dc2626" : "#16a34a")};
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  z-index: 9999;
+  animation: ${slideDown} 0.4s ease forwards;
+`;
+
+// ======================================
+// Layout
 const Page = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, #fff7fb, #eef2ff);
@@ -40,13 +64,6 @@ const Chargement = styled.h3`
   color: #333;
 `;
 
-const Message = styled.h3`
-  text-align: center;
-  margin-top: 100px;
-  font-size: 20px;
-  color: #dc2626;
-`;
-
 const Section = styled.section`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -69,22 +86,23 @@ const Card = styled.div`
   }
 `;
 
+// Full image wrapper
 const ImageWrapper = styled.div`
   width: 100%;
-  height: 320px;
   background: #f1f4ff;
-  overflow: hidden;
+  cursor: pointer;
 `;
 
 const Images = styled.img`
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 `;
 
+// Placeholder
 const Placeholder = styled.div`
   width: 100%;
-  height: 100%;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,6 +111,7 @@ const Placeholder = styled.div`
   background: linear-gradient(135deg, #ffe4f1, #f3e8ff);
 `;
 
+// Content
 const Content = styled.div`
   padding: 22px;
 `;
@@ -194,10 +213,58 @@ const Empty = styled.div`
   box-shadow: 0 10px 30px rgba(31, 42, 68, 0.06);
 `;
 
+// ======================================
+// Modal
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+`;
+
+const ModalContent = styled.div`
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  border-radius: 20px;
+  position: relative;
+`;
+
+const ModalImage = styled.img`
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 20px;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+  }
+`;
+
+// ======================================
+// Composant Matchs
 function Matchs() {
   const [matchs, setMatchs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [topBar, setTopBar] = useState(null);
+  const [modalPhoto, setModalPhoto] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -220,12 +287,16 @@ function Matchs() {
 
         if (!res.ok) {
           setMessage(data.message || "Impossible de charger les matchs.");
+          setTopBar({ type: "error", text: data.message || "Impossible de charger les matchs." });
+          setTimeout(() => setTopBar(null), 4000);
           return;
         }
 
         setMatchs(data);
       } catch (error) {
         setMessage("Erreur : " + error.message);
+        setTopBar({ type: "error", text: "Erreur : " + error.message });
+        setTimeout(() => setTopBar(null), 4000);
       } finally {
         setLoading(false);
       }
@@ -235,25 +306,20 @@ function Matchs() {
       fetchMatchs();
     } else {
       setMessage("Utilisateur non connecté.");
+      setTopBar({ type: "error", text: "Utilisateur non connecté." });
       setLoading(false);
     }
   }, [token]);
 
-  if (loading) {
-    return <Chargement>Chargement des matchs...</Chargement>;
-  }
-
-  if (message) {
-    return <Message>{message}</Message>;
-  }
+  if (loading) return <Chargement>Chargement des matchs...</Chargement>;
+  if (message && matchs.length === 0) return <Message>{message}</Message>;
 
   return (
     <Page>
+      {topBar && <TopBar type={topBar.type}>{topBar.text}</TopBar>}
       <Header>
         <Title>❤️ Mes Matchs</Title>
-        <Subtitle>
-          Voici les personnes avec qui le feeling est réciproque.
-        </Subtitle>
+        <Subtitle>Voici les personnes avec qui le feeling est réciproque.</Subtitle>
       </Header>
 
       <Section>
@@ -266,12 +332,9 @@ function Matchs() {
         ) : (
           matchs.map((profil) => (
             <Card key={profil._id}>
-              <ImageWrapper>
+              <ImageWrapper onClick={() => setModalPhoto(profil.avatar?.url || profil.photos?.[0]?.url)}>
                 {profil.avatar?.url || profil.photos?.[0]?.url ? (
-                  <Images
-                    src={profil.avatar?.url || profil.photos?.[0]?.url}
-                    alt={profil.pseudo}
-                  />
+                  <Images src={profil.avatar?.url || profil.photos?.[0]?.url} alt={profil.pseudo} />
                 ) : (
                   <Placeholder>
                     <FaUserCircle />
@@ -322,6 +385,17 @@ function Matchs() {
           ))
         )}
       </Section>
+
+      {modalPhoto && (
+        <ModalOverlay onClick={() => setModalPhoto(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={() => setModalPhoto(null)}>
+              <FaTimes />
+            </CloseButton>
+            <ModalImage src={modalPhoto} alt="agrandi" />
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Page>
   );
 }
