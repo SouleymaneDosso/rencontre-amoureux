@@ -5,10 +5,10 @@
   "license": "ISC",
   "author": "Dosso Souleymane",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
