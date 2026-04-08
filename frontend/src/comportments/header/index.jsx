@@ -17,12 +17,12 @@ const HeaderShell = styled.header`
   left: 0;
   width: 100%;
   z-index: 1200;
-  padding: 14px 18px;
   display: flex;
   justify-content: center;
+  
 
   @media (max-width: 640px) {
-    padding: 12px;
+    padding: 0;
   }
 `;
 
