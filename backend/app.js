@@ -6,17 +6,14 @@ const cors = require("cors");
 
 dotenv.config();
 
-// ============================
-// LOGS DE DEMARRAGE
-// ============================
-console.log("🔍 ENV CHECK");
-console.log("PORT:", process.env.PORT);
-console.log("MONGOOSE_URL existe ?", !!process.env.MONGOOSE_URL);
-console.log("JWT_SECRET existe ?", !!process.env.JWT_SECRET);
+console.log("🔍 VÉRIFICATION ENVIRONNEMENTALE");
+console.log("PORT :", process.env.PORT);
+console.log("L'URL MONGOOSE existe-t-elle ?", !!process.env.MONGOOSE_URL);
+console.log("JWT_SECRET existe-t-il ?", !!process.env.JWT_SECRET);
 
-// ============================
-// CONNEXION MONGODB
-// ============================
+// =======================
+// Connexion MongoDB
+// =======================
 mongoose
   .connect(process.env.MONGOOSE_URL)
   .then(() => console.log("✅ Connexion à MongoDB réussie"))
@@ -25,9 +22,9 @@ mongoose
     process.exit(1);
   });
 
-// ============================
+// =======================
 // CORS
-// ============================
+// =======================
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -55,20 +52,19 @@ app.use(
   })
 );
 
-// ============================
-// MIDDLEWARE
-// ============================
 app.use(express.json());
 
-// Petit log des requêtes
+// =======================
+// Log de toutes les requêtes
+// =======================
 app.use((req, res, next) => {
   console.log(`📡 ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ============================
-// ROUTES
-// ============================
+// =======================
+// Routes
+// =======================
 const mesInfosRoute = require("./Router/index");
 const routerConnexion = require("./Router/connexion");
 const routerInscription = require("./Router/inscription");
@@ -79,34 +75,54 @@ app.use("/api", routerConnexion);
 app.use("/api", routerInscription);
 app.use("/api/tchat", tchatRoutes);
 
-// ============================
-// ROUTE DE TEST
-// ============================
+// =======================
+// Route racine
+// =======================
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "Backend rencontre-amoureux actif 🚀",
     status: "OK",
-    timestamp: new Date().toISOString(),
+    time: new Date().toISOString(),
   });
 });
 
-// ============================
-// HEALTH CHECK
-// ============================
+// =======================
+// Health check Render
+// =======================
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    backend: "running",
+    db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    uptime: process.uptime(),
+  });
+});
+
+// =======================
+// Test API
+// =======================
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "ok",
     backend: "running",
     db: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-    time: new Date().toISOString(),
   });
 });
 
-// ============================
-// GESTION D'ERREURS GLOBALE
-// ============================
+// =======================
+// 404
+// =======================
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route non trouvée",
+  });
+});
+
+// =======================
+// Gestion erreurs globale
+// =======================
 app.use((err, req, res, next) => {
-  console.error("💥 Erreur serveur :", err.message);
+  console.error("💥 Erreur globale :", err.message);
   res.status(500).json({
     message: "Erreur interne serveur",
     error: err.message,

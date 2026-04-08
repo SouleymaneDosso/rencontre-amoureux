@@ -3,59 +3,30 @@ const app = require("./app");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
-
   if (isNaN(port)) return val;
   if (port >= 0) return port;
   return false;
 };
 
-const port = normalizePort(process.env.PORT || "3000");
+const port = normalizePort(process.env.PORT || 3000);
 app.set("port", port);
 
 const server = http.createServer(app);
 
-const errorHandler = (error) => {
-  if (error.syscall !== "listen") {
-    throw error;
-  }
-
-  const address = server.address();
-  const bind =
-    typeof address === "string" ? "pipe " + address : "port " + port;
-
-  switch (error.code) {
-    case "EACCES":
-      console.error(`❌ ${bind} nécessite des privilèges élevés`);
-      process.exit(1);
-      break;
-
-    case "EADDRINUSE":
-      console.error(`❌ ${bind} est déjà utilisé`);
-      process.exit(1);
-      break;
-
-    default:
-      throw error;
-  }
-};
-
-server.on("error", errorHandler);
-
-server.on("listening", () => {
-  const address = server.address();
-  const bind =
-    typeof address === "string" ? "pipe " + address : "port " + port;
-
-  console.log(`🚀 Serveur lancé sur ${bind}`);
+// IMPORTANT POUR RENDER
+server.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Serveur lancé sur le port ${port}`);
 });
 
-// Eviter que Render plante silencieusement
+server.on("error", (error) => {
+  console.error("❌ Erreur serveur :", error);
+});
+
+// Pour attraper les crashs silencieux
 process.on("uncaughtException", (err) => {
-  console.error("💥 uncaughtException:", err);
+  console.error("💥 uncaughtException :", err);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("💥 unhandledRejection:", reason);
+  console.error("💥 unhandledRejection :", reason);
 });
-
-server.listen(port);
