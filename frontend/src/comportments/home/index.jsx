@@ -14,14 +14,14 @@ import {
 
 const Page = styled.div`
   width: 100%;
+  min-height: 100vh;
   background: linear-gradient(135deg, #f8f9ff, #e6ecff);
   display: flex;
   justify-content: center;
-  padding: 20px;
-  margin-bottom: 80px;
+  padding: 28px 20px 120px;
 `;
 
-const Header = styled.div`
+const ProfileHero = styled.div`
   text-align: center;
   background: white;
   padding: 40px 30px;
@@ -401,18 +401,7 @@ const SuccessText = styled.p`
   color: #4b6b58;
   line-height: 1.6;
 `;
-const Container = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 50px;
-`;
 
-const Deconnexion = styled.button`
-  background: red;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-`;
 
 function Home() {
   const [profil, setProfil] = useState(null);
@@ -436,11 +425,7 @@ function Home() {
     setModal(true);
   };
 
-const deconnexion = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userId");
-  navigate("/connexion");
-};
+
 
   const fermerimage = () => {
     setImageActive(null);
@@ -572,23 +557,27 @@ const uploadMultiple = async (e) => {
     if (profil.photos?.length > 0) score += 10;
 
     setProgress(score);
+
+    afficherMessage();
+
   }, [profil]);
 
 
 
+const afficherMessage = () => {
+  const dejaMontre = localStorage.getItem("message100");
 
+  if (progress === 100 && !dejaMontre) {
+    setAfficher(true);
+    localStorage.setItem("message100", "oui"); 
 
-  useEffect(()=>{
+    const timer = setTimeout(() => {
+      setAfficher(false);
+    }, 5000);
 
-    if(progress === 100){
-      setAfficher(true)
-
-      const temps = setTimeout(()=>{
-        setAfficher(false)
-      }, 5000);
-      return ()=>clearInterval(temps)
-    }
-  }, [progress])
+    return () => clearTimeout(timer);
+  }
+};
 
 
 
@@ -600,15 +589,10 @@ const uploadMultiple = async (e) => {
         ? "Beau début. Encore quelques détails pour le rendre plus complet."
         : "Excellent profil. Tu es prêt à te démarquer.";
   return (
-    <Page>
+    <Page> 
       
       <Main>
-        <Header>
-       <Container>
-  <Deconnexion onClick={ deconnexion }>Déconnexion</Deconnexion>
-   <br/>
-  
-</Container>
+        <ProfileHero>
           <AvatarWrapper>
             {profil.avatar ? (
               <Avatar src={profil.avatar.url} alt="avatar" />
@@ -662,7 +646,7 @@ const uploadMultiple = async (e) => {
           <Name>
             {profil.prenom} {profil.nom}
           </Name>
-        </Header>
+        </ProfileHero>
         <Card>
           <SectionTitle>Informations personnelles</SectionTitle>
           <InfoGrid>
