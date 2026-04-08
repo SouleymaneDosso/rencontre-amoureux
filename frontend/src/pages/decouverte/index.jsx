@@ -249,7 +249,7 @@ function Decouverte() {
       setActionLoading(profilId);
 
       const res = await fetch(
-        `http://localhost:3000/api/mesInfos/like/${profilId}`,
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/like/${profilId}`,
         {
           method: "POST",
           headers: {
@@ -280,7 +280,7 @@ function Decouverte() {
       setActionLoading(profilId);
 
       const res = await fetch(
-        `http://localhost:3000/api/mesInfos/dislike/${profilId}`,
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/dislike/${profilId}`,
         {
           method: "POST",
           headers: {
@@ -309,7 +309,7 @@ function Decouverte() {
         setMessage("");
 
         const res = await fetch(
-          "http://localhost:3000/api/mesInfos/suggestions",
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/suggestions`,
           {
             method: "GET",
             headers: {

@@ -133,7 +133,7 @@ function Profil() {
     e.preventDefault();
 
     try {
-      const creation = await fetch("http://localhost:3000/api/mesInfos", {
+      const creation = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos`, {
         method: "POST",
         headers: {
           "Authorization" : `Bearer ${token}`,

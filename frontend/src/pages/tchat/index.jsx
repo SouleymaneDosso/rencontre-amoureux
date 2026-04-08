@@ -277,7 +277,7 @@ function Tchat() {
         setLoading(true);
         setMessageErreur("");
 
-        const monProfilRes = await fetch("http://localhost:3000/api/mesInfos/me", {
+        const monProfilRes = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/me`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -293,7 +293,7 @@ function Tchat() {
 
         setMonProfilId(monProfilData._id);
 
-        const profilRes = await fetch(`http://localhost:3000/api/mesInfos/${id}`, {
+        const profilRes = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -308,7 +308,7 @@ function Tchat() {
 
         setProfilCible(profilData);
 
-        const messagesRes = await fetch(`http://localhost:3000/api/tchat/messages/${id}`, {
+        const messagesRes = await fetch(`${import.meta.env.VITE_API_URL}/api/tchat/messages/${id}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -361,7 +361,7 @@ function Tchat() {
         formData.append("media", selectedFile);
       }
 
-      const res = await fetch(`http://localhost:3000/api/tchat/envoyer/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tchat/envoyer/${id}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

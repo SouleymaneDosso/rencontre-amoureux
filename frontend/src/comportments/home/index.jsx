@@ -450,7 +450,7 @@ const deconnexion = () => {
  const suppression = async (public_id) => {
   try {
     const res = await fetch(
-      `http://localhost:3000/api/mesInfos/photo/${profil._id}/${encodeURIComponent(public_id)}`,
+      `${import.meta.env.VITE_API_URL}/api/mesInfos/photo/${profil._id}/${encodeURIComponent(public_id)}`,
       {
         method: "DELETE",
         headers: {
@@ -480,7 +480,7 @@ const deconnexion = () => {
   formdata.append("avatar", file);
 
   try {
-    const res = await fetch(`http://localhost:3000/api/mesInfos/avatar/${profil._id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/avatar/${profil._id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -510,7 +510,7 @@ const uploadMultiple = async (e) => {
   }
 
   try {
-    const res = await fetch(`http://localhost:3000/api/mesInfos/${profil._id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/${profil._id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -533,7 +533,7 @@ const uploadMultiple = async (e) => {
    useEffect(() => {
     const fetchProfil = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/mesInfos/me", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

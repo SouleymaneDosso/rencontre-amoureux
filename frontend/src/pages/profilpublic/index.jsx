@@ -269,7 +269,7 @@ function Profilpublic() {
   const like = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/mesInfos/like/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/like/${id}`,
         {
           method: "POST",
           headers: {
@@ -302,7 +302,7 @@ function Profilpublic() {
         setLoading(true);
         setMessage("");
 
-        const res = await fetch(`http://localhost:3000/api/mesInfos/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -341,7 +341,7 @@ function Profilpublic() {
         setCheckingMatch(true);
 
         const res = await fetch(
-          `http://localhost:3000/api/mesInfos/verifier-match/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/verifier-match/${id}`,
           {
             method: "GET",
             headers: {

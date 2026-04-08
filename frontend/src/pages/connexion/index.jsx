@@ -126,7 +126,7 @@ const navigate = useNavigate()
     e.preventDefault();
 
     try {
-      const elements = await fetch("http://localhost:3000/api/connexion", {
+      const elements = await fetch(`${import.meta.env.VITE_API_URL}/api/connexion`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -237,7 +237,7 @@ function Conversations() {
         setMessageErreur("");
 
         // 1) récupérer mon profil
-        const monProfilRes = await fetch("http://localhost:3000/api/mesInfos/me", {
+        const monProfilRes = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/me`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -254,7 +254,7 @@ function Conversations() {
         setMonProfilId(monProfilData._id);
 
         // 2) récupérer mes conversations
-        const conversationsRes = await fetch("http://localhost:3000/api/tchat/conversations", {
+        const conversationsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

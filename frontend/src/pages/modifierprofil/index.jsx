@@ -285,7 +285,7 @@ function Modifier() {
     const fetchProfil = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:3000/api/mesInfos/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -338,7 +338,7 @@ function Modifier() {
     try {
       setSaving(true);
 
-      const res = await fetch(`http://localhost:3000/api/mesInfos/edit/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/edit/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
