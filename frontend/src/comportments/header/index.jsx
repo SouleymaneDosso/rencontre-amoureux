@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { FaHeart, FaBars, FaTimes, FaUser, FaCompass, FaComments, FaFire } from "react-icons/fa";
+import {
+  FaHeart,
+  FaBars,
+  FaTimes,
+  FaUser,
+  FaCompass,
+  FaComments,
+  FaFire,
+} from "react-icons/fa";
 
-const HeaderWrapper = styled.header`
-  position: sticky;
+const HeaderShell = styled.header`
+  position: fixed;
   top: 0;
-  z-index: 1200;
+  left: 0;
   width: 100%;
+  z-index: 1200;
+  padding: 14px 18px;
   display: flex;
   justify-content: center;
-  padding: 14px 18px 0;
-  pointer-events: none;
+
+  @media (max-width: 640px) {
+    padding: 12px;
+  }
 `;
 
 const Nav = styled.nav`
-  pointer-events: auto;
   width: 100%;
-  max-width: 1280px;
+  max-width: 1380px;
   min-height: 78px;
   border-radius: 28px;
   padding: 0 22px;
@@ -27,10 +38,10 @@ const Nav = styled.nav`
   position: relative;
   overflow: hidden;
 
-  background: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.55);
 
   box-shadow:
     0 10px 35px rgba(79, 108, 255, 0.10),
@@ -368,14 +379,9 @@ function Header() {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = "auto";
     };
   }, [isOpen]);
 
@@ -390,7 +396,7 @@ function Header() {
 
   return (
     <>
-      <HeaderWrapper>
+      <HeaderShell>
         <Nav>
           <GlowLeft />
           <GlowRight />
@@ -447,7 +453,7 @@ function Header() {
             {isOpen ? <FaTimes /> : <FaBars />}
           </BurgerButton>
         </Nav>
-      </HeaderWrapper>
+      </HeaderShell>
 
       <Overlay $open={isOpen} onClick={() => setOpen(false)} />
 
