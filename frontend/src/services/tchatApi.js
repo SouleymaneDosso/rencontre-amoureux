@@ -3,7 +3,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const marquerMessagesCommeLusApi = async (profilId, token) => {
   const response = await fetch(
-    `${API_URL}/tchat/lire/${profilId}`,
+    `${API_URL}/api/tchat/lire/${profilId}`,
     {
       method: "PATCH",
       headers: {
