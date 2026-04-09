@@ -35,8 +35,16 @@ io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
   // Enregistrer un utilisateur connecté
-  socket.on("registerUser", (userId) => {
-    onlineUsers.set(userId, socket.id);
+ socket.on("registerUser", (userId) => {
+  console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
+
+  onlineUsers.set(userId, socket.id);
+
+  console.log("👤 Utilisateur enregistré :", userId);
+  console.log("📌 Liste des utilisateurs en ligne :", Array.from(onlineUsers.entries()));
+
+  io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+});
 
       // Envoyer un message en temps réel
   socket.on("sendMessage", (messageData) => {
