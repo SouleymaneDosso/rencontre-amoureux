@@ -18,6 +18,7 @@ import {
   getProfilCible,
   getMessagesConversation,
   envoyerMessageApi,
+  marquerMessagesCommeLusApi,
 } from "../../services/tchatApi";
 
 const Wrapper = styled.div`
@@ -337,6 +338,30 @@ function Tchat() {
       chargerTchat();
     }
   }, [id, token]);
+
+  useEffect(() => {
+    const marquerCommeLus = async () => {
+      if (!token || !id || !monProfilId || messages.length === 0) return;
+
+      try {
+        const data = await marquerMessagesCommeLusApi(id, token);
+
+        if (data.idsMessagesLus?.length > 0) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              data.idsMessagesLus.includes(msg._id)
+                ? { ...msg, statut: "seen", lu: true }
+                : msg,
+            ),
+          );
+        }
+      } catch (error) {
+        console.error("Erreur marquage lu :", error.message);
+      }
+    };
+
+    marquerCommeLus();
+  }, [id, token, monProfilId, messages.length]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];

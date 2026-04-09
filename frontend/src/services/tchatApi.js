@@ -1,5 +1,26 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
+
+export const marquerMessagesCommeLusApi = async (profilId, token) => {
+  const response = await fetch(
+    `${API_URL}/tchat/lire/${profilId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Erreur lors du marquage des messages lus");
+  }
+
+  return data;
+};
+
 export const getMonProfil = async (token) => {
   const res = await fetch(`${API_URL}/api/mesInfos/me`, {
     method: "GET",
