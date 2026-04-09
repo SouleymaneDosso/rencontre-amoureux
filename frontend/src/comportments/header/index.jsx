@@ -11,18 +11,23 @@ import {
   FaFire,
 } from "react-icons/fa";
 
+
+
 const HeaderShell = styled.header`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
+   padding: 0;
   z-index: 1200;
   display: flex;
   justify-content: center;
+
   
 
   @media (max-width: 640px) {
     padding: 0;
+    
   }
 `;
 
@@ -250,7 +255,6 @@ const MobileMenu = styled.aside`
   height: calc(100vh - 28px);
   z-index: 1199;
   border-radius: 28px;
-  padding: 24px 20px;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
