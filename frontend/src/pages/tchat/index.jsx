@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import { socket } from "../../socket";
 
-
 import { useTchatSocket } from "../../hooks/useTchatSocket";
 import {
   getMonProfil,
@@ -20,7 +19,6 @@ import {
   getMessagesConversation,
   envoyerMessageApi,
 } from "../../services/tchatApi";
-
 
 const Wrapper = styled.div`
   height: 100vh;
@@ -271,7 +269,7 @@ function Tchat() {
   const messagesEndRef = useRef(null);
   const token = localStorage.getItem("token");
 
-const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
+  const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -301,31 +299,44 @@ const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
     });
   };
 
-  useEffect(() => {
-  const chargerTchat = async () => {
-    try {
-      setLoading(true);
-      setMessageErreur("");
-
-      const monProfilData = await getMonProfil(token);
-      setMonProfilId(monProfilData._id);
-
-      const profilData = await getProfilCible(id);
-      setProfilCible(profilData);
-
-      const messagesData = await getMessagesConversation(id, token);
-      setMessages(messagesData);
-    } catch (error) {
-      setMessageErreur(error.message);
-    } finally {
-      setLoading(false);
+  const getStatutLabel = (status) => {
+    switch (status) {
+      case "sent":
+        return "Envoyé";
+      case "delivered":
+        return "livré";
+      case "seen":
+        return "vu";
+      default:
+        return " Envoyé";
     }
   };
 
-  if (token && id) {
-    chargerTchat();
-  }
-}, [id, token]);
+  useEffect(() => {
+    const chargerTchat = async () => {
+      try {
+        setLoading(true);
+        setMessageErreur("");
+
+        const monProfilData = await getMonProfil(token);
+        setMonProfilId(monProfilData._id);
+
+        const profilData = await getProfilCible(id);
+        setProfilCible(profilData);
+
+        const messagesData = await getMessagesConversation(id, token);
+        setMessages(messagesData);
+      } catch (error) {
+        setMessageErreur(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token && id) {
+      chargerTchat();
+    }
+  }, [id, token]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -341,40 +352,40 @@ const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
   };
 
   const sendMessage = async () => {
-  if (!newMessage.trim() && !selectedFile) return;
+    if (!newMessage.trim() && !selectedFile) return;
 
-  try {
-    setSending(true);
+    try {
+      setSending(true);
 
-    const formData = new FormData();
-    formData.append("contenu", newMessage);
+      const formData = new FormData();
+      formData.append("contenu", newMessage);
 
-    if (selectedFile) {
-      formData.append("media", selectedFile);
+      if (selectedFile) {
+        formData.append("media", selectedFile);
+      }
+
+      const data = await envoyerMessageApi(id, token, formData);
+
+      setMessages((prev) => {
+        const existeDeja = prev.some(
+          (msg) => msg._id === data.nouveauMessage._id,
+        );
+        if (existeDeja) return prev;
+
+        return [...prev, data.nouveauMessage];
+      });
+
+      socket.emit("sendMessage", data.nouveauMessage);
+
+      setNewMessage("");
+      setSelectedFile(null);
+      setPreviewUrl("");
+    } catch (error) {
+      setMessageErreur(error.message);
+    } finally {
+      setSending(false);
     }
-
-    const data = await envoyerMessageApi(id, token, formData);
-
-    setMessages((prev) => {
-      const existeDeja = prev.some(
-        (msg) => msg._id === data.nouveauMessage._id
-      );
-      if (existeDeja) return prev;
-
-      return [...prev, data.nouveauMessage];
-    });
-
-    socket.emit("sendMessage", data.nouveauMessage);
-
-    setNewMessage("");
-    setSelectedFile(null);
-    setPreviewUrl("");
-  } catch (error) {
-    setMessageErreur(error.message);
-  } finally {
-    setSending(false);
-  }
-};
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -439,6 +450,7 @@ const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
 
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
+                    {isMine && ` • ${getStatutLabel(msg.statut)}`}
                   </MessageTime>
                 </MessageBubble>
               </MessageRow>
