@@ -38,6 +38,21 @@ io.on("connection", (socket) => {
   socket.on("registerUser", (userId) => {
     onlineUsers.set(userId, socket.id);
 
+      // Envoyer un message en temps réel
+  socket.on("sendMessage", (messageData) => {
+    const receiverSocketId = onlineUsers.get(messageData.destinataire);
+
+    console.log("📨 Message temps réel reçu :", messageData);
+    console.log("🎯 Destinataire socket trouvé :", receiverSocketId);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receiveMessage", messageData);
+      console.log("✅ Message envoyé en temps réel au destinataire");
+    } else {
+      console.log("⚠️ Destinataire non connecté");
+    }
+  });
+
     console.log("👤 Utilisateur enregistré :", userId);
     console.log("📌 Liste onlineUsers :", Array.from(onlineUsers.entries()));
 
