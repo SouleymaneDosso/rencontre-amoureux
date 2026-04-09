@@ -197,24 +197,39 @@ exports.mesConversations = async (req, res) => {
 
 exports.marquerMessagesCommeLus = async (req, res) => {
   try {
+    // =======================
+    // 1) récupérer les infos utiles
+    // =======================
     const userId = req.auth.userId;
     const { profilId } = req.params;
 
-    // retrouver mon profil
+    // =======================
+    // 2) récupérer io et onlineUsers depuis app
+    // =======================
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+
+    // =======================
+    // 3) retrouver mon profil
+    // =======================
     const monProfil = await Profil.findOne({ userId });
 
     if (!monProfil) {
       return res.status(404).json({ message: "Mon profil est introuvable" });
     }
 
-    // retrouver le profil cible
+    // =======================
+    // 4) retrouver le profil cible
+    // =======================
     const profilCible = await Profil.findById(profilId);
 
     if (!profilCible) {
       return res.status(404).json({ message: "Profil cible introuvable" });
     }
 
-    // sécurité : il faut un match
+    // =======================
+    // 5) sécurité : il faut un match
+    // =======================
     const estMatch = monProfil.matchs.some(
       (matchId) => matchId.toString() === profilId
     );
@@ -225,7 +240,9 @@ exports.marquerMessagesCommeLus = async (req, res) => {
       });
     }
 
-    // retrouver la conversation
+    // =======================
+    // 6) retrouver la conversation
+    // =======================
     const conversation = await Conversation.findOne({
       participants: { $all: [monProfil._id, profilCible._id] },
     });
@@ -233,11 +250,14 @@ exports.marquerMessagesCommeLus = async (req, res) => {
     if (!conversation) {
       return res.status(200).json({
         message: "Aucune conversation trouvée",
-        messagesMisAJour: [],
+        idsMessagesLus: [],
       });
     }
 
-    // récupérer les messages NON lus envoyés par profilCible vers moi
+    // =======================
+    // 7) récupérer les messages non lus
+    // envoyés par profilCible vers moi
+    // =======================
     const messagesNonLus = await Message.find({
       conversationId: conversation._id,
       expediteur: profilCible._id,
@@ -245,7 +265,9 @@ exports.marquerMessagesCommeLus = async (req, res) => {
       lu: false,
     });
 
-    // les marquer comme lus
+    // =======================
+    // 8) les marquer comme lus
+    // =======================
     await Message.updateMany(
       {
         conversationId: conversation._id,
@@ -258,13 +280,34 @@ exports.marquerMessagesCommeLus = async (req, res) => {
       }
     );
 
+    // =======================
+    // 9) récupérer les ids des messages lus
+    // =======================
     const idsMessagesLus = messagesNonLus.map((msg) => msg._id.toString());
 
+    // =======================
+    // 10) prévenir l'expéditeur en temps réel
+    // =======================
+    const expediteurSocketId = onlineUsers.get(profilCible._id.toString());
+
+    if (expediteurSocketId && idsMessagesLus.length > 0) {
+      io.to(expediteurSocketId).emit("messagesRead", {
+        expediteurId: profilCible._id.toString(),
+        lecteurId: monProfil._id.toString(),
+        idsMessagesLus,
+      });
+
+      console.log("👁️ Notification messages lus envoyée à :", profilCible._id.toString());
+    }
+
+    // =======================
+    // 11) réponse API
+    // =======================
     return res.status(200).json({
       message: "Messages marqués comme lus",
       idsMessagesLus,
-      lecteurId: monProfil._id.toString(),
       expediteurId: profilCible._id.toString(),
+      lecteurId: monProfil._id.toString(),
     });
   } catch (error) {
     console.error("Erreur marquerMessagesCommeLus :", error);
