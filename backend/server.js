@@ -29,12 +29,33 @@ const io = new Server(server, {
   },
 });
 
-// Test simple connexion socket
+const onlineUsers = new Map();
+
 io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
+  // Enregistrer un utilisateur connecté
+  socket.on("registerUser", (userId) => {
+    onlineUsers.set(userId, socket.id);
+
+    console.log("👤 Utilisateur enregistré :", userId);
+    console.log("📌 Liste onlineUsers :", Array.from(onlineUsers.entries()));
+
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+  });
+
   socket.on("disconnect", () => {
     console.log("🔴 Utilisateur socket déconnecté :", socket.id);
+
+    for (let [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        onlineUsers.delete(userId);
+        console.log("❌ Utilisateur retiré :", userId);
+        break;
+      }
+    }
+
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 });
 
