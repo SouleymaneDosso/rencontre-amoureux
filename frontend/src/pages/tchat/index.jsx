@@ -12,8 +12,18 @@ import {
 } from "react-icons/fa";
 import { socket } from "../../socket";
 
+
+import { useTchatSocket } from "../../hooks/useTchatSocket";
+import {
+  getMonProfil,
+  getProfilCible,
+  getMessagesConversation,
+  envoyerMessageApi,
+} from "../../services/tchatApi";
+
+
 const Wrapper = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #f8f9ff, #eef2ff);
@@ -188,7 +198,7 @@ const Input = styled.input`
   border-radius: 999px;
   border: 1px solid #dbe2f0;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
   transition: 0.2s ease;
 
   &:focus {
@@ -258,73 +268,30 @@ function Tchat() {
   const [messageErreur, setMessageErreur] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
-const [onlineUsers, setOnlineUsers] = useState([]);
   const messagesEndRef = useRef(null);
   const token = localStorage.getItem("token");
 
+const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
+
   useEffect(() => {
-    console.log("🧪 Tchat monté - test socket");
+    if (!monProfilId) return;
 
-    socket.connect();
-
-    socket.on("connect", () => {
-      console.log("✅ Socket connecté :", socket.id);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("❌ Socket déconnecté");
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("💥 Erreur connexion socket :", err.message);
-    });
-
-    socket.on("onlineUsers", (users) => {
-      setOnlineUsers(users);
-      });
-      
-
-      socket.on("receiveMessage", (messageData) => {
-        console.log("📩 Nouveau message reçu en temps réel :", messageData);
-
-        setMessages((prev) => {
-          const existeDeja = prev.some((msg) => msg._id === messageData._id);
-          if (existeDeja) return prev;
-
-          return [...prev, messageData];
-        });
-      });
-    
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("connect_error");
-      socket.off("onlineUsers");
-      socket.off("receiveMessage");
-     
+    const registerIfConnected = () => {
+      console.log("👤 Enregistrement utilisateur socket :", monProfilId);
+      console.log("🔌 socket.connected ?", socket.connected);
+      socket.emit("registerUser", monProfilId);
     };
-  }, []);
 
+    if (socket.connected) {
+      registerIfConnected();
+    } else {
+      socket.on("connect", registerIfConnected);
+    }
 
-useEffect(() => {
-  if (!monProfilId) return;
-
-  const registerIfConnected = () => {
-    console.log("👤 Enregistrement utilisateur socket :", monProfilId);
-    console.log("🔌 socket.connected ?", socket.connected);
-    socket.emit("registerUser", monProfilId);
-  };
-
-  if (socket.connected) {
-    registerIfConnected();
-  } else {
-    socket.on("connect", registerIfConnected);
-  }
-
-  return () => {
-    socket.off("connect", registerIfConnected);
-  };
-}, [monProfilId]);
+    return () => {
+      socket.off("connect", registerIfConnected);
+    };
+  }, [monProfilId]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -335,83 +302,30 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    const chargerTchat = async () => {
-      try {
-        setLoading(true);
-        setMessageErreur("");
+  const chargerTchat = async () => {
+    try {
+      setLoading(true);
+      setMessageErreur("");
 
-        const monProfilRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
+      const monProfilData = await getMonProfil(token);
+      setMonProfilId(monProfilData._id);
 
-        const monProfilData = await monProfilRes.json();
+      const profilData = await getProfilCible(id);
+      setProfilCible(profilData);
 
-        if (!monProfilRes.ok) {
-          throw new Error(
-            monProfilData.message || "Impossible de récupérer ton profil",
-          );
-        }
-
-        setMonProfilId(monProfilData._id);
-
-        const profilRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const profilData = await profilRes.json();
-
-        if (!profilRes.ok) {
-          throw new Error(
-            profilData.message || "Impossible de récupérer le profil",
-          );
-        }
-
-        setProfilCible(profilData);
-
-        const messagesRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/tchat/messages/${id}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const messagesData = await messagesRes.json();
-
-        if (!messagesRes.ok) {
-          throw new Error(
-            messagesData.message || "Impossible de récupérer les messages",
-          );
-        }
-
-        setMessages(messagesData);
-      } catch (error) {
-        setMessageErreur(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token && id) {
-      chargerTchat();
+      const messagesData = await getMessagesConversation(id, token);
+      setMessages(messagesData);
+    } catch (error) {
+      setMessageErreur(error.message);
+    } finally {
+      setLoading(false);
     }
-  }, [id, token]);
+  };
+
+  if (token && id) {
+    chargerTchat();
+  }
+}, [id, token]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -427,46 +341,40 @@ useEffect(() => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() && !selectedFile) return;
+  if (!newMessage.trim() && !selectedFile) return;
 
-    try {
-      setSending(true);
+  try {
+    setSending(true);
 
-      const formData = new FormData();
-      formData.append("contenu", newMessage);
+    const formData = new FormData();
+    formData.append("contenu", newMessage);
 
-      if (selectedFile) {
-        formData.append("media", selectedFile);
-      }
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/tchat/envoyer/${id}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        },
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Erreur lors de l’envoi du message");
-      }
-
-      setMessages((prev) => [...prev, data.nouveauMessage]);
-      socket.emit("sendMessage", data.nouveauMessage);
-      setNewMessage("");
-      setSelectedFile(null);
-      setPreviewUrl("");
-    } catch (error) {
-      setMessageErreur(error.message);
-    } finally {
-      setSending(false);
+    if (selectedFile) {
+      formData.append("media", selectedFile);
     }
-  };
+
+    const data = await envoyerMessageApi(id, token, formData);
+
+    setMessages((prev) => {
+      const existeDeja = prev.some(
+        (msg) => msg._id === data.nouveauMessage._id
+      );
+      if (existeDeja) return prev;
+
+      return [...prev, data.nouveauMessage];
+    });
+
+    socket.emit("sendMessage", data.nouveauMessage);
+
+    setNewMessage("");
+    setSelectedFile(null);
+    setPreviewUrl("");
+  } catch (error) {
+    setMessageErreur(error.message);
+  } finally {
+    setSending(false);
+  }
+};
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
