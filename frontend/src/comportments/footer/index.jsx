@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { FaHome, FaCompass, FaComments, FaUser } from "react-icons/fa";
+import { FaFire, FaCompass, FaComments, FaUser } from "react-icons/fa";
 
 const FooterContainer = styled.footer`
   position: fixed;
@@ -56,7 +56,7 @@ function FooterNav() {
   return (
     <FooterContainer>
       <NavItem active={isActive("/matchs")} onClick={() => navigate("/matchs")}>
-        <FaHome />
+         <FaFire />
         <span>Matchs</span>
       </NavItem>
 
