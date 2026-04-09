@@ -29,30 +29,25 @@ const io = new Server(server, {
   },
 });
 
+// =======================
+// Stockage utilisateurs connectés
+// =======================
 const onlineUsers = new Map();
+
+// rendre accessibles io et onlineUsers dans toute l'app
+app.set("io", io);
+app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
+  // =======================
   // Enregistrer un utilisateur connecté
+  // =======================
   socket.on("registerUser", (userId) => {
     console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
+
     onlineUsers.set(userId, socket.id);
-
-    // Envoyer un message en temps réel
-    socket.on("sendMessage", (messageData) => {
-      const receiverSocketId = onlineUsers.get(messageData.destinataire);
-
-      console.log("📨 Message temps réel reçu :", messageData);
-      console.log("🎯 Destinataire socket trouvé :", receiverSocketId);
-
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("receiveMessage", messageData);
-        console.log("✅ Message envoyé en temps réel au destinataire");
-      } else {
-        console.log("⚠️ Destinataire non connecté");
-      }
-    });
 
     console.log("👤 Utilisateur enregistré :", userId);
     console.log("📌 Liste onlineUsers :", Array.from(onlineUsers.entries()));
@@ -60,6 +55,51 @@ io.on("connection", (socket) => {
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
+  // =======================
+  // Envoyer un message en temps réel
+  // =======================
+  socket.on("sendMessage", (messageData) => {
+    const receiverSocketId = onlineUsers.get(messageData.destinataire);
+
+    console.log("📨 Message temps réel reçu :", messageData);
+    console.log("🎯 Destinataire socket trouvé :", receiverSocketId);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receiveMessage", messageData);
+      console.log("✅ Message envoyé en temps réel au destinataire");
+    } else {
+      console.log("⚠️ Destinataire non connecté");
+    }
+  });
+
+  // =======================
+  // Messages lus
+  // =======================
+  socket.on("messagesRead", ({ expediteurId, idsMessagesLus, lecteurId }) => {
+    const expediteurSocketId = onlineUsers.get(expediteurId);
+
+    console.log("👁️ messagesRead reçu :", {
+      expediteurId,
+      lecteurId,
+      idsMessagesLus,
+    });
+
+    if (expediteurSocketId) {
+      io.to(expediteurSocketId).emit("messagesRead", {
+        expediteurId,
+        lecteurId,
+        idsMessagesLus,
+      });
+
+      console.log("✅ Notification de lecture envoyée à l'expéditeur");
+    } else {
+      console.log("⚠️ Expéditeur non connecté pour recevoir le statut lu");
+    }
+  });
+
+  // =======================
+  // Déconnexion
+  // =======================
   socket.on("disconnect", () => {
     console.log("🔴 Utilisateur socket déconnecté :", socket.id);
 

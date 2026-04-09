@@ -193,3 +193,81 @@ exports.mesConversations = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+
+exports.marquerMessagesCommeLus = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { profilId } = req.params;
+
+    // retrouver mon profil
+    const monProfil = await Profil.findOne({ userId });
+
+    if (!monProfil) {
+      return res.status(404).json({ message: "Mon profil est introuvable" });
+    }
+
+    // retrouver le profil cible
+    const profilCible = await Profil.findById(profilId);
+
+    if (!profilCible) {
+      return res.status(404).json({ message: "Profil cible introuvable" });
+    }
+
+    // sécurité : il faut un match
+    const estMatch = monProfil.matchs.some(
+      (matchId) => matchId.toString() === profilId
+    );
+
+    if (!estMatch) {
+      return res.status(403).json({
+        message: "Accès interdit : pas de match",
+      });
+    }
+
+    // retrouver la conversation
+    const conversation = await Conversation.findOne({
+      participants: { $all: [monProfil._id, profilCible._id] },
+    });
+
+    if (!conversation) {
+      return res.status(200).json({
+        message: "Aucune conversation trouvée",
+        messagesMisAJour: [],
+      });
+    }
+
+    // récupérer les messages NON lus envoyés par profilCible vers moi
+    const messagesNonLus = await Message.find({
+      conversationId: conversation._id,
+      expediteur: profilCible._id,
+      destinataire: monProfil._id,
+      lu: false,
+    });
+
+    // les marquer comme lus
+    await Message.updateMany(
+      {
+        conversationId: conversation._id,
+        expediteur: profilCible._id,
+        destinataire: monProfil._id,
+        lu: false,
+      },
+      {
+        $set: { lu: true },
+      }
+    );
+
+    const idsMessagesLus = messagesNonLus.map((msg) => msg._id.toString());
+
+    return res.status(200).json({
+      message: "Messages marqués comme lus",
+      idsMessagesLus,
+      lecteurId: monProfil._id.toString(),
+      expediteurId: profilCible._id.toString(),
+    });
+  } catch (error) {
+    console.error("Erreur marquerMessagesCommeLus :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
