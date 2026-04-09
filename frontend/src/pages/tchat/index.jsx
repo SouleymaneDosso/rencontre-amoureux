@@ -13,84 +13,48 @@ import {
 import { socket } from "../../socket";
 
 const Wrapper = styled.div`
-  height: 100dvh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #fff0f6 0%, #f8f9ff 45%, #eef2ff 100%);
-  overflow: hidden;
+  background: linear-gradient(135deg, #f8f9ff, #eef2ff);
 `;
 
 const Header = styled.div`
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 24px rgba(31, 42, 68, 0.06);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-
-  @media (max-width: 480px) {
-    padding: 12px 14px;
-  }
+  gap: 14px;
+  box-shadow: 0 4px 18px rgba(31, 42, 68, 0.05);
 `;
 
 const BackButton = styled.button`
-  background: linear-gradient(135deg, #eef2ff, #f3e8ff);
+  background: #eef2ff;
   border: none;
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  color: #4f46e5;
+  color: #4f6cff;
   cursor: pointer;
   font-size: 16px;
   transition: 0.2s ease;
-  flex-shrink: 0;
 
   &:hover {
+    background: #dfe7ff;
     transform: scale(1.05);
-  }
-`;
-
-const AvatarBox = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff4d8d, #7c3aed);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 10px 24px rgba(255, 77, 141, 0.2);
-  flex-shrink: 0;
-
-  @media (max-width: 480px) {
-    width: 44px;
-    height: 44px;
   }
 `;
 
 const HeaderInfo = styled.div`
   display: flex;
   flex-direction: column;
-  min-width: 0;
 `;
 
 const HeaderTitle = styled.h2`
   margin: 0;
   font-size: 18px;
-  color: #111827;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  @media (max-width: 480px) {
-    font-size: 16px;
-  }
+  color: #1f2a44;
 `;
 
 const HeaderSubtitle = styled.div`
@@ -105,25 +69,10 @@ const HeaderSubtitle = styled.div`
 const MessagesContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 18px 14px 20px;
+  padding: 20px 16px 100px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  scroll-behavior: smooth;
-
-  &::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.4);
-    border-radius: 999px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 14px 10px 18px;
-    gap: 10px;
-  }
 `;
 
 const MessageRow = styled.div`
@@ -132,30 +81,21 @@ const MessageRow = styled.div`
 `;
 
 const MessageBubble = styled.div`
-  max-width: min(78%, 360px);
-  padding: 12px 14px;
-  border-radius: 22px;
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 20px;
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
-  box-shadow: 0 10px 26px rgba(31, 42, 68, 0.08);
-  position: relative;
+  box-shadow: 0 8px 20px rgba(31, 42, 68, 0.06);
 
   background: ${(props) =>
-    props.$mine
-      ? "linear-gradient(135deg, #ff4d8d, #ff6ca7 55%, #ff8cc0)"
-      : "rgba(255, 255, 255, 0.95)"};
+    props.$mine ? "linear-gradient(135deg, #ff4d8d, #ff6ca7)" : "white"};
 
-  color: ${(props) => (props.$mine ? "white" : "#111827")};
+  color: ${(props) => (props.$mine ? "white" : "#1f2a44")};
 
-  border-bottom-right-radius: ${(props) => (props.$mine ? "8px" : "22px")};
-  border-bottom-left-radius: ${(props) => (props.$mine ? "22px" : "8px")};
-
-  @media (max-width: 480px) {
-    max-width: 85%;
-    font-size: 13.5px;
-    padding: 11px 13px;
-  }
+  border-bottom-right-radius: ${(props) => (props.$mine ? "6px" : "20px")};
+  border-bottom-left-radius: ${(props) => (props.$mine ? "20px" : "6px")};
 `;
 
 const MessageImage = styled.img`
@@ -164,47 +104,34 @@ const MessageImage = styled.img`
   border-radius: 16px;
   margin-bottom: 8px;
   object-fit: cover;
-  display: block;
-
-  @media (max-width: 480px) {
-    max-width: 220px;
-  }
 `;
 
 const MessageText = styled.p`
   margin: 0;
-  white-space: pre-wrap;
 `;
 
 const MessageTime = styled.span`
   display: block;
   font-size: 11px;
-  margin-top: 7px;
+  margin-top: 6px;
   opacity: 0.75;
-  text-align: right;
 `;
 
 const PreviewBox = styled.div`
-  padding: 10px 14px 0;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
 `;
 
 const PreviewImageWrapper = styled.div`
   position: relative;
   width: fit-content;
-  background: white;
-  padding: 8px;
-  border-radius: 20px;
-  box-shadow: 0 10px 24px rgba(31, 42, 68, 0.08);
 `;
 
 const PreviewImage = styled.img`
   max-width: 140px;
-  border-radius: 14px;
+  border-radius: 16px;
   display: block;
-
-  @media (max-width: 480px) {
-    max-width: 110px;
-  }
 `;
 
 const RemovePreview = styled.button`
@@ -218,21 +145,15 @@ const RemovePreview = styled.button`
   background: #ef4444;
   color: white;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.28);
-`;
-
-const BottomArea = styled.div`
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(229, 231, 235, 0.8);
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  position: sticky;
-  bottom: 0;
-  z-index: 15;
 `;
 
 const InputContainer = styled.div`
+  position: sticky;
+  bottom: 70px;
   display: flex;
+  padding: 14px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
   gap: 10px;
   align-items: center;
 `;
@@ -242,27 +163,22 @@ const FileInput = styled.input`
 `;
 
 const IconButton = styled.label`
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
-  color: #4f46e5;
+  border: none;
+  background: #eef2ff;
+  color: #4f6cff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   cursor: pointer;
   transition: 0.2s ease;
-  flex-shrink: 0;
 
   &:hover {
+    background: #dfe7ff;
     transform: translateY(-2px);
-  }
-
-  @media (max-width: 480px) {
-    width: 46px;
-    height: 46px;
-    font-size: 16px;
   }
 `;
 
@@ -270,22 +186,14 @@ const Input = styled.input`
   flex: 1;
   padding: 14px 18px;
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #dbe2f0;
   outline: none;
   font-size: 14px;
-  background: #f9fafb;
   transition: 0.2s ease;
-  min-width: 0;
 
   &:focus {
-    border-color: #4f46e5;
-    background: white;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
-  }
-
-  @media (max-width: 480px) {
-    padding: 13px 16px;
-    font-size: 14px;
+    border-color: #4f6cff;
+    box-shadow: 0 0 0 4px rgba(79, 108, 255, 0.08);
   }
 `;
 
@@ -294,28 +202,22 @@ const SendButton = styled.button`
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #4f6cff, #6f88ff);
   color: white;
   font-size: 18px;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.24);
+  box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
   transition: 0.2s ease;
-  flex-shrink: 0;
 
   &:hover {
-    transform: translateY(-2px) scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(79, 108, 255, 0.28);
   }
 
   &:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
-  }
-
-  @media (max-width: 480px) {
-    width: 48px;
-    height: 48px;
-    font-size: 16px;
   }
 `;
 
@@ -341,15 +243,6 @@ const EmptyState = styled.div`
   text-align: center;
   color: #6b7280;
   padding: 30px;
-
-  h3 {
-    margin-bottom: 8px;
-    color: #111827;
-  }
-
-  p {
-    margin: 0;
-  }
 `;
 
 function Tchat() {
@@ -365,9 +258,73 @@ function Tchat() {
   const [messageErreur, setMessageErreur] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
-
+const [onlineUsers, setOnlineUsers] = useState([]);
   const messagesEndRef = useRef(null);
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    console.log("🧪 Tchat monté - test socket");
+
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("✅ Socket connecté :", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("❌ Socket déconnecté");
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("💥 Erreur connexion socket :", err.message);
+    });
+
+    socket.on("onlineUsers", (users) => {
+      setOnlineUsers(users);
+      });
+      
+
+      socket.on("receiveMessage", (messageData) => {
+        console.log("📩 Nouveau message reçu en temps réel :", messageData);
+
+        setMessages((prev) => {
+          const existeDeja = prev.some((msg) => msg._id === messageData._id);
+          if (existeDeja) return prev;
+
+          return [...prev, messageData];
+        });
+      });
+    
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+      socket.off("onlineUsers");
+      socket.off("receiveMessage");
+     
+    };
+  }, []);
+
+
+useEffect(() => {
+  if (!monProfilId) return;
+
+  const registerIfConnected = () => {
+    console.log("👤 Enregistrement utilisateur socket :", monProfilId);
+    console.log("🔌 socket.connected ?", socket.connected);
+    socket.emit("registerUser", monProfilId);
+  };
+
+  if (socket.connected) {
+    registerIfConnected();
+  } else {
+    socket.on("connect", registerIfConnected);
+  }
+
+  return () => {
+    socket.off("connect", registerIfConnected);
+  };
+}, [monProfilId]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -376,63 +333,6 @@ function Tchat() {
       minute: "2-digit",
     });
   };
-
-  useEffect(() => {
-    socket.connect();
-
-    const handleConnect = () => {
-      console.log("✅ Socket connecté");
-    };
-
-    const handleDisconnect = () => {
-      console.log("❌ Socket déconnecté");
-    };
-
-    const handleConnectError = (err) => {
-      console.error("💥 Erreur connexion socket :", err.message);
-    };
-
-    const handleReceiveMessage = (messageData) => {
-      console.log("📩 Nouveau message reçu :", messageData);
-
-      setMessages((prev) => {
-        const existeDeja = prev.some((msg) => msg._id === messageData._id);
-        if (existeDeja) return prev;
-        return [...prev, messageData];
-      });
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleConnectError);
-    socket.on("receiveMessage", handleReceiveMessage);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      socket.off("connect_error", handleConnectError);
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!monProfilId) return;
-
-    const registerIfConnected = () => {
-      console.log("👤 Enregistrement utilisateur socket :", monProfilId);
-      socket.emit("registerUser", monProfilId);
-    };
-
-    if (socket.connected) {
-      registerIfConnected();
-    } else {
-      socket.on("connect", registerIfConnected);
-    }
-
-    return () => {
-      socket.off("connect", registerIfConnected);
-    };
-  }, [monProfilId]);
 
   useEffect(() => {
     const chargerTchat = async () => {
@@ -448,14 +348,14 @@ function Tchat() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const monProfilData = await monProfilRes.json();
 
         if (!monProfilRes.ok) {
           throw new Error(
-            monProfilData.message || "Impossible de récupérer ton profil"
+            monProfilData.message || "Impossible de récupérer ton profil",
           );
         }
 
@@ -468,14 +368,14 @@ function Tchat() {
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const profilData = await profilRes.json();
 
         if (!profilRes.ok) {
           throw new Error(
-            profilData.message || "Impossible de récupérer le profil"
+            profilData.message || "Impossible de récupérer le profil",
           );
         }
 
@@ -489,14 +389,14 @@ function Tchat() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const messagesData = await messagesRes.json();
 
         if (!messagesRes.ok) {
           throw new Error(
-            messagesData.message || "Impossible de récupérer les messages"
+            messagesData.message || "Impossible de récupérer les messages",
           );
         }
 
@@ -523,7 +423,6 @@ function Tchat() {
 
   const removeSelectedFile = () => {
     setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl("");
   };
 
@@ -548,7 +447,7 @@ function Tchat() {
             Authorization: `Bearer ${token}`,
           },
           body: formData,
-        }
+        },
       );
 
       const data = await res.json();
@@ -559,10 +458,8 @@ function Tchat() {
 
       setMessages((prev) => [...prev, data.nouveauMessage]);
       socket.emit("sendMessage", data.nouveauMessage);
-
       setNewMessage("");
       setSelectedFile(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl("");
     } catch (error) {
       setMessageErreur(error.message);
@@ -573,13 +470,9 @@ function Tchat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, previewUrl]);
+  }, [messages]);
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+  const isProfilCibleOnline = onlineUsers.includes(id);
 
   if (loading) {
     return <Loading>Chargement du tchat...</Loading>;
@@ -603,18 +496,16 @@ function Tchat() {
           <FaArrowLeft />
         </BackButton>
 
-        <AvatarBox>
-          <FaUserCircle size={28} />
-        </AvatarBox>
+        <FaUserCircle size={42} color="#4f6cff" />
 
         <HeaderInfo>
           <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>
           <HeaderSubtitle>
             <FaCircle
-              size={9}
-              color={profilCible?.enLigne ? "#22c55e" : "#9ca3af"}
+              size={10}
+              color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
             />
-            {profilCible?.enLigne ? "En ligne" : "Hors ligne"}
+            {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
           </HeaderSubtitle>
         </HeaderInfo>
       </Header>
@@ -623,7 +514,7 @@ function Tchat() {
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
-            <p>Commence une belle conversation ✨</p>
+            <p>Commence la conversation</p>
           </EmptyState>
         ) : (
           messages.map((msg) => {
@@ -649,42 +540,40 @@ function Tchat() {
         <div ref={messagesEndRef} />
       </MessagesContainer>
 
-      <BottomArea>
-        {previewUrl && (
-          <PreviewBox>
-            <PreviewImageWrapper>
-              <PreviewImage src={previewUrl} alt="preview" />
-              <RemovePreview onClick={removeSelectedFile}>
-                <FaTimes />
-              </RemovePreview>
-            </PreviewImageWrapper>
-          </PreviewBox>
-        )}
+      {previewUrl && (
+        <PreviewBox>
+          <PreviewImageWrapper>
+            <PreviewImage src={previewUrl} alt="preview" />
+            <RemovePreview onClick={removeSelectedFile}>
+              <FaTimes />
+            </RemovePreview>
+          </PreviewImageWrapper>
+        </PreviewBox>
+      )}
 
-        <InputContainer>
-          <IconButton htmlFor="file-upload">
-            <FaImage />
-          </IconButton>
+      <InputContainer>
+        <IconButton htmlFor="file-upload">
+          <FaImage />
+        </IconButton>
 
-          <FileInput
-            id="file-upload"
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+        <FileInput
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
 
-          <Input
-            placeholder="Écrire un message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
+        <Input
+          placeholder="Écrire un message..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        />
 
-          <SendButton onClick={sendMessage} disabled={sending}>
-            <FaPaperPlane />
-          </SendButton>
-        </InputContainer>
-      </BottomArea>
+        <SendButton onClick={sendMessage} disabled={sending}>
+          <FaPaperPlane />
+        </SendButton>
+      </InputContainer>
     </Wrapper>
   );
 }
