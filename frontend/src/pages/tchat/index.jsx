@@ -268,7 +268,6 @@ function Tchat() {
     socket.connect();
 
     socket.on("connect", () => {
-      console.log("✅ Socket connecté :", socket.id);
     });
 
     socket.on("disconnect", () => {
@@ -278,8 +277,8 @@ function Tchat() {
     socket.on("connect_error", (err) => {
       console.error("💥 Erreur connexion socket :", err.message);
     });
-    socket.on("onlineUsers", (users) => {
-      console.log("🟢 Utilisateurs en ligne :", users);
+    socket.on("onlineUsers", () => {
+     
       socket.on("receiveMessage", (messageData) => {
         console.log("📩 Nouveau message reçu en temps réel :", messageData);
 
@@ -306,8 +305,6 @@ useEffect(() => {
   if (!monProfilId) return;
 
   const registerIfConnected = () => {
-    console.log("👤 Enregistrement utilisateur socket :", monProfilId);
-    console.log("🔌 socket.connected ?", socket.connected);
     socket.emit("registerUser", monProfilId);
   };
 
