@@ -1,6 +1,6 @@
 const http = require("http");
-const app = require("./app");
 const { Server } = require("socket.io");
+const app = require("./app");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -14,6 +14,9 @@ app.set("port", port);
 
 const server = http.createServer(app);
 
+// =======================
+// SOCKET.IO
+// =======================
 const io = new Server(server, {
   cors: {
     origin: [
@@ -21,18 +24,19 @@ const io = new Server(server, {
       "http://localhost:3000",
       "https://rencontre-amoureux.vercel.app",
     ],
-    methods:["GET", "POST"],
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-io.on("connexion", (socket) =>{
-    console.log("utilisateur connecté :", socket.id);
-    socket.on("deconnecté", () =>{
-    console.log("utilisateur déconnecté :", socket.id);
-})
+// Test simple connexion socket
+io.on("connection", (socket) => {
+  console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
-})
+  socket.on("disconnect", () => {
+    console.log("🔴 Utilisateur socket déconnecté :", socket.id);
+  });
+});
 
 // IMPORTANT POUR RENDER
 server.listen(port, "0.0.0.0", () => {
@@ -40,7 +44,7 @@ server.listen(port, "0.0.0.0", () => {
 });
 
 server.on("error", (error) => {
-  console.error("❌ Erreur serveur :", error); 
+  console.error("❌ Erreur serveur :", error);
 });
 
 // Pour attraper les crashs silencieux
