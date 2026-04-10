@@ -300,18 +300,18 @@ function Tchat() {
     });
   };
 
-  const getStatutLabel = (status) => {
-    switch (status) {
-      case "sent":
-        return "Envoyé";
-      case "delivered":
-        return "livré";
-      case "seen":
-        return "vu";
-      default:
-        return " Envoyé";
-    }
-  };
+const getStatutIcon = (status) => {
+  switch (status) {
+    case "sent":
+      return "✔";
+    case "delivered":
+      return "✔✔";
+    case "seen":
+      return "✔✔"; // tu peux styliser en bleu plus tard
+    default:
+      return "";
+  }
+};
 
   useEffect(() => {
     const chargerTchat = async () => {
@@ -339,30 +339,29 @@ function Tchat() {
     }
   }, [id, token]);
 
-  useEffect(() => {
-    const marquerCommeLus = async () => {
-      if (!token || !id || !monProfilId || messages.length === 0) return;
+useEffect(() => {
+  if (!token || !id || !monProfilId) return;
 
-      try {
-        const data = await marquerMessagesCommeLusApi(id, token);
-       
+  const marquerCommeLus = async () => {
+    try {
+      const data = await marquerMessagesCommeLusApi(id, token);
 
-        if (data.idsMessagesLus?.length > 0) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              data.idsMessagesLus.includes(msg._id)
-                ? { ...msg, statut: "seen", lu: true }
-                : msg,
-            ),
-          );
-        }
-      } catch (error) {
-        console.error("Erreur marquage lu :", error.message);
+      if (data.idsMessagesLus?.length > 0) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            data.idsMessagesLus.includes(msg._id)
+              ? { ...msg, statut: "seen" }
+              : msg
+          )
+        );
       }
-    };
+    } catch (error) {
+      console.error("Erreur marquage lu :", error.message);
+    }
+  };
 
-    marquerCommeLus();
-  }, [id, token, monProfilId, messages.length]);
+  marquerCommeLus();
+}, [id, token, monProfilId]); 
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -476,7 +475,7 @@ function Tchat() {
 
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
-                    {isMine && ` • ${getStatutLabel(msg.statut)}`}
+                    {isMine && ` • ${getStatutIcon(msg.statut)}`}
                   </MessageTime>
                 </MessageBubble>
               </MessageRow>
