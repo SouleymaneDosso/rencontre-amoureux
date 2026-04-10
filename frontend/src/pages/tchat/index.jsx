@@ -262,7 +262,12 @@ const EmptyState = styled.div`
   padding: 30px;
 `;
 
-
+const StatusWrapper = styled.span`
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.9;
+`;
 
 function Tchat() {
   const { id } = useParams();
@@ -313,13 +318,13 @@ function Tchat() {
   const getStatutIcon = (status) => {
     switch (status) {
       case "sent":
-        return <FaCheck color="#9ca3af" size={12} />; // gris
+        return <FaCheck color="#9ca3af" size={12} />;
 
       case "delivered":
-        return <FaCheckDouble color="#9ca3af" size={12} />; // gris double
+        return <FaCheckDouble color="#9ca3af" size={12} />;
 
       case "seen":
-        return <FaCheckDouble color="#3b82f6" size={12} />; // bleu (lu)
+        return <FaCheckDouble color="#3b82f6" size={12} />;
 
       default:
         return null;
@@ -350,6 +355,21 @@ function Tchat() {
       chargerTchat();
     }
   }, [id, token]);
+
+  useEffect(() => {
+  const handleReceiveMessage = (msg) => {
+    socket.emit("messageDelivered", {
+      messageId: msg._id,
+      expediteurId: msg.expediteur,
+    });
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, []);
 
   useEffect(() => {
     if (!token || !id || !monProfilId) return;
@@ -413,11 +433,6 @@ function Tchat() {
       });
 
       socket.emit("sendMessage", data.nouveauMessage);
-      socket.emit("messageDelivered", {
-        expediteurId: monProfilId,
-        messageId: data.nouveauMessage._id,
-      });
-
       setNewMessage("");
       setSelectedFile(null);
       setPreviewUrl("");
@@ -492,15 +507,7 @@ function Tchat() {
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
                     {isMine && (
-                      <span
-                        style={{
-                          marginLeft: "6px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        {getStatutIcon(msg.statut)}
-                      </span>
+                      <StatusWrapper>{getStatutIcon(msg.statut)}</StatusWrapper>
                     )}
                   </MessageTime>
                 </MessageBubble>

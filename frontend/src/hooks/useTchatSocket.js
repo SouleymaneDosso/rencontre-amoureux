@@ -35,12 +35,6 @@ export function useTchatSocket(monProfilId, setMessages) {
 
         return [...prev, messageData];
       });
-
-      // 🔥 ACCUSÉ DE RÉCEPTION
-      socket.emit("messageDelivered", {
-        messageId: messageData._id,
-        expediteurId: messageData.expediteur,
-      });
     };
 
     const handleMessagesRead = ({ idsMessagesLus }) => {
