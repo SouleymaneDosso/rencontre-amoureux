@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
 
   socket.on("messageDelivered", ({expediteurId, messageId})=>{
     console.log("message delivré recu :", {expediteurId, messageId});
-    const expediteurSocketId = onlineUsers.getById(expediteurId);
+    const expediteurSocketId = onlineUsers.get(expediteurId);
 
     if(expediteurSocketId){
       io.to(expediteurSocketId).emit("messageDelivered", {expediteurId, messageId});
