@@ -300,13 +300,16 @@ function Tchat() {
     });
   };
 
-  const getStatutLabel = (lu) => {
-    switch (lu) {
-      case true:
-        return "Vu";
-      case false:
-        return "Non vu";
-     default:  return "";
+  const getStatutLabel = (status) => {
+    switch (status) {
+      case "sent":
+        return "Envoyé";
+      case "delivered":
+        return "livré";
+      case "seen":
+        return "vu";
+      default:
+        return " Envoyé";
     }
   };
 
@@ -473,7 +476,7 @@ function Tchat() {
 
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
-                    {isMine && ` • ${getStatutLabel(msg.lu)}`}
+                    {isMine && ` • ${getStatutLabel(msg.statut)}`}
                   </MessageTime>
                 </MessageBubble>
               </MessageRow>
