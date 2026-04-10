@@ -129,7 +129,7 @@ const Input = styled.textarea`
   padding: 16px;
   min-height: 140px;
   resize: none;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: #1f2a44;
   background: #fbfcff;

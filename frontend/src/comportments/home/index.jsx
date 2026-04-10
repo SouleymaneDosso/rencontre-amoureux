@@ -40,14 +40,11 @@ const Name = styled.h1`
 `;
 
 const AvatarWrapper = styled.div`
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   margin: 0 auto;
   position: relative;
-  background: #f1f4ff;  
-  border: 4px solid #edf1ff;
-
 `;
 
 const Avatar = styled.img`
