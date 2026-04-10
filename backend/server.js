@@ -97,6 +97,22 @@ io.on("connection", (socket) => {
     }
   });
 
+
+  ////message delivré////////
+
+  socket.on("messageDelivered", ({expediteurId, messageId})=>{
+    console.log("message delivré recu :", {expediteurId, messageId});
+    const expediteurSocketId = onlineUsers.getById(expediteurId);
+
+    if(expediteurSocketId){
+      io.to(expediteurSocketId).emit("messageDelivered", {expediteurId, messageId});
+      console.log("✅ Notification de message delivré envoyée à l'expéditeur");
+    }
+    else{
+      console.log("⚠️ Expéditeur non connecté pour recevoir le statut delivré");
+    }
+  })
+
   // =======================
   // Déconnexion
   // =======================

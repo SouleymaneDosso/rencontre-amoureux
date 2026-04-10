@@ -26,7 +26,7 @@ exports.envoyerMessage = async (req, res) => {
 
     // sécurité : il faut un match
     const estMatch = monProfil.matchs.some(
-      (matchId) => matchId.toString() === profilId
+      (matchId) => matchId.toString() === profilId,
     );
 
     if (!estMatch) {
@@ -70,7 +70,7 @@ exports.envoyerMessage = async (req, res) => {
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
-          }
+          },
         );
 
         streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
@@ -141,7 +141,7 @@ exports.getMessages = async (req, res) => {
 
     // sécurité : il faut un match
     const estMatch = monProfil.matchs.some(
-      (matchId) => matchId.toString() === profilId
+      (matchId) => matchId.toString() === profilId,
     );
 
     if (!estMatch) {
@@ -194,7 +194,6 @@ exports.mesConversations = async (req, res) => {
   }
 };
 
-
 exports.marquerMessagesCommeLus = async (req, res) => {
   try {
     // =======================
@@ -231,7 +230,7 @@ exports.marquerMessagesCommeLus = async (req, res) => {
     // 5) sécurité : il faut un match
     // =======================
     const estMatch = monProfil.matchs.some(
-      (matchId) => matchId.toString() === profilId
+      (matchId) => matchId.toString() === profilId,
     );
 
     if (!estMatch) {
@@ -262,7 +261,7 @@ exports.marquerMessagesCommeLus = async (req, res) => {
       conversationId: conversation._id,
       expediteur: profilCible._id,
       destinataire: monProfil._id,
-      lu: false,
+      statut: { $ne: "seen" },
     });
 
     // =======================
@@ -273,11 +272,11 @@ exports.marquerMessagesCommeLus = async (req, res) => {
         conversationId: conversation._id,
         expediteur: profilCible._id,
         destinataire: monProfil._id,
-        lu: false,
+        statut: { $ne: "seen" },
       },
       {
-        $set: { lu: true },
-      }
+        $set: { statut: "seen" },
+      },
     );
 
     // =======================
@@ -297,7 +296,10 @@ exports.marquerMessagesCommeLus = async (req, res) => {
         idsMessagesLus,
       });
 
-      console.log("👁️ Notification messages lus envoyée à :", profilCible._id.toString());
+      console.log(
+        "👁️ Notification messages lus envoyée à :",
+        profilCible._id.toString(),
+      );
     }
 
     // =======================

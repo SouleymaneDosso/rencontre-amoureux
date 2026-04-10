@@ -72,11 +72,6 @@ const messageSchema = new mongoose.Schema(
       default: "sent",
     },
 
-    lu: {
-      type: Boolean,
-      default: false,
-    },
-
     dateLecture: {
       type: Date,
       default: null,
