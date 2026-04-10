@@ -14,6 +14,9 @@ const Page = styled.div`
   background-size: cover;
   background-position: center;
   font-family: "Poppins", sans-serif;
+  + padding: 20px;
++ box-sizing: border-box;
++ min-height: 100dvh;
 `;
 
 const LoginBox = styled.div`
@@ -22,7 +25,8 @@ const LoginBox = styled.div`
   -webkit-backdrop-filter: blur(14px);
   padding: 40px 30px;
   border-radius: 22px;
-  width: 360px;
+- width: 360px;
++ width: min(360px, 92vw);
   color: white;
   text-align: center;
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
@@ -55,7 +59,7 @@ const Input = styled.input`
   border: none;
   border-radius: 12px;
   outline: none;
-  font-size: 15px;
+  font-size: 16px;
   background: rgba(255, 255, 255, 0.9);
   box-sizing: border-box;
   transition: 0.3s ease;
