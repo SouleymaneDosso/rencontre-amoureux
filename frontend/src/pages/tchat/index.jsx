@@ -320,7 +320,7 @@ const getStatutIcon = (status) => {
     case "delivered":
       return "✔✔";
     case "seen":
-      return "✔✔";
+      return "✔✔"; 
     default:
       return "";
   }
@@ -414,6 +414,10 @@ useEffect(() => {
       });
 
       socket.emit("sendMessage", data.nouveauMessage);
+      socket.emit("messageDelivered", {
+        expediteurId: monProfilId,
+        messageId: data.nouveauMessage._id,
+      });
 
       setNewMessage("");
       setSelectedFile(null);
