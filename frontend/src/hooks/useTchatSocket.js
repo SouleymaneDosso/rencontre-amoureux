@@ -27,39 +27,48 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleReceiveMessage = (messageData) => {
-  console.log("📩 Nouveau message reçu en temps réel :", messageData);
+      console.log("📩 Nouveau message reçu en temps réel :", messageData);
 
-  setMessages((prev) => {
-    const existeDeja = prev.some((msg) => msg._id === messageData._id);
-    if (existeDeja) return prev;
+      setMessages((prev) => {
+        const existeDeja = prev.some((msg) => msg._id === messageData._id);
+        if (existeDeja) return prev;
 
-    return [...prev, messageData];
-  });
+        return [...prev, messageData];
+      });
 
-  // 🔥 ACCUSÉ DE RÉCEPTION
-  socket.emit("messageDelivered", {
-    messageId: messageData._id,
-    expediteurId: messageData.expediteur,
-  });
-};
+      // 🔥 ACCUSÉ DE RÉCEPTION
+      socket.emit("messageDelivered", {
+        messageId: messageData._id,
+        expediteurId: messageData.expediteur,
+      });
+    };
 
-const handleMessageDelivered = ({ messageId }) => {
-  console.log("📬 Message livré :", messageId);
+    const handleMessagesRead = ({ idsMessagesLus }) => {
+      console.log("👁️ Messages lus :", idsMessagesLus);
 
-  setMessages((prev) =>
-    prev.map((msg) =>
-      msg._id === messageId
-        ? { ...msg, statut: "delivered" }
-        : msg
-    )
-  );
-};
+      setMessages((prev) =>
+        prev.map((msg) =>
+          idsMessagesLus.includes(msg._id) ? { ...msg, statut: "seen" } : msg,
+        ),
+      );
+    };
+
+    const handleMessageDelivered = ({ messageId }) => {
+      console.log("📬 Message livré :", messageId);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, statut: "delivered" } : msg,
+        ),
+      );
+    };
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
     socket.on("onlineUsers", handleOnlineUsers);
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("messageDelivered", handleMessageDelivered);
+    socket.on("messagesRead", handleMessagesRead);
 
     return () => {
       socket.off("connect", handleConnect);
@@ -68,6 +77,7 @@ const handleMessageDelivered = ({ messageId }) => {
       socket.off("onlineUsers", handleOnlineUsers);
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("messageDelivered", handleMessageDelivered);
+      socket.off("messagesRead", handleMessagesRead);
     };
   }, [setMessages]);
 
