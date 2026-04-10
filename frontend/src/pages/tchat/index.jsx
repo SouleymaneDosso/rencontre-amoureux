@@ -269,6 +269,28 @@ const StatusWrapper = styled.span`
   opacity: 0.9;
 `;
 
+const Avatarplaceholder = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f6cff, #6f88ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+`;
+
+const Avatar = styled.img`
+  width: 100%; 
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -330,6 +352,7 @@ function Tchat() {
         return null;
     }
   };
+
   useEffect(() => {
     const chargerTchat = async () => {
       try {
@@ -355,6 +378,8 @@ function Tchat() {
       chargerTchat();
     }
   }, [id, token]);
+
+
 
   useEffect(() => {
   const handleReceiveMessage = (msg) => {
@@ -471,7 +496,16 @@ function Tchat() {
           <FaArrowLeft />
         </BackButton>
 
-        <FaUserCircle size={42} color="#4f6cff" />
+        <Avatarplaceholder>
+          {profilCible?.avatar ? (
+            <Avatar
+              src={profilCible.avatar?.url}
+              alt="Profil"
+            />
+          ) : (
+            <FaUserCircle size={42} color="#4f6cff" />
+          )}
+        </Avatarplaceholder>
 
         <HeaderInfo>
           <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>

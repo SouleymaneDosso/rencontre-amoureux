@@ -11,23 +11,18 @@ import {
   FaFire,
 } from "react-icons/fa";
 
-
-
 const HeaderShell = styled.header`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-   padding: 0;
+  padding: 0;
   z-index: 1200;
   display: flex;
   justify-content: center;
 
-  
-
   @media (max-width: 640px) {
     padding: 0;
-    
   }
 `;
 
@@ -49,7 +44,7 @@ const Nav = styled.nav`
   border: 1px solid rgba(255, 255, 255, 0.55);
 
   box-shadow:
-    0 10px 35px rgba(79, 108, 255, 0.10),
+    0 10px 35px rgba(79, 108, 255, 0.1),
     0 6px 18px rgba(31, 42, 68, 0.06);
 
   @media (max-width: 768px) {
@@ -249,10 +244,12 @@ const Overlay = styled.div`
 
 const MobileMenu = styled.aside`
   position: fixed;
+  
   top: 14px;
   right: 14px;
   width: min(92vw, 380px);
   height: calc(100vh - 28px);
+  height: calc(100dvh - 28px);
   z-index: 1199;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.88);
@@ -265,8 +262,7 @@ const MobileMenu = styled.aside`
   flex-direction: column;
   justify-content: space-between;
 
-  transform: ${({ $open }) =>
-    $open ? "translateX(0)" : "translateX(110%)"};
+  transform: ${({ $open }) => ($open ? "translateX(0)" : "translateX(110%)")};
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   transition: all 0.35s ease;
 
@@ -276,7 +272,8 @@ const MobileMenu = styled.aside`
 
   @media (max-width: 640px) {
     width: calc(100vw - 24px);
-    height: calc(100vh - 24px);
+   -  height: calc(100vh - 24px);
++  height: calc(100dvh - 24px);
     top: 12px;
     right: 12px;
     border-radius: 24px;
@@ -361,14 +358,16 @@ const MobileActionButton = styled.button`
   font-weight: 700;
   cursor: pointer;
   box-shadow: ${({ $variant }) =>
-    $variant === "ghost"
-      ? "none"
-      : "0 12px 28px rgba(79, 108, 255, 0.24)"};
+    $variant === "ghost" ? "none" : "0 12px 28px rgba(79, 108, 255, 0.24)"};
   transition: all 0.25s ease;
 
   &:hover {
     transform: translateY(-2px);
   }
+`;
+
+const Pagewrapper = styled.div`
+  padding-top: 100px;
 `;
 
 function Header() {
@@ -399,7 +398,7 @@ function Header() {
   };
 
   return (
-    <>
+    <Pagewrapper>
       <HeaderShell>
         <Nav>
           <GlowLeft />
@@ -448,9 +447,7 @@ function Header() {
             <GhostButton onClick={() => navigate("/profil")}>
               Mon espace
             </GhostButton>
-            <PrimaryButton onClick={deconnexion}>
-              Déconnexion
-            </PrimaryButton>
+            <PrimaryButton onClick={deconnexion}>Déconnexion</PrimaryButton>
           </DesktopActions>
 
           <BurgerButton onClick={() => setOpen((prev) => !prev)}>
@@ -515,7 +512,7 @@ function Header() {
           </MobileActionButton>
         </MobileActions>
       </MobileMenu>
-    </>
+    </Pagewrapper>
   );
 }
 
