@@ -43,8 +43,6 @@ function Layout() {
         <Route path="/conversations" element={<Conversations />} />
         <Route path="*" element={<h1>Page non trouvée</h1>} />
       </Routes>
-
-      <FooterNav />
     </>
   );
 }
