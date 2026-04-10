@@ -320,7 +320,7 @@ const getStatutIcon = (status) => {
     case "delivered":
       return "✔✔";
     case "seen":
-      return "✔✔✔"; 
+      return "✔✔"; 
     default:
       return "";
   }

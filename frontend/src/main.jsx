@@ -21,10 +21,13 @@ function Layout() {
 
   // cacher header si on est sur /tchat
   const hideHeader = location.pathname.startsWith("/tchat");
+  const hideFooter = location.pathname.startsWith("/tchat");
 
   return (
     <>
       {!hideHeader && <Header />}
+      {!hideFooter && <FooterNav />}
+
 
       <Routes>
         <Route path="/" element={<Home />} />
