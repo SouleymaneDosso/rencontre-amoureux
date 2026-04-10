@@ -49,7 +49,7 @@ const SearchInput = styled.input`
   border: none;
   outline: none;
   width: 100%;
-  font-size: 14px;
+  font-size: 16px;
   color: #1f2a44;
   background: transparent;
 `;
