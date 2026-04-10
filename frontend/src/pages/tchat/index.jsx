@@ -9,12 +9,8 @@ import {
   FaCircle,
   FaImage,
   FaTimes,
-  
 } from "react-icons/fa";
-import {
-  FaCheck,
-  FaCheckDouble,
-} from "react-icons/fa";
+import { FaCheck, FaCheckDouble } from "react-icons/fa";
 
 import { socket } from "../../socket";
 
@@ -26,7 +22,6 @@ import {
   envoyerMessageApi,
   marquerMessagesCommeLusApi,
 } from "../../services/tchatApi";
-
 
 const Wrapper = styled.div`
   height: 100dvh; /* ✅ meilleur que 100vh */
@@ -267,6 +262,8 @@ const EmptyState = styled.div`
   padding: 30px;
 `;
 
+
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -313,19 +310,21 @@ function Tchat() {
     });
   };
 
-const getStatutIcon = (status) => {
-  switch (status) {
-    case "sent":
-      return "✔";
-    case "delivered":
-      return "✔✔";
-    case "seen":
-      return "✔✔"; 
-    default:
-      return "";
-  }
-};
+  const getStatutIcon = (status) => {
+    switch (status) {
+      case "sent":
+        return <FaCheck color="#9ca3af" size={12} />; // gris
 
+      case "delivered":
+        return <FaCheckDouble color="#9ca3af" size={12} />; // gris double
+
+      case "seen":
+        return <FaCheckDouble color="#3b82f6" size={12} />; // bleu (lu)
+
+      default:
+        return null;
+    }
+  };
   useEffect(() => {
     const chargerTchat = async () => {
       try {
@@ -352,29 +351,29 @@ const getStatutIcon = (status) => {
     }
   }, [id, token]);
 
-useEffect(() => {
-  if (!token || !id || !monProfilId) return;
+  useEffect(() => {
+    if (!token || !id || !monProfilId) return;
 
-  const marquerCommeLus = async () => {
-    try {
-      const data = await marquerMessagesCommeLusApi(id, token);
+    const marquerCommeLus = async () => {
+      try {
+        const data = await marquerMessagesCommeLusApi(id, token);
 
-      if (data.idsMessagesLus?.length > 0) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            data.idsMessagesLus.includes(msg._id)
-              ? { ...msg, statut: "seen" }
-              : msg
-          )
-        );
+        if (data.idsMessagesLus?.length > 0) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              data.idsMessagesLus.includes(msg._id)
+                ? { ...msg, statut: "seen" }
+                : msg,
+            ),
+          );
+        }
+      } catch (error) {
+        console.error("Erreur marquage lu :", error.message);
       }
-    } catch (error) {
-      console.error("Erreur marquage lu :", error.message);
-    }
-  };
+    };
 
-  marquerCommeLus();
-}, [id, token, monProfilId]); 
+    marquerCommeLus();
+  }, [id, token, monProfilId]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -492,7 +491,17 @@ useEffect(() => {
 
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
-                    {isMine && ` • ${getStatutIcon(msg.statut)}`}
+                    {isMine && (
+                      <span
+                        style={{
+                          marginLeft: "6px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        {getStatutIcon(msg.statut)}
+                      </span>
+                    )}
                   </MessageTime>
                 </MessageBubble>
               </MessageRow>
