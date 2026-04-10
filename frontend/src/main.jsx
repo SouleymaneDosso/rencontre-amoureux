@@ -1,6 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 
 import Profil from "./pages/profil";
 import Header from "./comportments/header";
@@ -15,19 +20,21 @@ import Decouverte from "./pages/decouverte";
 import Matchs from "./pages/match";
 import Conversations from "./pages/conversations";
 
-// 🔥 Composant layout
+
+// 🔥 Layout principal
 function Layout() {
   const location = useLocation();
 
-  // cacher header si on est sur /tchat
-  const hideHeader = location.pathname.startsWith("/tchat");
-  const hideFooter = location.pathname.startsWith("/tchat");
+  // routes où on cache header + footer
+  const shouldHideLayout =
+    location.pathname.startsWith("/tchat") ||
+    location.pathname === "/connexion" ||
+    location.pathname === "/inscription";
 
   return (
     <>
-      {!hideHeader && <Header />}
-      {!hideFooter && <FooterNav />}
-
+      {!shouldHideLayout && <Header />}
+      {!shouldHideLayout && <FooterNav />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -47,6 +54,8 @@ function Layout() {
   );
 }
 
+
+// 🔥 Render app
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Router>
