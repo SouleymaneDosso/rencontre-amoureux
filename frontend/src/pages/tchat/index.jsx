@@ -9,7 +9,13 @@ import {
   FaCircle,
   FaImage,
   FaTimes,
+  
 } from "react-icons/fa";
+import {
+  FaCheck,
+  FaCheckDouble,
+} from "react-icons/fa";
+
 import { socket } from "../../socket";
 
 import { useTchatSocket } from "../../hooks/useTchatSocket";
@@ -21,14 +27,19 @@ import {
   marquerMessagesCommeLusApi,
 } from "../../services/tchatApi";
 
+
 const Wrapper = styled.div`
-  height: 100vh;
+  height: 100dvh; /* ✅ meilleur que 100vh */
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #f8f9ff, #eef2ff);
 `;
 
 const Header = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
   padding: 16px 20px;
   background: white;
   border-bottom: 1px solid #e5e7eb;
@@ -158,9 +169,11 @@ const RemovePreview = styled.button`
 
 const InputContainer = styled.div`
   position: sticky;
-  bottom: 70px;
+  bottom: 0;
+  z-index: 1000;
+
   display: flex;
-  padding: 14px;
+  padding: 10px;
   background: white;
   border-top: 1px solid #e5e7eb;
   gap: 10px;
@@ -197,7 +210,7 @@ const Input = styled.input`
   border-radius: 999px;
   border: 1px solid #dbe2f0;
   outline: none;
-  font-size: 16px;
+  font-size: 16px; /* IMPORTANT pour éviter zoom */
   transition: 0.2s ease;
 
   &:focus {
@@ -307,7 +320,7 @@ const getStatutIcon = (status) => {
     case "delivered":
       return "✔✔";
     case "seen":
-      return "✔✔"; // tu peux styliser en bleu plus tard
+      return "✔✔✔"; 
     default:
       return "";
   }
