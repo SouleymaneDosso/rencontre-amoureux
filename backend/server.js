@@ -100,54 +100,19 @@ io.on("connection", (socket) => {
 
   ////message delivré////////
 
-socket.on("messageDelivered", async ({ expediteurId, messageId }) => {
-  try {
-    console.log("📩 message delivered reçu :", { expediteurId, messageId });
-
-    // 1) récupérer le message en DB
-    const message = await Message.findById(messageId);
-
-    if (!message) return;
-
-    // 2) mettre à jour le statut du message
-    if (message.statut === "sent") {
-      message.statut = "delivered";
-      await message.save();
-    }
-
-    // 3) récupérer la conversation
-    const conversation = await Conversation.findById(message.conversationId);
-
-    if (conversation) {
-      // 4) vérifier si c'est le dernier message
-      const dernierMessage = await Message.findOne({
-        conversationId: conversation._id,
-      }).sort({ createdAt: -1 });
-
-      if (dernierMessage && dernierMessage._id.toString() === messageId) {
-        conversation.dernierMessageStatut = "delivered";
-        await conversation.save();
-      }
-    }
-
-    // 5) envoyer notif à l’expéditeur
+  socket.on("messageDelivered", ({expediteurId, messageId})=>{
+    console.log("message delivré recu :", {expediteurId, messageId});
     const expediteurSocketId = onlineUsers.get(expediteurId);
+    
+    if(expediteurSocketId){
+      io.to(expediteurSocketId).emit("messageDelivered", {expediteurId, messageId});
 
-    if (expediteurSocketId) {
-      io.to(expediteurSocketId).emit("messageDelivered", {
-        messageId,
-        statut: "delivered",
-        expediteurId,
-      });
-
-      console.log("✅ delivered envoyé à l’expéditeur");
-    } else {
-      console.log("⚠️ utilisateur hors ligne");
+      console.log("✅ Notification de message delivré envoyée à l'expéditeur");
     }
-  } catch (error) {
-    console.error("❌ erreur messageDelivered :", error);
-  }
-});
+    else{
+      console.log("⚠️ Expéditeur non connecté pour recevoir le statut delivré");
+    }
+  })
 
   // =======================
   // Déconnexion
