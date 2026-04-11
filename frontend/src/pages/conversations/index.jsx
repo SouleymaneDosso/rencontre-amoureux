@@ -199,6 +199,15 @@ const ErrorBox = styled.div`
   padding: 18px;
   text-align: center;
 `;
+const Badge = styled.div`
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  min-width: 20px;
+  text-align: center;
+`;
 
 function Conversations() {
   const [conversations, setConversations] = useState([]);
@@ -338,6 +347,9 @@ function Conversations() {
 
         const updated = prev.map((conv) => {
           const autre = conv.participants.find((p) => p._id !== monProfilId);
+          if (message.destinataire === monProfilId) {
+            conv.nonLus += 1;
+          }
 
           if (!autre) return conv;
 
@@ -351,7 +363,7 @@ function Conversations() {
               ...conv,
               dernierMessage: message.contenu,
               dernierMessageDate: message.createdAt,
-              dernierMessageStatut: message.statut || "sent",
+              dernierMessageStatut: "delivered",
             };
           }
 
@@ -544,6 +556,9 @@ function Conversations() {
 
                     <RightIcon>
                       <FaChevronRight />
+                      {conversation.nonLus > 0 && (
+                        <Badge>{conversation.nonLus}</Badge>
+                      )}
                     </RightIcon>
                   </BottomRow>
                 </Info>
