@@ -58,61 +58,45 @@ io.on("connection", (socket) => {
   // =======================
   // Envoyer un message en temps réel
   // =======================
-  socket.on("sendMessage", (messageData) => {
-    const receiverSocketId = onlineUsers.get(messageData.destinataire);
+socket.on("sendMessage", (messageData) => {
+  const receiverSocketId = onlineUsers.get(messageData.destinataire);
+  const senderSocketId = onlineUsers.get(messageData.expediteur);
 
-    console.log("📨 Message temps réel reçu :", messageData);
-    console.log("🎯 Destinataire socket trouvé :", receiverSocketId);
+  console.log("📨 Message temps réel reçu :", messageData);
 
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("receiveMessage", messageData);
-      console.log("✅ Message envoyé en temps réel au destinataire");
-    } else {
-      console.log("⚠️ Destinataire non connecté");
+  // 🔥 envoyer au destinataire
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("receiveMessage", messageData);
+
+    // 🔥 IMPORTANT : dire à A que c'est livré
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageDelivered", {
+        messageId: messageData._id,
+      });
     }
-  });
+
+    console.log("✅ Message envoyé + livré");
+  } else {
+    console.log("⚠️ Destinataire non connecté");
+  }
+});
 
   // =======================
   // Messages lus
   // =======================
-  socket.on("messagesRead", ({ expediteurId, idsMessagesLus, lecteurId }) => {
-    const expediteurSocketId = onlineUsers.get(expediteurId);
+socket.on("messagesRead", ({ expediteurId, idsMessagesLus }) => {
+  const expediteurSocketId = onlineUsers.get(expediteurId);
 
-    console.log("👁️ messagesRead reçu :", {
-      expediteurId,
-      lecteurId,
+  console.log("👁️ messagesRead reçu :", idsMessagesLus);
+
+  if (expediteurSocketId) {
+    io.to(expediteurSocketId).emit("messagesRead", {
       idsMessagesLus,
     });
 
-    if (expediteurSocketId) {
-      io.to(expediteurSocketId).emit("messagesRead", {
-        expediteurId,
-        lecteurId,
-        idsMessagesLus,
-      });
-
-      console.log("✅ Notification de lecture envoyée à l'expéditeur");
-    } else {
-      console.log("⚠️ Expéditeur non connecté pour recevoir le statut lu");
-    }
-  });
-
-
-  ////message delivré////////
-
-  socket.on("messageDelivered", ({expediteurId, messageId})=>{
-    console.log("message delivré recu :", {expediteurId, messageId});
-    const expediteurSocketId = onlineUsers.get(expediteurId);
-    
-    if(expediteurSocketId){
-      io.to(expediteurSocketId).emit("messageDelivered", {expediteurId, messageId});
-
-      console.log("✅ Notification de message delivré envoyée à l'expéditeur");
-    }
-    else{
-      console.log("⚠️ Expéditeur non connecté pour recevoir le statut delivré");
-    }
-  })
+    console.log("✅ Lu envoyé à l'expéditeur");
+  }
+});
 
   // =======================
   // Déconnexion

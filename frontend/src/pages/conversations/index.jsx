@@ -98,17 +98,6 @@ const Avatar = styled.img`
   background: #eef2ff;
 `;
 
-const OnlineDot = styled.div`
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 16px;
-  height: 16px;
-  background: #22c55e;
-  border: 3px solid white;
-  border-radius: 50%;
-`;
-
 const Info = styled.div`
   flex: 1;
   min-width: 0;
@@ -249,125 +238,119 @@ function Conversations() {
     });
   };
 
+  useEffect(() => {
+    if (!socket.connected) {
+      console.log("🚀 Connexion socket...");
+      socket.connect();
+    }
 
+    socket.on("connect", () => {
+      console.log("✅ Socket connecté :", socket.id);
+    });
 
-useEffect(() => {
-  if (!socket.connected) {
-    console.log("🚀 Connexion socket...");
-    socket.connect();
-  }
+    socket.on("disconnect", () => {
+      console.log("❌ Socket déconnecté");
+    });
 
-  socket.on("connect", () => {
-    console.log("✅ Socket connecté :", socket.id);
-  });
+    socket.on("connect_error", (err) => {
+      console.error("💥 Erreur socket :", err.message);
+    });
 
-  socket.on("disconnect", () => {
-    console.log("❌ Socket déconnecté");
-  });
+    socket.on("onlineUsers", (users) => {
+      console.log("🟢 Utilisateurs en ligne :", users);
+    });
 
-  socket.on("connect_error", (err) => {
-    console.error("💥 Erreur socket :", err.message);
-  });
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+      socket.off("onlineUsers");
+    };
+  }, []);
 
-  socket.on("onlineUsers", (users) => {
-    console.log("🟢 Utilisateurs en ligne :", users);
-  });
+  useEffect(() => {
+    if (!monProfilId) return;
 
-  return () => {
-    socket.off("connect");
-    socket.off("disconnect");
-    socket.off("connect_error");
-    socket.off("onlineUsers");
-  };
-}, []);
+    const register = () => {
+      console.log("👤 registerUser envoyé :", monProfilId);
+      socket.emit("registerUser", monProfilId);
+    };
 
-useEffect(() => {
-  if (!monProfilId) return;
+    // 🔥 CAS 1 : déjà connecté
+    if (socket.connected) {
+      register();
+    }
 
-  const register = () => {
-    console.log("👤 registerUser envoyé :", monProfilId);
-    socket.emit("registerUser", monProfilId);
-  };
+    // 🔥 CAS 2 : connexion plus tard
+    socket.on("connect", register);
 
-  // 🔥 CAS 1 : déjà connecté
-  if (socket.connected) {
-    register();
-  }
+    return () => {
+      socket.off("connect", register);
+    };
+  }, [monProfilId]);
 
-  // 🔥 CAS 2 : connexion plus tard
-  socket.on("connect", register);
+  
 
-  return () => {
-    socket.off("connect", register);
-  };
-}, [monProfilId]);
+  useEffect(() => {
+    if (!monProfilId) return;
 
+    const handleReceiveMessage = (message) => {
+      console.log("📩 (Conversations) message reçu :", message);
 
-useEffect(() => {
-  if (!monProfilId) return;
+      setConversations((prev) => {
+        let found = false;
 
-  const handleReceiveMessage = (message) => {
-    console.log("📩 (Conversations) message reçu :", message);
+        const updated = prev.map((conv) => {
+          const autre = conv.participants.find((p) => p._id !== monProfilId);
 
-    setConversations((prev) => {
-      let found = false;
+          if (!autre) return conv;
 
-      const updated = prev.map((conv) => {
-        const autre = conv.participants.find(
-          (p) => p._id !== monProfilId
-        );
+          if (
+            autre._id === message.expediteur ||
+            autre._id === message.destinataire
+          ) {
+            found = true;
 
-        if (!autre) return conv;
+            return {
+              ...conv,
+              dernierMessage: message.contenu,
+              dernierMessageDate: message.createdAt,
+              dernierMessageStatut: "delivered",
+            };
+          }
 
-        if (
-          autre._id === message.expediteur ||
-          autre._id === message.destinataire
-        ) {
-          found = true;
+          return conv;
+        });
 
-          return {
-            ...conv,
-            dernierMessage: message.contenu,
-            dernierMessageDate: message.createdAt,
-            dernierMessageStatut: "delivered",
-          };
+        // 🔥 IMPORTANT : si pas trouvé → on recharge
+        if (!found) {
+          console.log("⚠️ Conversation non trouvée → refresh API");
+
+          // recharge propre (optionnel mais PRO)
+          fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => setConversations(data));
+
+          return prev;
         }
 
-        return conv;
+        return [...updated].sort(
+          (a, b) =>
+            new Date(b.dernierMessageDate) - new Date(a.dernierMessageDate),
+        );
       });
+    };
 
-      // 🔥 IMPORTANT : si pas trouvé → on recharge
-      if (!found) {
-        console.log("⚠️ Conversation non trouvée → refresh API");
+    socket.on("receiveMessage", handleReceiveMessage);
 
-        // recharge propre (optionnel mais PRO)
-        fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-          .then((res) => res.json())
-          .then((data) => setConversations(data));
-
-        return prev;
-      }
-
-      return [...updated].sort(
-        (a, b) =>
-          new Date(b.dernierMessageDate) -
-          new Date(a.dernierMessageDate)
-      );
-    });
-  };
-
-  socket.on("receiveMessage", handleReceiveMessage);
-
-  return () => {
-    socket.off("receiveMessage", handleReceiveMessage);
-  };
-}, [monProfilId]);
-
-
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, [monProfilId]);
 
   useEffect(() => {
     const chargerConversations = async () => {
