@@ -6,7 +6,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-
+import {useEffect} from "react";
 import Profil from "./pages/profil";
 import Header from "./comportments/header";
 import FooterNav from "./comportments/footer";
@@ -19,11 +19,16 @@ import Profilpublic from "./pages/profilpublic";
 import Decouverte from "./pages/decouverte";
 import Matchs from "./pages/match";
 import Conversations from "./pages/conversations";
+import { socket } from "./socket";
 
 
 // 🔥 Layout principal
 function Layout() {
   const location = useLocation();
+  useEffect(() => {
+    console.log("🔌 Connexion socket globale");
+    socket.connect();
+  }, []);
 
   // routes où on cache header + footer
   const shouldHideLayout =
