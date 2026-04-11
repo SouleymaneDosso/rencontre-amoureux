@@ -185,16 +185,31 @@ exports.mesConversations = async (req, res) => {
     const conversations = await Conversation.find({
       participants: monProfil._id,
     })
-      .populate("participants", "pseudo avatar age ville pays enLigne")
+      .populate("participants", "pseudo avatar age ville pays")
       .sort({ dernierMessageDate: -1 });
 
-    res.status(200).json(conversations);
+    // 🔥 AJOUT COMPTEUR NON LUS
+    const conversationsAvecNonLus = await Promise.all(
+      conversations.map(async (conv) => {
+        const nonLus = await Message.countDocuments({
+          conversationId: conv._id,
+          destinataire: monProfil._id,
+          statut: { $ne: "seen" },
+        });
+
+        return {
+          ...conv.toObject(),
+          nonLus,
+        };
+      }),
+    );
+
+    res.status(200).json(conversationsAvecNonLus);
   } catch (error) {
     console.error("Erreur mesConversations :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
-
 exports.marquerMessagesCommeLus = async (req, res) => {
   try {
     // =======================

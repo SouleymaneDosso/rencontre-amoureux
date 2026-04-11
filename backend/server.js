@@ -1,6 +1,7 @@
 const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
+const Conversation = require("./models/conversation");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -58,45 +59,47 @@ io.on("connection", (socket) => {
   // =======================
   // Envoyer un message en temps réel
   // =======================
-socket.on("sendMessage", (messageData) => {
-  const receiverSocketId = onlineUsers.get(messageData.destinataire);
-  const senderSocketId = onlineUsers.get(messageData.expediteur);
+  socket.on("sendMessage", (messageData) => {
+    const receiverSocketId = onlineUsers.get(messageData.destinataire);
+    const senderSocketId = onlineUsers.get(messageData.expediteur);
 
-  console.log("📨 Message temps réel reçu :", messageData);
+    console.log("📨 Message temps réel reçu :", messageData);
 
-  // 🔥 envoyer au destinataire
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("receiveMessage", messageData);
+    // 🔥 envoyer au destinataire
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receiveMessage", messageData);
+      Conversation.findByIdAndUpdate(messageData.conversationId, {
+        dernierMessageStatut: "delivered",
+      }).catch(console.error);
+      // 🔥 IMPORTANT : dire à A que c'est livré
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageDelivered", {
+          messageId: messageData._id,
+        });
+      }
 
-    // 🔥 IMPORTANT : dire à A que c'est livré
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("messageDelivered", {
-        messageId: messageData._id,
-      });
+      console.log("✅ Message envoyé + livré");
+    } else {
+      console.log("⚠️ Destinataire non connecté");
     }
-
-    console.log("✅ Message envoyé + livré");
-  } else {
-    console.log("⚠️ Destinataire non connecté");
-  }
-});
+  });
 
   // =======================
   // Messages lus
   // =======================
-socket.on("messagesRead", ({ expediteurId, idsMessagesLus }) => {
-  const expediteurSocketId = onlineUsers.get(expediteurId);
+  socket.on("messagesRead", ({ expediteurId, idsMessagesLus }) => {
+    const expediteurSocketId = onlineUsers.get(expediteurId);
 
-  console.log("👁️ messagesRead reçu :", idsMessagesLus);
+    console.log("👁️ messagesRead reçu :", idsMessagesLus);
 
-  if (expediteurSocketId) {
-    io.to(expediteurSocketId).emit("messagesRead", {
-      idsMessagesLus,
-    });
+    if (expediteurSocketId) {
+      io.to(expediteurSocketId).emit("messagesRead", {
+        idsMessagesLus,
+      });
 
-    console.log("✅ Lu envoyé à l'expéditeur");
-  }
-});
+      console.log("✅ Lu envoyé à l'expéditeur");
+    }
+  });
 
   // =======================
   // Déconnexion
