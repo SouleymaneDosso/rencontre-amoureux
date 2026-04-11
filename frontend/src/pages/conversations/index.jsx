@@ -288,10 +288,10 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (!socket || !monProfilId) return;
+  if (!monProfilId) return;
 
-  socket.on("receiveMessage", (message) => {
-    console.log("📩 Message reçu :", message);
+  const handleReceiveMessage = (message) => {
+    console.log("📩 (Conversations) message reçu :", message);
 
     setConversations((prev) => {
       let found = false;
@@ -301,10 +301,11 @@ useEffect(() => {
           (p) => p._id !== monProfilId
         );
 
+        if (!autre) return conv;
+
         if (
-          autre &&
-          (autre._id === message.expediteur ||
-            autre._id === message.destinataire)
+          autre._id === message.expediteur ||
+          autre._id === message.destinataire
         ) {
           found = true;
 
@@ -319,25 +320,34 @@ useEffect(() => {
         return conv;
       });
 
-      // 🔥 SI conversation n'existe pas (cas nouveau match)
+      // 🔥 IMPORTANT : si pas trouvé → on recharge
       if (!found) {
-        console.log("⚠️ Conversation non trouvée → reload");
+        console.log("⚠️ Conversation non trouvée → refresh API");
 
-        // fallback propre
+        // recharge propre (optionnel mais PRO)
+        fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => setConversations(data));
+
         return prev;
       }
 
-      // 🔥 TRÈS IMPORTANT → clone avant sort
       return [...updated].sort(
         (a, b) =>
           new Date(b.dernierMessageDate) -
           new Date(a.dernierMessageDate)
       );
     });
-  });
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
 
   return () => {
-    socket.off("receiveMessage");
+    socket.off("receiveMessage", handleReceiveMessage);
   };
 }, [monProfilId]);
 
