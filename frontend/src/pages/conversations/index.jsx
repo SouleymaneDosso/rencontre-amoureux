@@ -4,6 +4,7 @@ import styled from "styled-components";
 import {
   FaComments,
   FaSearch,
+  FaClock,
   FaChevronRight,
   FaCheck,
   FaCheckDouble,
@@ -11,6 +12,7 @@ import {
 import { MdVerified } from "react-icons/md";
 import { BsDot } from "react-icons/bs";
 import { socket } from "../../socket";
+
 
 const Page = styled.div`
   min-height: 100vh;
@@ -44,6 +46,7 @@ const SearchBox = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  box-shadow: 0 8px 24px rgba(31, 42, 68, 0.05);
 `;
 
 const SearchInput = styled.input`
@@ -51,6 +54,7 @@ const SearchInput = styled.input`
   outline: none;
   width: 100%;
   font-size: 16px;
+  color: #1f2a44;
   background: transparent;
 `;
 
@@ -70,216 +74,416 @@ const Card = styled.div`
   align-items: center;
   gap: 16px;
   cursor: pointer;
+  border: 1px solid #edf1ff;
+  box-shadow: 0 10px 28px rgba(31, 42, 68, 0.06);
+  transition: all 0.22s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px rgba(31, 42, 68, 0.1);
+  }
+`;
+
+const AvatarWrapper = styled.div`
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
 `;
 
 const Avatar = styled.img`
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  height: 100%;
   border-radius: 22px;
   object-fit: cover;
+  background: #eef2ff;
+`;
+
+const OnlineDot = styled.div`
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background: #22c55e;
+  border: 3px solid white;
+  border-radius: 50%;
 `;
 
 const Info = styled.div`
   flex: 1;
+  min-width: 0;
 `;
 
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 `;
 
 const Name = styled.h3`
   margin: 0;
+  font-size: 18px;
+  color: #1f2a44;
   display: flex;
+  align-items: center;
   gap: 8px;
 `;
 
 const Meta = styled.span`
   font-size: 13px;
   color: #6b7280;
+  white-space: nowrap;
 `;
 
 const BottomRow = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 10px;
+  gap: 12px;
 `;
 
 const LastMessage = styled.p`
   margin: 0;
   font-size: 14px;
   color: #5f6b85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const Conversations = () => {
+const UserDetails = styled.p`
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #8a94a6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const RightIcon = styled.div`
+  color: #9aa4b2;
+  font-size: 18px;
+`;
+
+const EmptyState = styled.div`
+  max-width: 900px;
+  margin: 80px auto;
+  background: white;
+  border-radius: 28px;
+  padding: 50px 30px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(31, 42, 68, 0.06);
+  border: 1px solid #edf1ff;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 48px;
+  color: #4f6cff;
+  margin-bottom: 16px;
+`;
+
+const EmptyTitle = styled.h2`
+  color: #1f2a44;
+  margin-bottom: 10px;
+`;
+
+const EmptyText = styled.p`
+  color: #6b7280;
+  font-size: 15px;
+`;
+
+const Loading = styled.h3`
+  text-align: center;
+  margin-top: 80px;
+  color: #374151;
+`;
+
+const ErrorBox = styled.div`
+  max-width: 700px;
+  margin: 60px auto;
+  background: #fff5f5;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 18px;
+  padding: 18px;
+  text-align: center;
+`;
+
+function Conversations() {
   const [conversations, setConversations] = useState([]);
   const [filtre, setFiltre] = useState("");
   const [monProfilId, setMonProfilId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [messageErreur, setMessageErreur] = useState("");
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+ 
 
   const getStatutIcon = (statut) => {
-    if (statut === "sent") return <FaCheck size={12} />;
-    if (statut === "delivered") return <FaCheckDouble size={12} />;
-    if (statut === "seen") return <FaCheckDouble color="blue" size={12} />;
+    switch (statut) {
+      case "sent":
+        return <FaCheck color="#9ca3af" size={12} />;
+
+      case "delivered":
+        return <FaCheckDouble color="#9ca3af" size={12} />;
+
+      case "seen":
+        return <FaCheckDouble color="#3b82f6" size={12} />;
+
+      default:
+        return null;
+    }
   };
 
-  // ================= SOCKET =================
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
 
-  useEffect(() => {
-    const handleReceiveMessage = (message) => {
-      setConversations((prev) => {
-        const index = prev.findIndex(
-          (conv) => conv._id === message.conversationId
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+
+
+useEffect(() => {
+  socket.connect();
+
+  const handleReceiveMessage = (message) => {
+    console.log("📩 nouveau message reçu :", message);
+
+    setConversations((prev) => {
+      // chercher la conversation correspondante
+      const index = prev.findIndex(
+        (conv) =>
+          conv.participants.some((p) => p._id === message.expediteur) ||
+          conv.participants.some((p) => p._id === message.destinataire)
+      );
+
+      // 🔥 si conversation existe
+      if (index !== -1) {
+        const updated = [...prev];
+
+        updated[index] = {
+          ...updated[index],
+          dernierMessage:
+            message.type === "image"
+              ? message.contenu
+                ? `📷 ${message.contenu}`
+                : "📷 Image"
+              : message.contenu,
+          dernierMessageDate: message.createdAt,
+          dernierMessageStatut: message.statut,
+        };
+
+        // 🔥 remonter en haut (comme WhatsApp)
+        const conv = updated.splice(index, 1)[0];
+        return [conv, ...updated];
+      }
+
+      // ❗ si conversation n'existe pas → ignorer (ou refetch)
+      return prev;
+    });
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, []);
+
+
+
+
+
+
+
+useEffect(() => {
+  socket.on("messagesRead", () => {
+    setConversations((prev) =>
+      prev.map((conv) => ({
+        ...conv,
+        dernierMessageStatut: "seen",
+      }))
+    );
+  });
+
+  return () => {
+    socket.off("messagesRead");
+  };
+}, []);
+
+
+
+
+
+  useEffect(()  => {
+    const chargerConversations = async () => {
+      try {
+        setLoading(true);
+        setMessageErreur("");
+
+        // 1) récupérer le profil de l'utilisateur connecté
+        const monProfilRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
 
-        if (index !== -1) {
-          const updated = [...prev];
+        const monProfilData = await monProfilRes.json();
 
-          updated[index] = {
-            ...updated[index],
-            dernierMessage:
-              message.type === "image"
-                ? message.contenu
-                  ? `📷 ${message.contenu}`
-                  : "📷 Image"
-                : message.contenu,
-            dernierMessageDate: message.createdAt,
-            dernierMessageStatut: message.statut,
-            dernierMessageId: message._id,
-          };
-
-          const conv = updated.splice(index, 1)[0];
-          return [conv, ...updated];
+        if (!monProfilRes.ok) {
+          throw new Error(
+            monProfilData.message || "Impossible de récupérer ton profil",
+          );
         }
 
-        return prev;
-      });
-    };
+        setMonProfilId(monProfilData._id);
 
-    socket.on("receiveMessage", handleReceiveMessage);
+        // 2) récupérer les conversations
+        const conversationsRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
 
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, []);
+        const conversationsData = await conversationsRes.json();
 
-  useEffect(() => {
-    const handleDelivered = ({ messageId }) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.dernierMessageId === messageId
-            ? { ...conv, dernierMessageStatut: "delivered" }
-            : conv
-        )
-      );
-    };
-
-    socket.on("messageDelivered", handleDelivered);
-
-    return () => {
-      socket.off("messageDelivered", handleDelivered);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleSeen = ({ idsMessagesLus }) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          idsMessagesLus.includes(conv.dernierMessageId)
-            ? { ...conv, dernierMessageStatut: "seen" }
-            : conv
-        )
-      );
-    };
-
-    socket.on("messagesRead", handleSeen);
-
-    return () => {
-      socket.off("messagesRead", handleSeen);
-    };
-  }, []);
-
-  // ================= API =================
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const me = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then((r) => r.json());
-
-      setMonProfilId(me._id);
-
-      const convs = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+        if (!conversationsRes.ok) {
+          throw new Error(
+            conversationsData.message ||
+              "Impossible de récupérer les conversations",
+          );
         }
-      ).then((r) => r.json());
 
-      setConversations(convs);
+        setConversations(conversationsData);
+        
+      } catch (error) {
+        setMessageErreur(error.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (token) fetchData();
+    if (token) {
+      chargerConversations();
+    }
   }, [token]);
 
-  const getAutre = (participants) =>
-    participants.find((p) => p._id !== monProfilId);
+  // récupérer l'autre participant
+  const getAutreParticipant = (participants) => {
+    return participants.find((p) => p._id !== monProfilId);
+  };
 
-  const filtered = conversations.filter((conv) => {
-    const autre = getAutre(conv.participants);
-    return autre?.pseudo.toLowerCase().includes(filtre.toLowerCase());
+  // filtre recherche 
+  const conversationsFiltrees = conversations.filter((conv) => {
+    const autre = getAutreParticipant(conv.participants);
+    if (!autre) return false;
+
+    return autre.pseudo.toLowerCase().includes(filtre.toLowerCase());
   });
+
+  if (loading) {
+    return <Loading>Chargement des conversations...</Loading>;
+  }
+
+  if (messageErreur) {
+    return <ErrorBox>{messageErreur}</ErrorBox>;
+  }
+
 
   return (
     <Page>
       <Header>
         <Title>Mes conversations</Title>
-        <Subtitle>Continue tes discussions</Subtitle>
+        <Subtitle>
+          Retrouve ici toutes tes discussions et continue là où tu t’es arrêté.
+        </Subtitle>
       </Header>
 
       <SearchBox>
-        <FaSearch />
+        <FaSearch color="#6b7280" />
         <SearchInput
-          placeholder="Rechercher..."
+          type="text"
+          placeholder="Rechercher une conversation..."
           value={filtre}
           onChange={(e) => setFiltre(e.target.value)}
         />
       </SearchBox>
 
-      {filtered.length === 0 ? (
-        <div>Aucune conversation</div>
+      {conversationsFiltrees.length === 0 ? (
+        <EmptyState>
+          <EmptyIcon>
+            <FaComments />
+          </EmptyIcon>
+          <EmptyTitle>Aucune conversation pour le moment</EmptyTitle>
+          <EmptyText>
+            Quand tu commenceras à discuter avec un match, tes conversations
+            apparaîtront ici.
+          </EmptyText>
+        </EmptyState>
       ) : (
         <List>
-          {filtered.map((conv) => {
-            const autre = getAutre(conv.participants);
+          {conversationsFiltrees.map((conversation) => {
+            const autre = getAutreParticipant(conversation.participants);
+
             if (!autre) return null;
 
             return (
               <Card
-                key={conv._id}
+                key={conversation._id}
                 onClick={() => navigate(`/tchat/${autre._id}`)}
               >
-                <Avatar src={autre.avatar?.url} />
-
+                <AvatarWrapper>
+                  <Avatar
+                    src={autre.avatar?.url || "https://via.placeholder.com/150"}
+                    alt={autre.pseudo}
+                  />
+                </AvatarWrapper>
                 <Info>
                   <TopRow>
                     <Name>
                       {autre.pseudo}
-                      {autre.verifie && <MdVerified />}
+                      {autre.verifie && <MdVerified color="#4f6cff" />}
                     </Name>
-                    <Meta>
-                      {new Date(conv.dernierMessageDate).toLocaleString()}
-                    </Meta>
+                    <Meta>{formatDate(conversation.dernierMessageDate)}</Meta>
                   </TopRow>
+
+                  <UserDetails>
+                    {autre.age} ans <BsDot /> {autre.ville}, {autre.pays}
+                  </UserDetails>
 
                   <BottomRow>
                     <LastMessage>
-                      {conv.dernierMessage}
-                      {getStatutIcon(conv.dernierMessageStatut)}
+                      {conversation.dernierMessage || "Aucun message"}
+
+                      <span style={{ marginLeft: "6px" }}>
+                        {conversation.dernierMessageStatut &&
+                          getStatutIcon(conversation.dernierMessageStatut)}
+                      </span>
                     </LastMessage>
-                    <FaChevronRight />
+
+                    <RightIcon>
+                      <FaChevronRight />
+                    </RightIcon>
                   </BottomRow>
                 </Info>
               </Card>
@@ -289,6 +493,6 @@ const Conversations = () => {
       )}
     </Page>
   );
-};
+}
 
 export default Conversations;
