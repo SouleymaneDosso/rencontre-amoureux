@@ -105,6 +105,7 @@ exports.envoyerMessage = async (req, res) => {
           : "📷 Image"
         : contenu.trim();
 
+    conversation.dernierMessageStatut = "sent";
     conversation.dernierMessageDate = new Date();
 
     await conversation.save();
@@ -278,6 +279,10 @@ exports.marquerMessagesCommeLus = async (req, res) => {
         $set: { statut: "seen" },
       },
     );
+    if (messagesNonLus.length > 0) {
+      conversation.dernierMessageStatut = "seen";
+      await conversation.save();
+    }
 
     // =======================
     // 9) récupérer les ids des messages lus

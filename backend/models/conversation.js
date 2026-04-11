@@ -17,6 +17,11 @@ const conversationSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    dernierMessageStatut: {
+      type: String,
+      enum: ["sent", "delivered", "seen"],
+      default: "sent",
+    }
   },
   { timestamps: true }
 );
