@@ -289,7 +289,43 @@ function Conversations() {
     };
   }, [monProfilId]);
 
-  
+  useEffect(() => {
+    const handleDelivered = ({ messageId }) => {
+      console.log("📬 livré reçu dans conversations");
+
+      setConversations((prev) =>
+        prev.map((conv) => ({
+          ...conv,
+          dernierMessageStatut: "delivered",
+        })),
+      );
+    };
+
+    socket.on("messageDelivered", handleDelivered);
+
+    return () => {
+      socket.off("messageDelivered", handleDelivered);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSeen = ({ idsMessagesLus }) => {
+      console.log("👁️ lu reçu dans conversations");
+
+      setConversations((prev) =>
+        prev.map((conv) => ({
+          ...conv,
+          dernierMessageStatut: "seen",
+        })),
+      );
+    };
+
+    socket.on("messagesRead", handleSeen);
+
+    return () => {
+      socket.off("messagesRead", handleSeen);
+    };
+  }, []);
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -315,7 +351,7 @@ function Conversations() {
               ...conv,
               dernierMessage: message.contenu,
               dernierMessageDate: message.createdAt,
-              dernierMessageStatut: "delivered",
+              dernierMessageStatut: message.statut || "sent",
             };
           }
 
