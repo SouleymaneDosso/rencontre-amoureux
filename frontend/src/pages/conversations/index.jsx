@@ -252,7 +252,10 @@ function Conversations() {
 
 
 useEffect(() => {
-  if (!socket) return;
+  if (!socket.connected) {
+    console.log("🚀 Connexion socket...");
+    socket.connect();
+  }
 
   socket.on("connect", () => {
     console.log("✅ Socket connecté :", socket.id);
@@ -279,11 +282,24 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (!socket || !monProfilId) return;
+  if (!monProfilId) return;
 
-  console.log("📡 registerUser envoyé :", monProfilId);
+  const register = () => {
+    console.log("👤 registerUser envoyé :", monProfilId);
+    socket.emit("registerUser", monProfilId);
+  };
 
-  socket.emit("registerUser", monProfilId);
+  // 🔥 CAS 1 : déjà connecté
+  if (socket.connected) {
+    register();
+  }
+
+  // 🔥 CAS 2 : connexion plus tard
+  socket.on("connect", register);
+
+  return () => {
+    socket.off("connect", register);
+  };
 }, [monProfilId]);
 
 
