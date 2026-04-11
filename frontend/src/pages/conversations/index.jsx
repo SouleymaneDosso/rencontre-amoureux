@@ -340,53 +340,37 @@ function Conversations() {
     if (!monProfilId) return;
 
     const handleReceiveMessage = (message) => {
-      console.log("📩 (Conversations) message reçu :", message);
-
       setConversations((prev) => {
         let found = false;
 
         const updated = prev.map((conv) => {
           const autre = conv.participants.find((p) => p._id !== monProfilId);
-          if (message.destinataire === monProfilId) {
-            conv.nonLus += 1;
-          }
 
           if (!autre) return conv;
 
-          if (
+          const isTarget =
             autre._id === message.expediteur ||
-            autre._id === message.destinataire
-          ) {
-            found = true;
+            autre._id === message.destinataire;
 
-            return {
-              ...conv,
-              dernierMessage: message.contenu,
-              dernierMessageDate: message.createdAt,
-              dernierMessageStatut: "delivered",
-            };
-          }
+          if (!isTarget) return conv;
 
-          return conv;
+          found = true;
+
+          return {
+            ...conv,
+            dernierMessage: message.contenu,
+            dernierMessageDate: message.createdAt,
+            dernierMessageStatut: "delivered",
+            nonLus:
+              message.destinataire === monProfilId
+                ? (conv.nonLus || 0) + 1
+                : conv.nonLus || 0,
+          };
         });
 
-        // 🔥 IMPORTANT : si pas trouvé → on recharge
-        if (!found) {
-          console.log("⚠️ Conversation non trouvée → refresh API");
+        if (!found) return prev;
 
-          // recharge propre (optionnel mais PRO)
-          fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          })
-            .then((res) => res.json())
-            .then((data) => setConversations(data));
-
-          return prev;
-        }
-
-        return [...updated].sort(
+        return updated.sort(
           (a, b) =>
             new Date(b.dernierMessageDate) - new Date(a.dernierMessageDate),
         );
