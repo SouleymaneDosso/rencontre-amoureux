@@ -251,28 +251,62 @@ function Conversations() {
 
 
 
-  useEffect(() => {
+useEffect(() => {
+  if (!socket) return;
+
+  socket.on("connect", () => {
+    console.log("✅ Socket connecté :", socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Socket déconnecté");
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("💥 Erreur socket :", err.message);
+  });
+
+  socket.on("onlineUsers", (users) => {
+    console.log("🟢 Utilisateurs en ligne :", users);
+  });
+
+  return () => {
+    socket.off("connect");
+    socket.off("disconnect");
+    socket.off("connect_error");
+    socket.off("onlineUsers");
+  };
+}, []);
+
+useEffect(() => {
   if (!socket || !monProfilId) return;
 
-  console.log("📡 Enregistrement socket user :", monProfilId);
+  console.log("📡 registerUser envoyé :", monProfilId);
 
   socket.emit("registerUser", monProfilId);
 }, [monProfilId]);
 
-  useEffect(() => {
-    if (!socket) return;
 
-    socket.on("receiveMessage", (message) => {
-      console.log("📩 Message reçu en temps réel :", message);
+useEffect(() => {
+  if (!socket || !monProfilId) return;
 
-      setConversations((prev) => {
-        // 1. trouver la conversation concernée
-        const updated = prev.map((conv) => {
-          const isMatch =
-            conv.participants.some((p) => p._id === message.expediteur) &&
-            conv.participants.some((p) => p._id === message.destinataire);
+  socket.on("receiveMessage", (message) => {
+    console.log("📩 Message reçu :", message);
 
-          if (!isMatch) return conv;
+    setConversations((prev) => {
+      let found = false;
+
+      const updated = prev.map((conv) => {
+        const autre = conv.participants.find(
+          (p) => p._id !== monProfilId
+        );
+
+        if (
+          autre &&
+          (autre._id === message.expediteur ||
+            autre._id === message.destinataire)
+        ) {
+          found = true;
 
           return {
             ...conv,
@@ -280,20 +314,34 @@ function Conversations() {
             dernierMessageDate: message.createdAt,
             dernierMessageStatut: "delivered",
           };
-        });
+        }
 
-        // 2. trier pour mettre en haut
-        return updated.sort(
-          (a, b) =>
-            new Date(b.dernierMessageDate) - new Date(a.dernierMessageDate),
-        );
+        return conv;
       });
-    });
 
-    return () => {
-      socket.off("receiveMessage");
-    };
-  }, []);
+      // 🔥 SI conversation n'existe pas (cas nouveau match)
+      if (!found) {
+        console.log("⚠️ Conversation non trouvée → reload");
+
+        // fallback propre
+        return prev;
+      }
+
+      // 🔥 TRÈS IMPORTANT → clone avant sort
+      return [...updated].sort(
+        (a, b) =>
+          new Date(b.dernierMessageDate) -
+          new Date(a.dernierMessageDate)
+      );
+    });
+  });
+
+  return () => {
+    socket.off("receiveMessage");
+  };
+}, [monProfilId]);
+
+
 
   useEffect(() => {
     const chargerConversations = async () => {
