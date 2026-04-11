@@ -283,13 +283,11 @@ const Avatarplaceholder = styled.div`
 `;
 
 const Avatar = styled.img`
-  width: 100%; 
+  width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
 `;
-
-
 
 function Tchat() {
   const { id } = useParams();
@@ -379,22 +377,27 @@ function Tchat() {
     }
   }, [id, token]);
 
-
-
   useEffect(() => {
-  const handleReceiveMessage = (msg) => {
-    socket.emit("messageDelivered", {
-      messageId: msg._id,
-      expediteurId: msg.expediteur,
-    });
-  };
+    const handleReceiveMessage = (msg) => {
+      // 📬 dire "livré"
+      socket.emit("messageDelivered", {
+        messageId: msg._id,
+        expediteurId: msg.expediteur,
+      });
 
-  socket.on("receiveMessage", handleReceiveMessage);
+      // 👁️ dire "LU DIRECT si ouvert"
+      socket.emit("messagesRead", {
+        expediteurId: msg.expediteur,
+        idsMessagesLus: [msg._id],
+      });
+    };
 
-  return () => {
-    socket.off("receiveMessage", handleReceiveMessage);
-  };
-}, []);
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, []);
 
   useEffect(() => {
     if (!token || !id || !monProfilId) return;
@@ -411,6 +414,10 @@ function Tchat() {
                 : msg,
             ),
           );
+          socket.emit("messagesRead", {
+            expediteurId: id,
+            idsMessagesLus: data.idsMessagesLus,
+          });
         }
       } catch (error) {
         console.error("Erreur marquage lu :", error.message);
@@ -498,10 +505,7 @@ function Tchat() {
 
         <Avatarplaceholder>
           {profilCible?.avatar ? (
-            <Avatar
-              src={profilCible.avatar?.url}
-              alt="Profil"
-            />
+            <Avatar src={profilCible.avatar?.url} alt="Profil" />
           ) : (
             <FaUserCircle size={42} color="#4f6cff" />
           )}
