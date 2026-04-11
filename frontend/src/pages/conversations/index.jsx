@@ -13,7 +13,6 @@ import { MdVerified } from "react-icons/md";
 import { BsDot } from "react-icons/bs";
 import { socket } from "../../socket";
 
-
 const Page = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9ff, #eef2ff);
@@ -221,7 +220,6 @@ function Conversations() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
- 
 
   const getStatutIcon = (statut) => {
     switch (statut) {
@@ -251,81 +249,43 @@ function Conversations() {
     });
   };
 
+  useEffect(() => {
+    if (!socket) return;
 
+    socket.on("receiveMessage", (message) => {
+      console.log("📩 Message reçu en temps réel :", message);
 
-useEffect(() => {
-  socket.connect();
+      setConversations((prev) => {
+        // 1. trouver la conversation concernée
+        const updated = prev.map((conv) => {
+          const isMatch =
+            conv.participants.some((p) => p._id === message.expediteur) &&
+            conv.participants.some((p) => p._id === message.destinataire);
 
-  const handleReceiveMessage = (message) => {
-    console.log("📩 nouveau message reçu :", message);
+          if (!isMatch) return conv;
 
-    setConversations((prev) => {
-      // chercher la conversation correspondante
-      const index = prev.findIndex(
-        (conv) =>
-          conv.participants.some((p) => p._id === message.expediteur) ||
-          conv.participants.some((p) => p._id === message.destinataire)
-      );
+          return {
+            ...conv,
+            dernierMessage: message.contenu,
+            dernierMessageDate: message.createdAt,
+            dernierMessageStatut: "delivered",
+          };
+        });
 
-      // 🔥 si conversation existe
-      if (index !== -1) {
-        const updated = [...prev];
-
-        updated[index] = {
-          ...updated[index],
-          dernierMessage:
-            message.type === "image"
-              ? message.contenu
-                ? `📷 ${message.contenu}`
-                : "📷 Image"
-              : message.contenu,
-          dernierMessageDate: message.createdAt,
-          dernierMessageStatut: message.statut,
-        };
-
-        // 🔥 remonter en haut (comme WhatsApp)
-        const conv = updated.splice(index, 1)[0];
-        return [conv, ...updated];
-      }
-
-      // ❗ si conversation n'existe pas → ignorer (ou refetch)
-      return prev;
+        // 2. trier pour mettre en haut
+        return updated.sort(
+          (a, b) =>
+            new Date(b.dernierMessageDate) - new Date(a.dernierMessageDate),
+        );
+      });
     });
-  };
 
-  socket.on("receiveMessage", handleReceiveMessage);
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, []);
 
-  return () => {
-    socket.off("receiveMessage", handleReceiveMessage);
-  };
-}, []);
-
-
-
-
-
-
-
-useEffect(() => {
-  socket.on("messagesRead", () => {
-    setConversations((prev) =>
-      prev.map((conv) => ({
-        ...conv,
-        dernierMessageStatut: "seen",
-      }))
-    );
-  });
-
-  return () => {
-    socket.off("messagesRead");
-  };
-}, []);
-
-
-
-
-
-  useEffect(()  => {
+  useEffect(() => {
     const chargerConversations = async () => {
       try {
         setLoading(true);
@@ -375,7 +335,6 @@ useEffect(() => {
         }
 
         setConversations(conversationsData);
-        
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
@@ -393,7 +352,7 @@ useEffect(() => {
     return participants.find((p) => p._id !== monProfilId);
   };
 
-  // filtre recherche 
+  // filtre recherche
   const conversationsFiltrees = conversations.filter((conv) => {
     const autre = getAutreParticipant(conv.participants);
     if (!autre) return false;
@@ -408,7 +367,6 @@ useEffect(() => {
   if (messageErreur) {
     return <ErrorBox>{messageErreur}</ErrorBox>;
   }
-
 
   return (
     <Page>
