@@ -12,7 +12,7 @@ import {
 import { MdVerified } from "react-icons/md";
 import { BsDot } from "react-icons/bs";
 import { socket } from "../../socket";
-import { useTchatSocket } from "../../hooks/useTchatSocket";
+
 
 const Page = styled.div`
   min-height: 100vh;
@@ -221,6 +221,7 @@ function Conversations() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+ 
 
   const getStatutIcon = (statut) => {
     switch (statut) {
@@ -250,13 +251,95 @@ function Conversations() {
     });
   };
 
-  useEffect(() => {
+
+
+useEffect(() => {
+  socket.connect();
+
+  const handleReceiveMessage = (message) => {
+    console.log("📩 nouveau message reçu :", message);
+
+    setConversations((prev) => {
+      // chercher la conversation correspondante
+      const index = prev.findIndex(
+        (conv) =>
+          conv.participants.some((p) => p._id === message.expediteur) ||
+          conv.participants.some((p) => p._id === message.destinataire)
+      );
+
+      // 🔥 si conversation existe
+      if (index !== -1) {
+        const updated = [...prev];
+
+        updated[index] = {
+          ...updated[index],
+          dernierMessage:
+            message.type === "image"
+              ? message.contenu
+                ? `📷 ${message.contenu}`
+                : "📷 Image"
+              : message.contenu,
+          dernierMessageDate: message.createdAt,
+          dernierMessageStatut: message.statut,
+        };
+
+        // 🔥 remonter en haut (comme WhatsApp)
+        const conv = updated.splice(index, 1)[0];
+        return [conv, ...updated];
+      }
+
+      // ❗ si conversation n'existe pas → ignorer (ou refetch)
+      return prev;
+    });
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, []);
+
+
+
+socket.on("messageDelivered", ({ messageId }) => {
+  setConversations((prev) =>
+    prev.map((conv) =>
+      conv.dernierMessageId === messageId
+        ? { ...conv, dernierMessageStatut: "delivered" }
+        : conv
+    )
+  );
+});
+
+
+
+useEffect(() => {
+  socket.on("messagesRead", () => {
+    setConversations((prev) =>
+      prev.map((conv) => ({
+        ...conv,
+        dernierMessageStatut: "seen",
+      }))
+    );
+  });
+
+  return () => {
+    socket.off("messagesRead");
+  };
+}, []);
+
+
+
+
+
+  useEffect(()  => {
     const chargerConversations = async () => {
       try {
         setLoading(true);
         setMessageErreur("");
 
-        // 1) récupérer mon profil
+        // 1) récupérer le profil de l'utilisateur connecté
         const monProfilRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
           {
@@ -278,7 +361,7 @@ function Conversations() {
 
         setMonProfilId(monProfilData._id);
 
-        // 2) récupérer mes conversations
+        // 2) récupérer les conversations
         const conversationsRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
           {
@@ -300,6 +383,7 @@ function Conversations() {
         }
 
         setConversations(conversationsData);
+        
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
@@ -317,7 +401,7 @@ function Conversations() {
     return participants.find((p) => p._id !== monProfilId);
   };
 
-  // filtre recherche
+  // filtre recherche 
   const conversationsFiltrees = conversations.filter((conv) => {
     const autre = getAutreParticipant(conv.participants);
     if (!autre) return false;
@@ -332,6 +416,7 @@ function Conversations() {
   if (messageErreur) {
     return <ErrorBox>{messageErreur}</ErrorBox>;
   }
+
 
   return (
     <Page>
