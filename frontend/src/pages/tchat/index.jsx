@@ -337,8 +337,8 @@ function Tchat() {
     });
   };
 
-  const getStatutIcon = (status) => {
-    switch (status) {
+  const getStatutIcon = (statut) => {
+    switch (statut) {
       case "sent":
         return <FaCheck color="#9ca3af" size={12} />;
 

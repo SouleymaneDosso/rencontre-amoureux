@@ -117,7 +117,7 @@ const Bioh3 = styled.h3`
 `;
 
 const Label = styled.p`
-  font-size: 14px;
+  font-size: 16px;
   color: #6b7280;
   margin-bottom: 14px;
 `;
@@ -129,7 +129,7 @@ const Input = styled.textarea`
   padding: 16px;
   min-height: 140px;
   resize: none;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.6;
   color: #1f2a44;
   background: #fbfcff;

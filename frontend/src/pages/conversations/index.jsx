@@ -6,9 +6,13 @@ import {
   FaSearch,
   FaClock,
   FaChevronRight,
+  FaCheck,
+  FaCheckDouble,
 } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import { BsDot } from "react-icons/bs";
+import { socket } from "../../socket";
+import { useTchatSocket } from "../../hooks/useTchatSocket";
 
 const Page = styled.div`
   min-height: 100vh;
@@ -218,6 +222,22 @@ function Conversations() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  const getStatutIcon = (statut) => {
+    switch (statut) {
+      case "sent":
+        return <FaCheck color="#9ca3af" size={12} />;
+
+      case "delivered":
+        return <FaCheckDouble color="#9ca3af" size={12} />;
+
+      case "seen":
+        return <FaCheckDouble color="#3b82f6" size={12} />;
+
+      default:
+        return null;
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
 
@@ -237,35 +257,46 @@ function Conversations() {
         setMessageErreur("");
 
         // 1) récupérer mon profil
-        const monProfilRes = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/me`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const monProfilRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         const monProfilData = await monProfilRes.json();
 
         if (!monProfilRes.ok) {
-          throw new Error(monProfilData.message || "Impossible de récupérer ton profil");
+          throw new Error(
+            monProfilData.message || "Impossible de récupérer ton profil",
+          );
         }
 
         setMonProfilId(monProfilData._id);
 
         // 2) récupérer mes conversations
-        const conversationsRes = await fetch(`${import.meta.env.VITE_API_URL}/api/tchat/conversations`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const conversationsRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         const conversationsData = await conversationsRes.json();
 
         if (!conversationsRes.ok) {
-          throw new Error(conversationsData.message || "Impossible de récupérer les conversations");
+          throw new Error(
+            conversationsData.message ||
+              "Impossible de récupérer les conversations",
+          );
         }
 
         setConversations(conversationsData);
@@ -328,7 +359,8 @@ function Conversations() {
           </EmptyIcon>
           <EmptyTitle>Aucune conversation pour le moment</EmptyTitle>
           <EmptyText>
-            Quand tu commenceras à discuter avec un match, tes conversations apparaîtront ici.
+            Quand tu commenceras à discuter avec un match, tes conversations
+            apparaîtront ici.
           </EmptyText>
         </EmptyState>
       ) : (
@@ -348,9 +380,7 @@ function Conversations() {
                     src={autre.avatar?.url || "https://via.placeholder.com/150"}
                     alt={autre.pseudo}
                   />
-                  {autre.enLigne && <OnlineDot />}
                 </AvatarWrapper>
-
                 <Info>
                   <TopRow>
                     <Name>
@@ -367,6 +397,11 @@ function Conversations() {
                   <BottomRow>
                     <LastMessage>
                       {conversation.dernierMessage || "Aucun message"}
+
+                      <span style={{ marginLeft: "6px" }}>
+                        {conversation.dernierMessageStatut &&
+                          getStatutIcon(conversation.dernierMessageStatut)}
+                      </span>
                     </LastMessage>
 
                     <RightIcon>
