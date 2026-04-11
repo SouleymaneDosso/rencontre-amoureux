@@ -249,6 +249,16 @@ function Conversations() {
     });
   };
 
+
+
+  useEffect(() => {
+  if (!socket || !monProfilId) return;
+
+  console.log("📡 Enregistrement socket user :", monProfilId);
+
+  socket.emit("registerUser", monProfilId);
+}, [monProfilId]);
+
   useEffect(() => {
     if (!socket) return;
 
