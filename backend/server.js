@@ -2,7 +2,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
 const Conversation = require("./models/conversation");
-const Message = require("./models/message");
+const Message = require("./models/message"); 
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -46,51 +46,55 @@ io.on("connection", (socket) => {
   // =======================
   // Enregistrer un utilisateur connecté
   // =======================
-  socket.on("registerUser", async (userId) => {
-    console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
+socket.on("registerUser", async (userId) => {
+  console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
 
-    onlineUsers.set(userId, socket.id);
+  onlineUsers.set(userId, socket.id);
 
-    console.log("👤 Utilisateur enregistré :", userId);
+  io.emit("onlineUsers", Array.from(onlineUsers.keys()));
 
-    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+  // ==========================
+  // 🔥 AJOUT CRITIQUE FIX BUG
+  // ==========================
+  try {
+    const messagesNonLivres = await Message.find({
+      destinataire: userId,
+      statut: "sent",
+    });
 
-    // ===============================
-    // 🔥 AJOUT IMPORTANT : sync messages offline
-    // ===============================
-    try {
-      const messagesNonLivres = await Message.find({
-        destinataire: userId,
-        statut: "sent",
+    if (messagesNonLivres.length > 0) {
+      const senderMap = new Map();
+
+      // regrouper par expéditeur
+      messagesNonLivres.forEach((msg) => {
+        const senderId = msg.expediteur.toString();
+
+        if (!senderMap.has(senderId)) {
+          senderMap.set(senderId, []);
+        }
+
+        senderMap.get(senderId).push(msg);
       });
 
-      if (messagesNonLivres.length > 0) {
-        const ids = messagesNonLivres.map((m) => m._id);
+      // notifier chaque expéditeur
+      for (let [senderId, msgs] of senderMap.entries()) {
+        const senderSocketId = onlineUsers.get(senderId);
 
-        // 🔥 update DB → delivered
-        await Message.updateMany(
-          { _id: { $in: ids } },
-          { statut: "delivered" },
-        );
-
-        console.log("📬 messages delivered update :", ids);
-
-        // 🔥 notifier expéditeurs
-        messagesNonLivres.forEach((msg) => {
-          const senderSocketId = onlineUsers.get(msg.expediteur.toString());
-
-          if (senderSocketId) {
-            io.to(senderSocketId).emit("messagesDelivered", {
+        if (senderSocketId) {
+          msgs.forEach((msg) => {
+            io.to(senderSocketId).emit("messageDelivered", {
               messageId: msg._id,
-              conversationId: msg.conversationId,
             });
-          }
-        });
+          });
+        }
       }
-    } catch (err) {
-      console.error("❌ erreur sync delivered :", err);
+
+      console.log("📬 messages offline traités :", messagesNonLivres.length);
     }
-  });
+  } catch (err) {
+    console.error("❌ erreur sync delivered :", err);
+  }
+});
 
   // =======================
   // Envoyer un message en temps réel
@@ -125,6 +129,7 @@ io.on("connection", (socket) => {
   // =======================
   socket.on("messagesRead", ({ expediteurId, idsMessagesLus }) => {
     const expediteurSocketId = onlineUsers.get(expediteurId);
+    
 
     console.log("👁️ messagesRead reçu :", idsMessagesLus);
 
