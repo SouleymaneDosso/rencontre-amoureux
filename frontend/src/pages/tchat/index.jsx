@@ -338,10 +338,10 @@ function Tchat() {
   const getStatutIcon = (statut) => {
     switch (statut) {
       case "sent":
-        return <FaCheck color="#9ca3af" size={12} />;
+        return <FaCheck color="white" size={12} />;
 
       case "delivered":
-        return <FaCheckDouble color="#9ca3af" size={12} />;
+        return <FaCheckDouble color="white" size={12} />;
 
       case "seen":
         return <FaCheckDouble color="#3b82f6" size={12} />;
@@ -377,27 +377,37 @@ function Tchat() {
     }
   }, [id, token]);
 
-  useEffect(() => {
-    const handleReceiveMessage = (msg) => {
-      // 📬 dire "livré"
-      socket.emit("messageDelivered", {
-        messageId: msg._id,
-        expediteurId: msg.expediteur,
-      });
+useEffect(() => {
+  const handleReceiveMessage = (msg) => {
 
-      // 👁️ dire "LU DIRECT si ouvert"
-      socket.emit("messagesRead", {
-        expediteurId: msg.expediteur,
-        idsMessagesLus: [msg._id],
-      });
-    };
+    // 🔥 1. Ajouter message AVEC filtre anti-doublon
+    setMessages((prev) => {
+      const existe = prev.some((m) => m._id === msg._id);
 
-    socket.on("receiveMessage", handleReceiveMessage);
+      if (existe) return prev; // ❌ évite doublon
 
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-    };
-  }, []);
+      return [...prev, msg]; // ✅ ajoute message
+    });
+
+    // 📬 dire "livré"
+    socket.emit("messageDelivered", {
+      messageId: msg._id,
+      expediteurId: msg.expediteur,
+    });
+
+    // 👁️ dire "LU DIRECT si ouvert"
+    socket.emit("messagesRead", {
+      expediteurId: msg.expediteur,
+      idsMessagesLus: [msg._id],
+    });
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, []);
 
   useEffect(() => {
     if (!token || !id || !monProfilId) return;
@@ -445,7 +455,7 @@ function Tchat() {
 
   const tempId = "temp-" + Date.now();
 
-  // 🔥 Sauvegarde AVANT reset
+ 
   const file = selectedFile;
   const messageText = newMessage;
 
@@ -476,9 +486,6 @@ function Tchat() {
   setSelectedFile(null);
   setPreviewUrl("");
 
-  // ⚡ socket direct
-  socket.emit("sendMessage", tempMessage);
-
   try {
     const formData = new FormData();
     formData.append("contenu", messageText);
@@ -495,7 +502,7 @@ function Tchat() {
         msg._id === tempId ? data.nouveauMessage : msg
       )
     );
-    console.log(data.nouveauMessage);
+   
 
     socket.emit("sendMessage", data.nouveauMessage);
   } catch (error) {
