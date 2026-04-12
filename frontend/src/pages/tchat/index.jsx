@@ -377,37 +377,27 @@ function Tchat() {
     }
   }, [id, token]);
 
-useEffect(() => {
-  const handleReceiveMessage = (msg) => {
+  useEffect(() => {
+    const handleReceiveMessage = (msg) => {
+      // 📬 dire "livré"
+      socket.emit("messageDelivered", {
+        messageId: msg._id,
+        expediteurId: msg.expediteur,
+      });
 
-    // 🔥 1. Ajouter message AVEC filtre anti-doublon
-    setMessages((prev) => {
-      const existe = prev.some((m) => m._id === msg._id);
+      // 👁️ dire "LU DIRECT si ouvert"
+      socket.emit("messagesRead", {
+        expediteurId: msg.expediteur,
+        idsMessagesLus: [msg._id],
+      });
+    };
 
-      if (existe) return prev; // ❌ évite doublon
+    socket.on("receiveMessage", handleReceiveMessage);
 
-      return [...prev, msg]; // ✅ ajoute message
-    });
-
-    // 📬 dire "livré"
-    socket.emit("messageDelivered", {
-      messageId: msg._id,
-      expediteurId: msg.expediteur,
-    });
-
-    // 👁️ dire "LU DIRECT si ouvert"
-    socket.emit("messagesRead", {
-      expediteurId: msg.expediteur,
-      idsMessagesLus: [msg._id],
-    });
-  };
-
-  socket.on("receiveMessage", handleReceiveMessage);
-
-  return () => {
-    socket.off("receiveMessage", handleReceiveMessage);
-  };
-}, []);
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, []);
 
   useEffect(() => {
     if (!token || !id || !monProfilId) return;
