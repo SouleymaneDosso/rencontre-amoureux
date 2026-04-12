@@ -87,50 +87,30 @@ socket.on("registerUser", async (userId) => {
   // =======================
   // Envoyer un message en temps réel
   // =======================
-socket.on("sendMessage", async (messageData) => {
+  socket.on("sendMessage", (messageData) => {
+    const receiverSocketId = onlineUsers.get(messageData.destinataire);
+    const senderSocketId = onlineUsers.get(messageData.expediteur);
 
-  // 🔥 1. SAUVEGARDER EN DB (TRÈS IMPORTANT)
-  const newMessage = new Message({
-    ...messageData,
-    statut: "sent", // important pour la suite
-  });
+    console.log("📨 Message temps réel reçu :", messageData);
 
-  await newMessage.save();
+    // 🔥 envoyer au destinataire
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receiveMessage", messageData);
+      Conversation.findByIdAndUpdate(messageData.conversationId, {
+        dernierMessageStatut: "delivered",
+      }).catch(console.error);
+      // 🔥 IMPORTANT : dire à A que c'est livré
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageDelivered", {
+          messageId: messageData._id,
+        });
+      }
 
-  // 🔥 2. récupérer socket IDs
-  const receiverSocketId = onlineUsers.get(messageData.destinataire);
-  const senderSocketId = onlineUsers.get(messageData.expediteur);
-
-  console.log("📨 Message temps réel reçu :", messageData);
-
-  // 🔥 3. si destinataire ONLINE
-  if (receiverSocketId) {
-
-    // envoyer message à A
-    io.to(receiverSocketId).emit("receiveMessage", newMessage);
-
-    // mettre à jour conversation
-    Conversation.findByIdAndUpdate(messageData.conversationId, {
-      dernierMessageStatut: "delivered",
-    }).catch(console.error);
-
-    // notifier B (double tick)
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("messageDelivered", {
-        messageId: newMessage._id,
-      });
+      console.log("✅ Message envoyé + livré");
+    } else {
+      console.log("⚠️ Destinataire non connecté");
     }
-
-    // 🔥 4. update statut DB
-    newMessage.statut = "delivered";
-    await newMessage.save();
-
-    console.log("✅ Message envoyé + livré");
-
-  } else {
-    console.log("⚠️ Destinataire non connecté");
-  }
-});
+  });
 
   // =======================
   // Messages lus
