@@ -440,40 +440,76 @@ function Tchat() {
     setPreviewUrl("");
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() && !selectedFile) return;
+ const sendMessage = async () => {
+  if (!newMessage.trim() && !selectedFile) return;
 
-    try {
-      setSending(true);
+  const tempId = "temp-" + Date.now();
 
-      const formData = new FormData();
-      formData.append("contenu", newMessage);
+  // 🔥 Sauvegarde AVANT reset
+  const file = selectedFile;
+  const messageText = newMessage;
 
-      if (selectedFile) {
-        formData.append("media", selectedFile);
-      }
-
-      const data = await envoyerMessageApi(id, token, formData);
-
-      setMessages((prev) => {
-        const existeDeja = prev.some(
-          (msg) => msg._id === data.nouveauMessage._id,
-        );
-        if (existeDeja) return prev;
-
-        return [...prev, data.nouveauMessage];
-      });
-
-      socket.emit("sendMessage", data.nouveauMessage);
-      setNewMessage("");
-      setSelectedFile(null);
-      setPreviewUrl("");
-    } catch (error) {
-      setMessageErreur(error.message);
-    } finally {
-      setSending(false);
-    }
+  const tempMessage = {
+    _id: tempId,
+    conversationId: id,
+    expediteur: monProfilId,
+    destinataire: id,
+    contenu: messageText,
+    type: file ? "image" : "text",
+    media: file
+      ? {
+          url: previewUrl,
+          originalname: file.name,
+          mimetype: file.type,
+          size: file.size,
+        }
+      : {},
+    statut: "sent",
+    createdAt: new Date().toISOString(),
   };
+
+  // ⚡ affichage instantané
+  setMessages((prev) => [...prev, tempMessage]);
+
+  // ⚡ reset UI
+  setNewMessage("");
+  setSelectedFile(null);
+  setPreviewUrl("");
+
+  // ⚡ socket direct
+  socket.emit("sendMessage", tempMessage);
+
+  try {
+    const formData = new FormData();
+    formData.append("contenu", messageText);
+
+    if (file) {
+      formData.append("media", file);
+    }
+
+    const data = await envoyerMessageApi(id, token, formData);
+
+    // 🔁 remplacement message temporaire
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === tempId ? data.nouveauMessage : msg
+      )
+    );
+    console.log(data.nouveauMessage);
+
+    socket.emit("sendMessage", data.nouveauMessage);
+  } catch (error) {
+    console.error("Erreur :", error.message);
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === tempId
+          ? { ...msg, statut: "error" }
+          : msg
+      )
+    );
+  }
+};
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
