@@ -307,6 +307,8 @@ function Tchat() {
   const [isTyping, setIsTyping] = useState(false);
   const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
 
+  const typingTimeoutRef = useRef(null);
+
   useEffect(() => {
     if (!monProfilId) return;
 
@@ -651,7 +653,19 @@ function Tchat() {
           value={newMessage}
           onChange={(e) => {
             setNewMessage(e.target.value);
-            socket.emit("typing", { to: id });
+
+            if (!typingTimeoutRef.current) {
+              socket.emit("typing", { to: id });
+            }
+
+            clearTimeout(typingTimeoutRef.current);
+
+            typingTimeoutRef.current = setTimeout(() => {
+              typingTimeoutRef.current = null;
+
+              // 🔥 NOUVEAU : stop typing
+              socket.emit("stopTyping", { to: id });
+            }, 2000);
           }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
