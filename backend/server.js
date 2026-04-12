@@ -43,6 +43,12 @@ app.set("onlineUsers", onlineUsers);
 io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
+  socket.on("typing", ({to})=>{
+    const receiverSocketId = onlineUsers.get(to);
+    if(receiverSocketId){
+      io.to(receiverSocketId).emit("typing")
+    }
+  })
   // =======================
   // Enregistrer un utilisateur connecté
   // =======================
@@ -79,7 +85,7 @@ socket.on("registerUser", async (userId) => {
       msg.statut = "delivered";
       await msg.save();
     }
-  } catch (err) {
+  } catch (err) { 
     console.error(err);
   }
 });
