@@ -457,9 +457,22 @@ function Tchat() {
     };
     socket.on("typing", handleTyping);
     return () => {
-      socket.of("typing", handleTyping);
+      socket.off("typing", handleTyping);
     };
   }, []);
+
+
+  useEffect(() => {
+  const handleStopTyping = () => {
+    setIsTyping(false);
+  };
+
+  socket.on("stopTyping", handleStopTyping);
+
+  return () => {
+    socket.off("stopTyping", handleStopTyping);
+  };
+}, []);
 
   // fin typing
 
