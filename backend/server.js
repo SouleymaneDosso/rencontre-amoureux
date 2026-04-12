@@ -2,6 +2,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
 const Conversation = require("./models/conversation");
+const Message = require("./models/message");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -45,15 +46,50 @@ io.on("connection", (socket) => {
   // =======================
   // Enregistrer un utilisateur connecté
   // =======================
-  socket.on("registerUser", (userId) => {
+  socket.on("registerUser", async (userId) => {
     console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
 
     onlineUsers.set(userId, socket.id);
 
     console.log("👤 Utilisateur enregistré :", userId);
-    console.log("📌 Liste onlineUsers :", Array.from(onlineUsers.entries()));
 
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+
+    // ===============================
+    // 🔥 AJOUT IMPORTANT : sync messages offline
+    // ===============================
+    try {
+      const messagesNonLivres = await Message.find({
+        destinataire: userId,
+        statut: "sent",
+      });
+
+      if (messagesNonLivres.length > 0) {
+        const ids = messagesNonLivres.map((m) => m._id);
+
+        // 🔥 update DB → delivered
+        await Message.updateMany(
+          { _id: { $in: ids } },
+          { statut: "delivered" },
+        );
+
+        console.log("📬 messages delivered update :", ids);
+
+        // 🔥 notifier expéditeurs
+        messagesNonLivres.forEach((msg) => {
+          const senderSocketId = onlineUsers.get(msg.expediteur.toString());
+
+          if (senderSocketId) {
+            io.to(senderSocketId).emit("messagesDelivered", {
+              messageId: msg._id,
+              conversationId: msg.conversationId,
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.error("❌ erreur sync delivered :", err);
+    }
   });
 
   // =======================
