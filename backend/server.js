@@ -47,52 +47,40 @@ io.on("connection", (socket) => {
   // Enregistrer un utilisateur connecté
   // =======================
 socket.on("registerUser", async (userId) => {
-  console.log("📥 registerUser reçu :", userId, "socket :", socket.id);
-
   onlineUsers.set(userId, socket.id);
 
   io.emit("onlineUsers", Array.from(onlineUsers.keys()));
 
-  // ==========================
-  // 🔥 AJOUT CRITIQUE FIX BUG
-  // ==========================
   try {
     const messagesNonLivres = await Message.find({
       destinataire: userId,
       statut: "sent",
     });
 
-    if (messagesNonLivres.length > 0) {
-      const senderMap = new Map();
+    console.log("🔍 messagesNonLivres:", messagesNonLivres.length);
 
-      // regrouper par expéditeur
-      messagesNonLivres.forEach((msg) => {
-        const senderId = msg.expediteur.toString();
+    for (let msg of messagesNonLivres) {
+      
+      // 🔥 1. ENVOYER LE MESSAGE À A
+      io.to(socket.id).emit("receiveMessage", msg);
 
-        if (!senderMap.has(senderId)) {
-          senderMap.set(senderId, []);
-        }
+      // 🔥 2. notifier B (expéditeur)
+      const senderSocketId = onlineUsers.get(
+        msg.expediteur.toString()
+      );
 
-        senderMap.get(senderId).push(msg);
-      });
-
-      // notifier chaque expéditeur
-      for (let [senderId, msgs] of senderMap.entries()) {
-        const senderSocketId = onlineUsers.get(senderId);
-
-        if (senderSocketId) {
-          msgs.forEach((msg) => {
-            io.to(senderSocketId).emit("messageDelivered", {
-              messageId: msg._id,
-            });
-          });
-        }
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageDelivered", {
+          messageId: msg._id,
+        });
       }
 
-      console.log("📬 messages offline traités :", messagesNonLivres.length);
+      // 🔥 3. mettre à jour statut
+      msg.statut = "delivered";
+      await msg.save();
     }
   } catch (err) {
-    console.error("❌ erreur sync delivered :", err);
+    console.error(err);
   }
 });
 
