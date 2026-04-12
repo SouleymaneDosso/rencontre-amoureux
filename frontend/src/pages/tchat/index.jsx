@@ -304,7 +304,7 @@ function Tchat() {
   const [previewUrl, setPreviewUrl] = useState("");
   const messagesEndRef = useRef(null);
   const token = localStorage.getItem("token");
-
+  const [isTyping, setIsTyping] = useState(false);
   const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
 
   useEffect(() => {
@@ -400,6 +400,21 @@ function Tchat() {
   }, []);
 
   useEffect(() => {
+    const handleReconnect = async () => {
+      console.log("🔄 Reconnexion → sync messages");
+
+      const messagesData = await getMessagesConversation(id, token);
+      setMessages(messagesData);
+    };
+
+    socket.on("connect", handleReconnect);
+
+    return () => {
+      socket.off("connect", handleReconnect);
+    };
+  }, [id, token]);
+
+  useEffect(() => {
     if (!token || !id || !monProfilId) return;
 
     const marquerCommeLus = async () => {
@@ -427,6 +442,25 @@ function Tchat() {
     marquerCommeLus();
   }, [id, token, monProfilId]);
 
+  // typing
+  useEffect(() => {
+    let timeout;
+    const handleTyping = () => {
+      setIsTyping(true);
+
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
+    };
+    socket.on("typing", handleTyping);
+    return () => {
+      socket.of("typing", handleTyping);
+    };
+  }, []);
+
+  // fin typing
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -440,73 +474,67 @@ function Tchat() {
     setPreviewUrl("");
   };
 
- const sendMessage = async () => {
-  if (!newMessage.trim() && !selectedFile) return;
+  const sendMessage = async () => {
+    if (!newMessage.trim() && !selectedFile) return;
 
-  const tempId = "temp-" + Date.now();
+    const tempId = "temp-" + Date.now();
 
- 
-  const file = selectedFile;
-  const messageText = newMessage;
+    const file = selectedFile;
+    const messageText = newMessage;
 
-  const tempMessage = {
-    _id: tempId,
-    conversationId: id,
-    expediteur: monProfilId,
-    destinataire: id,
-    contenu: messageText,
-    type: file ? "image" : "text",
-    media: file
-      ? {
-          url: previewUrl,
-          originalname: file.name,
-          mimetype: file.type,
-          size: file.size,
-        }
-      : {},
-    statut: "sent",
-    createdAt: new Date().toISOString(),
-  };
+    const tempMessage = {
+      _id: tempId,
+      conversationId: id,
+      expediteur: monProfilId,
+      destinataire: id,
+      contenu: messageText,
+      type: file ? "image" : "text",
+      media: file
+        ? {
+            url: previewUrl,
+            originalname: file.name,
+            mimetype: file.type,
+            size: file.size,
+          }
+        : {},
+      statut: "sent",
+      createdAt: new Date().toISOString(),
+    };
 
-  // ⚡ affichage instantané
-  setMessages((prev) => [...prev, tempMessage]);
+    // ⚡ affichage instantané
+    setMessages((prev) => [...prev, tempMessage]);
 
-  // ⚡ reset UI
-  setNewMessage("");
-  setSelectedFile(null);
-  setPreviewUrl("");
+    // ⚡ reset UI
+    setNewMessage("");
+    setSelectedFile(null);
+    setPreviewUrl("");
 
-  try {
-    const formData = new FormData();
-    formData.append("contenu", messageText);
+    try {
+      const formData = new FormData();
+      formData.append("contenu", messageText);
 
-    if (file) {
-      formData.append("media", file);
+      if (file) {
+        formData.append("media", file);
+      }
+
+      const data = await envoyerMessageApi(id, token, formData);
+
+      // 🔁 remplacement message temporaire
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
+      );
+
+      socket.emit("sendMessage", data.nouveauMessage);
+    } catch (error) {
+      console.error("Erreur :", error.message);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId ? { ...msg, statut: "error" } : msg,
+        ),
+      );
     }
-
-    const data = await envoyerMessageApi(id, token, formData);
-
-    // 🔁 remplacement message temporaire
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === tempId ? data.nouveauMessage : msg
-      )
-    );
-   
-
-    socket.emit("sendMessage", data.nouveauMessage);
-  } catch (error) {
-    console.error("Erreur :", error.message);
-
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === tempId
-          ? { ...msg, statut: "error" }
-          : msg
-      )
-    );
-  }
-};
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -547,11 +575,17 @@ function Tchat() {
         <HeaderInfo>
           <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>
           <HeaderSubtitle>
-            <FaCircle
-              size={10}
-              color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
-            />
-            {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
+            {isTyping ? (
+              "en train d’écrire..."
+            ) : (
+              <>
+                <FaCircle
+                  size={10}
+                  color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
+                />
+                {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
+              </>
+            )}
           </HeaderSubtitle>
         </HeaderInfo>
       </Header>
@@ -615,7 +649,10 @@ function Tchat() {
         <Input
           placeholder="Écrire un message..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(e) => {
+            setNewMessage(e.target.value);
+            socket.emit("typing", { to: id });
+          }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
