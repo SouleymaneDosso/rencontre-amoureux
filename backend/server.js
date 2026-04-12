@@ -49,6 +49,14 @@ io.on("connection", (socket) => {
       io.to(receiverSocketId).emit("typing")
     }
   })
+
+  socket.on("stopTyping", ({ to }) => {
+  const receiverSocketId = onlineUsers.get(to);
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("stopTyping");
+  }
+});
   // =======================
   // Enregistrer un utilisateur connecté
   // =======================
