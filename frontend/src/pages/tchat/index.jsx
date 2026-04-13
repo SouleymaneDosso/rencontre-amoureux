@@ -315,6 +315,13 @@ const SkeletonMessage = styled.div`
   justify-content: ${(props) => (props.$right ? "flex-end" : "flex-start")};
 `;
 
+const MessageVideo = styled.video`
+  width: 100%;
+  max-width: 260px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -559,21 +566,24 @@ function Tchat() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // 🎬 si vidéo → PAS de compression
+    if (file.type.startsWith("video")) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      return;
+    }
+
+    // 🖼️ sinon image → compression
     try {
-      // ⚙️ options de compression
       const options = {
-        maxSizeMB: 0.5, // taille max = 500KB
-        maxWidthOrHeight: 1024, // redimensionne image
-        useWebWorker: true, // + rapide
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
       };
 
-      // 🔥 compression
       const compressedFile = await imageCompression(file, options);
 
-      // 🧠 stocke fichier compressé
       setSelectedFile(compressedFile);
-
-      // 👁️ preview (image compressée)
       setPreviewUrl(URL.createObjectURL(compressedFile));
     } catch (error) {
       console.error("Erreur compression :", error);
@@ -599,7 +609,7 @@ function Tchat() {
       expediteur: monProfilId,
       destinataire: id,
       contenu: messageText,
-      type: file ? "image" : "text",
+      type: file ? (file.type.startsWith("video") ? "video" : "image") : "text",
       media: file
         ? {
             url: previewUrl,
@@ -756,6 +766,12 @@ function Tchat() {
                     <MessageImage src={msg.media.url} alt="message" />
                   )}
 
+                  {msg.type === "video" && msg.media?.url && (
+                    <MessageVideo controls>
+                      <source src={msg.media.url} type={msg.media.mimetype} />
+                    </MessageVideo>
+                  )}
+
                   {msg.contenu && <MessageText>{msg.contenu}</MessageText>}
 
                   <MessageTime>
@@ -791,7 +807,7 @@ function Tchat() {
         <FileInput
           id="file-upload"
           type="file"
-          accept="image/*"
+          accept="image/*,video/mp4"
           onChange={handleFileChange}
         />
 
