@@ -306,7 +306,9 @@ function Tchat() {
   const token = localStorage.getItem("token");
   const [isTyping, setIsTyping] = useState(false);
   const { onlineUsers } = useTchatSocket(monProfilId, setMessages);
-
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -353,6 +355,29 @@ function Tchat() {
     }
   };
 
+  const loadMoreMessages = async () => {
+    if (!hasMore || loadingMore) return;
+
+    setLoadingMore(true);
+
+    const nextPage = page + 1;
+
+    try {
+      const moreMessages = await getMessagesConversation(id, token, nextPage);
+
+      if (moreMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setMessages((prev) => [...moreMessages, ...prev]);
+        setPage(nextPage);
+      }
+    } catch (error) {
+      console.error("Erreur load more :", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
     const chargerTchat = async () => {
       try {
@@ -367,6 +392,8 @@ function Tchat() {
 
         const messagesData = await getMessagesConversation(id, token);
         setMessages(messagesData);
+        setPage(1);
+        setHasMore(messagesData.length === 20);
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
@@ -461,18 +488,17 @@ function Tchat() {
     };
   }, []);
 
-
   useEffect(() => {
-  const handleStopTyping = () => {
-    setIsTyping(false);
-  };
+    const handleStopTyping = () => {
+      setIsTyping(false);
+    };
 
-  socket.on("stopTyping", handleStopTyping);
+    socket.on("stopTyping", handleStopTyping);
 
-  return () => {
-    socket.off("stopTyping", handleStopTyping);
-  };
-}, []);
+    return () => {
+      socket.off("stopTyping", handleStopTyping);
+    };
+  }, []);
 
   // fin typing
 
@@ -558,7 +584,25 @@ function Tchat() {
   const isProfilCibleOnline = onlineUsers.includes(id);
 
   if (loading) {
-    return <Loading>Chargement du tchat...</Loading>;
+    return (
+      <Wrapper>
+        <Header>
+          <BackButton onClick={() => navigate(-1)}>
+            <FaArrowLeft />
+          </BackButton>
+
+          <HeaderInfo>
+            <HeaderTitle>Chargement...</HeaderTitle>
+          </HeaderInfo>
+        </Header>
+
+        <MessagesContainer>
+          <EmptyState>
+            <p>Chargement des messages...</p>
+          </EmptyState>
+        </MessagesContainer>
+      </Wrapper>
+    );
   }
 
   if (messageErreur) {
@@ -605,7 +649,13 @@ function Tchat() {
         </HeaderInfo>
       </Header>
 
-      <MessagesContainer>
+      <MessagesContainer
+        onScroll={(e) => {
+          if (e.target.scrollTop === 0) {
+            loadMoreMessages();
+          }
+        }}
+      >
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
