@@ -401,7 +401,9 @@ function Tchat() {
   useEffect(() => {
     const chargerTchat = async () => {
       try {
-        if (messages.length === 0) {
+        const cachedMessages = localStorage.getItem(`messages-${id}`);
+
+        if (!cachedMessages) {
           setLoading(true);
         }
         setMessageErreur("");
@@ -414,7 +416,9 @@ function Tchat() {
 
         setMonProfilId(monProfilData._id);
         setProfilCible(profilData);
-        setMessages(messagesData);
+        setMessages((prev) => {
+          return messagesData;
+        });
         setPage(1);
         setHasMore(messagesData.length === 20);
       } catch (error) {
@@ -606,7 +610,7 @@ function Tchat() {
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
-  if (loading) {
+  if (loading && messages.length === 0) {
     return (
       <Wrapper>
         <Header>
