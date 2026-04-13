@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState, useRef, useEffect } from "react";
+import imageCompression from "browser-image-compression";
 import {
   FaArrowLeft,
   FaPaperPlane,
@@ -295,12 +296,7 @@ const SkeletonBubble = styled.div`
   width: ${(props) => props.width || "60%"};
   height: 16px;
   border-radius: 12px;
-  background: linear-gradient(
-    90deg,
-    #e5e7eb 25%,
-    #f3f4f6 37%,
-    #e5e7eb 63%
-  );
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 
@@ -559,12 +555,29 @@ function Tchat() {
 
   // fin typing
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    try {
+      // ⚙️ options de compression
+      const options = {
+        maxSizeMB: 0.5, // taille max = 500KB
+        maxWidthOrHeight: 1024, // redimensionne image
+        useWebWorker: true, // + rapide
+      };
+
+      // 🔥 compression
+      const compressedFile = await imageCompression(file, options);
+
+      // 🧠 stocke fichier compressé
+      setSelectedFile(compressedFile);
+
+      // 👁️ preview (image compressée)
+      setPreviewUrl(URL.createObjectURL(compressedFile));
+    } catch (error) {
+      console.error("Erreur compression :", error);
+    }
   };
 
   const removeSelectedFile = () => {
@@ -644,28 +657,28 @@ function Tchat() {
 
   if (loading && messages.length === 0) {
     return (
-  <Wrapper>
-    <Header>
-      <BackButton onClick={() => navigate(-1)}>
-        <FaArrowLeft />
-      </BackButton>
+      <Wrapper>
+        <Header>
+          <BackButton onClick={() => navigate(-1)}>
+            <FaArrowLeft />
+          </BackButton>
 
-      <HeaderInfo>
-        <HeaderTitle>Chargement...</HeaderTitle>
-      </HeaderInfo>
-    </Header>
+          <HeaderInfo>
+            <HeaderTitle>Chargement...</HeaderTitle>
+          </HeaderInfo>
+        </Header>
 
-    <MessagesContainer>
-      {[...Array(6)].map((_, i) => (
-        <SkeletonMessage key={i} $right={i % 2 === 0}>
-          <SkeletonBubble width={i % 2 === 0 ? "60%" : "40%"} />
-        </SkeletonMessage>
-      ))}
-    </MessagesContainer>
-  </Wrapper>
-);
+        <MessagesContainer>
+          {[...Array(6)].map((_, i) => (
+            <SkeletonMessage key={i} $right={i % 2 === 0}>
+              <SkeletonBubble width={i % 2 === 0 ? "60%" : "40%"} />
+            </SkeletonMessage>
+          ))}
+        </MessagesContainer>
+      </Wrapper>
+    );
   }
-  
+
   if (messageErreur) {
     return (
       <Wrapper>
