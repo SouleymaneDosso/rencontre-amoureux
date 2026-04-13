@@ -507,7 +507,11 @@ function Conversations() {
             return (
               <Card
                 key={conversation._id}
-                onClick={() => navigate(`/tchat/${autre._id}`)}
+                onClick={() =>
+                  navigate(`/tchat/${autre._id}`, {
+                    state: { messages: [] },
+                  })
+                }
               >
                 <AvatarWrapper>
                   <Avatar

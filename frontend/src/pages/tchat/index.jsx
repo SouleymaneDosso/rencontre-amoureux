@@ -23,6 +23,8 @@ import {
   marquerMessagesCommeLusApi,
 } from "../../services/tchatApi";
 
+import { useLocation } from "react-router-dom";
+
 const Wrapper = styled.div`
   height: 100dvh; /* ✅ meilleur que 100vh */
   display: flex;
@@ -292,8 +294,9 @@ const Avatar = styled.img`
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
   const [monProfilId, setMonProfilId] = useState(null);
   const [profilCible, setProfilCible] = useState(null);
@@ -313,7 +316,6 @@ function Tchat() {
 
   useEffect(() => {
     if (!monProfilId) return;
-
     const registerIfConnected = () => {
       console.log("👤 Enregistrement utilisateur socket :", monProfilId);
       console.log("🔌 socket.connected ?", socket.connected);
@@ -330,6 +332,16 @@ function Tchat() {
       socket.off("connect", registerIfConnected);
     };
   }, [monProfilId]);
+
+  useEffect(() => {
+    const cachedMessages = localStorage.getItem(`messages-${id}`);
+
+    if (cachedMessages) {
+      console.log("⚡ Chargement instantané depuis cache");
+      setMessages(JSON.parse(cachedMessages));
+      setLoading(false); // 🔥 IMPORTANT
+    }
+  }, [id]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -378,19 +390,30 @@ function Tchat() {
     }
   };
 
+  // localStorage pour les messages
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(`messages-${id}`, JSON.stringify(messages));
+    }
+  }, [id, messages]);
+
   useEffect(() => {
     const chargerTchat = async () => {
       try {
-        setLoading(true);
+        if (messages.length === 0) {
+          setLoading(true);
+        }
         setMessageErreur("");
 
-        const monProfilData = await getMonProfil(token);
+        const [monProfilData, profilData, messagesData] = await Promise.all([
+          getMonProfil(token),
+          getProfilCible(id),
+          getMessagesConversation(id, token),
+        ]);
+
         setMonProfilId(monProfilData._id);
-
-        const profilData = await getProfilCible(id);
         setProfilCible(profilData);
-
-        const messagesData = await getMessagesConversation(id, token);
         setMessages(messagesData);
         setPage(1);
         setHasMore(messagesData.length === 20);
