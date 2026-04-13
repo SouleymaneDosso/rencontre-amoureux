@@ -161,11 +161,19 @@ exports.getMessages = async (req, res) => {
     }
 
     // récupérer les messages
-    const messages = await Message.find({
-      conversationId: conversation._id,
-    }).sort({ createdAt: 1 });
 
-    res.status(200).json(messages);
+    const page = parseInt(req.query.page)|| 1;
+    const limit = parseInt(req.query.limit)|| 20;
+
+
+
+    const messages = await Message.find({
+      conversationId: req.params.id,
+    }).sort({ createdAt:  -1 })
+    .skip((page - 1)* limit)
+    .limite(limit);
+
+    res.status(200).json(messages.reverse());
   } catch (error) {
     console.error("Erreur getMessages :", error);
     res.status(500).json({ message: "Erreur serveur" });
