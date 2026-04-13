@@ -291,10 +291,40 @@ const Avatar = styled.img`
   object-fit: cover;
 `;
 
+const SkeletonBubble = styled.div`
+  width: ${(props) => props.width || "60%"};
+  height: 16px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+
+  @keyframes shimmer {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: 0 0;
+    }
+  }
+`;
+
+const SkeletonMessage = styled.div`
+  display: flex;
+  justify-content: ${(props) => (props.$right ? "flex-end" : "flex-start")};
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const containerRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -605,33 +635,37 @@ function Tchat() {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScrollRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
   if (loading && messages.length === 0) {
     return (
-      <Wrapper>
-        <Header>
-          <BackButton onClick={() => navigate(-1)}>
-            <FaArrowLeft />
-          </BackButton>
+  <Wrapper>
+    <Header>
+      <BackButton onClick={() => navigate(-1)}>
+        <FaArrowLeft />
+      </BackButton>
 
-          <HeaderInfo>
-            <HeaderTitle>Chargement...</HeaderTitle>
-          </HeaderInfo>
-        </Header>
+      <HeaderInfo>
+        <HeaderTitle>Chargement...</HeaderTitle>
+      </HeaderInfo>
+    </Header>
 
-        <MessagesContainer>
-          <EmptyState>
-            <p>Chargement des messages...</p>
-          </EmptyState>
-        </MessagesContainer>
-      </Wrapper>
-    );
+    <MessagesContainer>
+      {[...Array(6)].map((_, i) => (
+        <SkeletonMessage key={i} $right={i % 2 === 0}>
+          <SkeletonBubble width={i % 2 === 0 ? "60%" : "40%"} />
+        </SkeletonMessage>
+      ))}
+    </MessagesContainer>
+  </Wrapper>
+);
   }
-
+  
   if (messageErreur) {
     return (
       <Wrapper>
@@ -677,8 +711,18 @@ function Tchat() {
       </Header>
 
       <MessagesContainer
+        ref={containerRef}
         onScroll={(e) => {
-          if (e.target.scrollTop === 0) {
+          const el = e.target;
+
+          // 📌 détecte si on est en bas
+          const isNearBottom =
+            el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+
+          shouldAutoScrollRef.current = isNearBottom;
+
+          // 📌 load anciens messages
+          if (el.scrollTop === 0) {
             loadMoreMessages();
           }
         }}
@@ -691,7 +735,7 @@ function Tchat() {
         ) : (
           messages.map((msg) => {
             const isMine = msg.expediteur === monProfilId;
-
+            if (!monProfilId) return null;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>
