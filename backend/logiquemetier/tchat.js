@@ -165,7 +165,7 @@ exports.getMessages = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const messages = await Message.find({ conversationId: req.params.id })
+    const messages = await Message.find({ conversationId: conversation._id, })
       .sort({ createdAt: -1 }) 
       .skip((page - 1) * limit)
       .limit(limit);
