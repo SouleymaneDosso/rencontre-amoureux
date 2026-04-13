@@ -3,6 +3,26 @@ const Message = require("../models/message");
 const Profil = require("../models/profil");
 const cloudinary = require("../cloudinary");
 const streamifier = require("streamifier");
+const message = require("../models/message");
+
+const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: resourceType,
+        quality: "auto",
+        fetch_format: "auto",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      },
+    );
+
+    streamifier.createReadStream(fileBuffer).pipe(stream);
+  });
+};
 
 exports.envoyerMessage = async (req, res) => {
   try {
@@ -64,19 +84,39 @@ exports.envoyerMessage = async (req, res) => {
 
     // Si fichier image envoyé
     if (req.file) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { folder: `site-de-rencontre/messages/${conversation._id}` },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          },
-        );
+      // 🔒 1. vérifier taille fichier
+      if (req.file.size > 10 * 1024 * 1024) {
+        return res
+          .status(400)
+          .json({ message: "Fichier trop lourd (max 10MB)" });
+      }
 
-        streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
-      });
+      // 🔒 2. vérifier format autorisé
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/mp4",
+      ];
 
-      type = "image";
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ message: "Format non supporté" });
+      }
+
+      // 🔥 3. détecter si vidéo
+      const isVideo = req.file.mimetype.startsWith("video");
+
+      // ☁️ 4. upload Cloudinary
+      const uploadResult = await uploadToCloudinary(
+        req.file.buffer,
+        `site-de-rencontre/messages/${conversation._id}`,
+        isVideo ? "video" : "image",
+      );
+
+      // 🧠 5. définir type
+      type = isVideo ? "video" : "image";
+
+      // 📦 6. stocker données
       mediaData = {
         url: uploadResult.secure_url,
         public_id: uploadResult.public_id,
@@ -165,8 +205,8 @@ exports.getMessages = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const messages = await Message.find({ conversationId: conversation._id, })
-      .sort({ createdAt: -1 }) 
+    const messages = await Message.find({ conversationId: conversation._id })
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
