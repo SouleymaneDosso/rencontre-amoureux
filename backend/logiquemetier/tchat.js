@@ -3,7 +3,7 @@ const Message = require("../models/message");
 const Profil = require("../models/profil");
 const cloudinary = require("../cloudinary");
 const streamifier = require("streamifier");
-const message = require("../models/message");
+
 
 const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
   return new Promise((resolve, reject) => {
@@ -138,12 +138,16 @@ exports.envoyerMessage = async (req, res) => {
     await nouveauMessage.save();
 
     // mettre à jour la conversation
-    conversation.dernierMessage =
-      type === "image"
-        ? contenu.trim()
-          ? `📷 ${contenu.trim()}`
-          : "📷 Image"
-        : contenu.trim();
+  conversation.dernierMessage =
+  type === "image"
+    ? contenu.trim()
+      ? `📷 ${contenu.trim()}`
+      : "📷 Image"
+    : type === "video"
+    ? contenu.trim()
+      ? `🎥 ${contenu.trim()}`
+      : "🎥 Vidéo"
+    : contenu.trim();
 
     conversation.dernierMessageStatut = "sent";
     conversation.dernierMessageDate = new Date();
