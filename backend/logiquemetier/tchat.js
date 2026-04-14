@@ -4,7 +4,6 @@ const Profil = require("../models/profil");
 const cloudinary = require("../cloudinary");
 const streamifier = require("streamifier");
 
-
 const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -90,22 +89,16 @@ exports.envoyerMessage = async (req, res) => {
           .status(400)
           .json({ message: "Fichier trop lourd (max 10MB)" });
       }
-
+ 
       // 🔒 2. vérifier format autorisé
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "video/mp4",
-      ];
-
-      if (!allowedTypes.includes(req.file.mimetype)) {
-        return res.status(400).json({ message: "Format non supporté" });
-      }
-
-      // 🔥 3. détecter si vidéo
+      const isImage = req.file.mimetype.startsWith("image");
       const isVideo = req.file.mimetype.startsWith("video");
 
+      if (!isImage && !isVideo) {
+        return res.status(400).json({ message: "Format non supporté" });
+      }
+      // 🔥 3. détecter si vidéo
+      
       // ☁️ 4. upload Cloudinary
       const uploadResult = await uploadToCloudinary(
         req.file.buffer,
@@ -138,16 +131,16 @@ exports.envoyerMessage = async (req, res) => {
     await nouveauMessage.save();
 
     // mettre à jour la conversation
-  conversation.dernierMessage =
-  type === "image"
-    ? contenu.trim()
-      ? `📷 ${contenu.trim()}`
-      : "📷 Image"
-    : type === "video"
-    ? contenu.trim()
-      ? `🎥 ${contenu.trim()}`
-      : "🎥 Vidéo"
-    : contenu.trim();
+    conversation.dernierMessage =
+      type === "image"
+        ? contenu.trim()
+          ? `📷 ${contenu.trim()}`
+          : "📷 Image"
+        : type === "video"
+          ? contenu.trim()
+            ? `🎥 ${contenu.trim()}`
+            : "🎥 Vidéo"
+          : contenu.trim();
 
     conversation.dernierMessageStatut = "sent";
     conversation.dernierMessageDate = new Date();
