@@ -333,10 +333,6 @@ const MOdalcontain = styled.div`
   justify-content: center;
 `;
 
-const ImageWrapper = styled.div`
-  position: relative;
-  display: inline-block;
-`;
 
 const ModalImage = styled.img`
   max-width: 100%;
@@ -890,10 +886,7 @@ function Tchat() {
 
       {modal && (
         <MOdalcontain
-          onClick={fermermodal}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+          onClick={fermermodal}>
           <Slider
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
