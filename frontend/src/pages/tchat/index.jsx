@@ -348,6 +348,7 @@ const Slider = styled.div`
   display: flex;
   height: 100%;
   transition: transform 0.3s ease;
+  user-select: none;
 `;
 
 const Slide = styled.div`
@@ -364,6 +365,7 @@ function Tchat() {
   const containerRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
   const startX = useRef(0);
+  const isDragging = useRef(false);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -402,8 +404,6 @@ function Tchat() {
 
   const images = messages.filter((m) => m.type === "image");
 
-  // fin modal
-
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
   };
@@ -420,6 +420,28 @@ function Tchat() {
       setCurrentIndex((prev) => prev - 1);
     }
   };
+
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging.current) return;
+
+    const diff = startX.current - e.clientX;
+
+    if (diff > 50 && currentIndex < images.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+
+    if (diff < -50 && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+
+    isDragging.current = false;
+  };
+  // fin modal
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -876,7 +898,10 @@ function Tchat() {
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
             }}
-            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
           >
             {images.map((img) => (
               <Slide key={img._id}>
