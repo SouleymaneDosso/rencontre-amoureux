@@ -333,7 +333,6 @@ const MOdalcontain = styled.div`
   justify-content: center;
 `;
 
-
 const ModalImage = styled.img`
   max-width: 100%;
   max-height: 100%;
@@ -362,6 +361,7 @@ function Tchat() {
   const shouldAutoScrollRef = useRef(true);
   const startX = useRef(0);
   const isDragging = useRef(false);
+  const startY = useRef(0);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -399,20 +399,31 @@ function Tchat() {
   };
 
   const images = messages.filter((m) => m.type === "image");
-
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
   };
-
   const handleTouchEnd = (e) => {
     const endX = e.changedTouches[0].clientX;
-    const diff = startX.current - endX;
+    const endY = e.changedTouches[0].clientY;
 
-    if (diff > 50 && currentIndex < images.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    const diffX = startX.current - endX;
+    const diffY = startY.current - endY;
+
+    // 🔥 priorité au swipe vertical (fermer)
+    if (Math.abs(diffY) > Math.abs(diffX)) {
+      if (diffY < -100) {
+        fermermodal();
+      }
+      return;
     }
 
-    if (diff < -50 && currentIndex > 0) {
+    // 👉 swipe horizontal (images)
+    if (Math.abs(diffX) < 80) return;
+
+    if (diffX > 0 && currentIndex < images.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else if (diffX < 0 && currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
   };
@@ -422,16 +433,23 @@ function Tchat() {
     startX.current = e.clientX;
   };
 
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return;
+  };
+
   const handleMouseUp = (e) => {
     if (!isDragging.current) return;
 
     const diff = startX.current - e.clientX;
 
-    if (diff > 50 && currentIndex < images.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    if (Math.abs(diff) < 80) {
+      isDragging.current = false;
+      return;
     }
 
-    if (diff < -50 && currentIndex > 0) {
+    if (diff > 0 && currentIndex < images.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else if (diff < 0 && currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
 
@@ -885,8 +903,7 @@ function Tchat() {
       </MessagesContainer>
 
       {modal && (
-        <MOdalcontain
-          onClick={fermermodal}>
+        <MOdalcontain onClick={fermermodal}>
           <Slider
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
@@ -894,6 +911,7 @@ function Tchat() {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
           >
             {images.map((img) => (
