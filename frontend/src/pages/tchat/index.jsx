@@ -322,6 +322,44 @@ const MessageVideo = styled.video`
   margin-bottom: 8px;
 `;
 
+const MOdalcontain = styled.div`
+  position: fixed;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  padding: 20px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  inset: 0;
+`;
+
+const CloseButtons = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 30;
+
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+`;
+
+const ImageWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const ModalImage = styled.img`
+  border-radius: 18px;
+  object-fit: contain;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -347,6 +385,21 @@ function Tchat() {
   const [loadingMore, setLoadingMore] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [modal, setModal] = useState(false);
+  const [imageActive, setImageActive] = useState(null);
+
+  // modal zone
+
+  const ouvrirmodal = (msg) => {
+    setImageActive(msg);
+    setModal(true);
+  };
+
+  const fermermodal = (msg) => {
+    setImageActive(null);
+    setModal(false);
+  };
+
+  // fin modal
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -764,7 +817,11 @@ function Tchat() {
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>
                   {msg.type === "image" && msg.media?.url && (
-                    <MessageImage src={msg.media.url} alt="message" />
+                    <MessageImage
+                      src={msg.media.url}
+                      alt="message"
+                      onClick={() => ouvrirmodal(msg)}
+                    />
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
@@ -788,6 +845,21 @@ function Tchat() {
         )}
         <div ref={messagesEndRef} />
       </MessagesContainer>
+
+      {modal && imageActive?.media?.url && (
+        <MOdalcontain onClick={fermermodal}>
+          <ImageWrapper>
+            <CloseButtons>x</CloseButtons>
+            <ModalImage
+              src={imageActive.media.url}
+              alt="image agrandire"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            />
+          </ImageWrapper>
+        </MOdalcontain>
+      )}
 
       {previewUrl && (
         <PreviewBox>
