@@ -346,6 +346,7 @@ function Tchat() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const [modal, setModal] = useState(false);
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -791,7 +792,11 @@ function Tchat() {
       {previewUrl && (
         <PreviewBox>
           <PreviewImageWrapper>
-            <PreviewImage src={previewUrl} alt="preview" />
+            {selectedFile?.type.startsWith("video") ? (
+              <MessageVideo controls src={previewUrl} />
+            ) : (
+              <PreviewImage src={previewUrl} alt="preview" />
+            )}
             <RemovePreview onClick={removeSelectedFile}>
               <FaTimes />
             </RemovePreview>
