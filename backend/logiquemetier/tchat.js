@@ -10,8 +10,7 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
       {
         folder,
         resource_type: resourceType,
-        quality: "auto",
-        fetch_format: "auto",
+        chunk_size: 6000000, 
       },
       (error, result) => {
         if (error) reject(error);
@@ -89,7 +88,7 @@ exports.envoyerMessage = async (req, res) => {
           .status(400)
           .json({ message: "Fichier trop lourd (max 10MB)" });
       }
- 
+
       // 🔒 2. vérifier format autorisé
       const isImage = req.file.mimetype.startsWith("image");
       const isVideo = req.file.mimetype.startsWith("video");
@@ -98,7 +97,7 @@ exports.envoyerMessage = async (req, res) => {
         return res.status(400).json({ message: "Format non supporté" });
       }
       // 🔥 3. détecter si vidéo
-      
+
       // ☁️ 4. upload Cloudinary
       const uploadResult = await uploadToCloudinary(
         req.file.buffer,
