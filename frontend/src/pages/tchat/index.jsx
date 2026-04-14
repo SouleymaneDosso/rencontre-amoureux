@@ -324,29 +324,13 @@ const MessageVideo = styled.video`
 
 const MOdalcontain = styled.div`
   position: fixed;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 1000;
-  padding: 20px;
-  align-items: center;
-  display: flex;
-  justify-content: center;
   inset: 0;
-`;
+  background: black;
+  z-index: 9999;
 
-const CloseButtons = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 30;
-
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  font-size: 22px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const ImageWrapper = styled.div`
@@ -355,9 +339,22 @@ const ImageWrapper = styled.div`
 `;
 
 const ModalImage = styled.img`
-  border-radius: 18px;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+`;
+
+const Slider = styled.div`
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s ease;
+`;
+
+const Slide = styled.div`
+  min-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 function Tchat() {
@@ -366,6 +363,7 @@ function Tchat() {
   const location = useLocation();
   const containerRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
+  const startX = useRef(0);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -386,10 +384,13 @@ function Tchat() {
   const typingTimeoutRef = useRef(null);
   const [modal, setModal] = useState(false);
   const [imageActive, setImageActive] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // modal zone
 
   const ouvrirmodal = (msg) => {
+    const index = images.findIndex((m) => m._id === msg._id);
+    setCurrentIndex(index);
     setImageActive(msg);
     setModal(true);
   };
@@ -399,7 +400,26 @@ function Tchat() {
     setModal(false);
   };
 
+  const images = messages.filter((m) => m.type === "image");
+
   // fin modal
+
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const diff = startX.current - endX;
+
+    if (diff > 50 && currentIndex < images.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+
+    if (diff < -50 && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
 
   useEffect(() => {
     if (!monProfilId) return;
@@ -846,18 +866,24 @@ function Tchat() {
         <div ref={messagesEndRef} />
       </MessagesContainer>
 
-      {modal && imageActive?.media?.url && (
-        <MOdalcontain onClick={fermermodal}>
-          <ImageWrapper>
-            <CloseButtons>x</CloseButtons>
-            <ModalImage
-              src={imageActive.media.url}
-              alt="image agrandire"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            />
-          </ImageWrapper>
+      {modal && (
+        <MOdalcontain
+          onClick={fermermodal}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <Slider
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((img) => (
+              <Slide key={img._id}>
+                <ModalImage src={img.media.url} />
+              </Slide>
+            ))}
+          </Slider>
         </MOdalcontain>
       )}
 
