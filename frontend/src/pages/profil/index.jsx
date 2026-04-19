@@ -21,6 +21,9 @@ const Card = styled.div`
   padding: 40px;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  @media (max-width: 480px) {
+    padding: 24px 16px;
+  }
 `;
 
 const Title = styled.h2`
@@ -43,7 +46,7 @@ const Input = styled.input`
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #ddd;
-  font-size: 14px;
+  font-size: 16px;
 
   &:focus {
     outline: none;
@@ -55,7 +58,7 @@ const Select = styled.select`
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #ddd;
-  font-size: 14px;
+  font-size: 16px;
   background: white;
 
   &:focus {
@@ -102,7 +105,7 @@ const villesCI = [
   "Séguéla",
   "Daoukro",
   "Aboisso",
-  "Issia"
+  "Issia",
 ];
 
 /* ================== COMPONENT ================== */
@@ -120,27 +123,27 @@ function Profil() {
     pseudo: "",
   });
 
-
-
   const valeurs = (e) => {
     setInfo({ ...info, [e.target.name]: e.target.value });
   };
 
-  const token = localStorage.getItem("token")
-
+  const token = localStorage.getItem("token");
 
   const valeurEnvoyer = async (e) => {
     e.preventDefault();
 
     try {
-      const creation = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos`, {
-        method: "POST",
-        headers: {
-          "Authorization" : `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const creation = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/mesInfos`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(info),
         },
-        body: JSON.stringify(info),
-      });
+      );
 
       const data = await creation.json();
 
@@ -158,9 +161,8 @@ function Profil() {
         pseudo: "",
       });
       navigate("/home");
-
     } catch (error) {
-  console.log("❌ " + error.message);
+      console.log("❌ " + error.message);
     }
   };
 
@@ -170,16 +172,38 @@ function Profil() {
         <Title>Créer votre profil</Title>
 
         <Form onSubmit={valeurEnvoyer}>
-          <Input name="nom" placeholder="Nom" value={info.nom} onChange={valeurs} required />
-          <Input name="prenom" placeholder="Prénom" value={info.prenom} onChange={valeurs} required />
-          <Input name="pseudo" placeholder="Pseudo" value={info.pseudo} onChange={valeurs} required />
+          <Input
+            name="nom"
+            placeholder="Nom"
+            value={info.nom}
+            onChange={valeurs}
+            required
+          />
+          <Input
+            name="prenom"
+            placeholder="Prénom"
+            value={info.prenom}
+            onChange={valeurs}
+            required
+          />
+          <Input
+            name="pseudo"
+            placeholder="Pseudo"
+            value={info.pseudo}
+            onChange={valeurs}
+            required
+          />
 
           {/* AGE SELECT 18 - 70 */}
           <Select name="age" value={info.age} onChange={valeurs} required>
             <option value="">Sélectionner votre âge</option>
             {[...Array(53)].map((_, i) => {
               const age = i + 18;
-              return <option key={age} value={age}>{age} ans</option>;
+              return (
+                <option key={age} value={age}>
+                  {age} ans
+                </option>
+              );
             })}
           </Select>
 
@@ -187,7 +211,9 @@ function Profil() {
           <Select name="ville" value={info.ville} onChange={valeurs} required>
             <option value="">Sélectionner votre ville</option>
             {villesCI.map((ville) => (
-              <option key={ville} value={ville}>{ville}</option>
+              <option key={ville} value={ville}>
+                {ville}
+              </option>
             ))}
           </Select>
 
@@ -200,7 +226,12 @@ function Profil() {
             <option value="autre">Autre</option>
           </Select>
 
-          <Select name="recherche" value={info.recherche} onChange={valeurs} required>
+          <Select
+            name="recherche"
+            value={info.recherche}
+            onChange={valeurs}
+            required
+          >
             <option value="">Je recherche</option>
             <option value="homme">Homme</option>
             <option value="femme">Femme</option>

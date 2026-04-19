@@ -572,12 +572,16 @@ function Tchat() {
           getProfilCible(id),
           getMessagesConversation(id, token),
         ]);
+        const myId = monProfilData._id;
+
+        const formattedMessages = messagesData.map((msg) => ({
+          ...msg,
+          isMine: msg.expediteur === myId,
+        }));
 
         setMonProfilId(monProfilData._id);
         setProfilCible(profilData);
-        setMessages((prev) => {
-          return messagesData;
-        });
+      setMessages(formattedMessages);
         setPage(1);
         setHasMore(messagesData.length === 20);
       } catch (error) {
@@ -594,6 +598,7 @@ function Tchat() {
 
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
+       msg.isMine = msg.expediteur === monProfilId;
       // 📬 dire "livré"
       socket.emit("messageDelivered", {
         messageId: msg._id,
@@ -612,7 +617,7 @@ function Tchat() {
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, []);
+  }, [monProfilId]);
 
   useEffect(() => {
     const handleReconnect = async () => {
@@ -749,7 +754,7 @@ function Tchat() {
     };
 
     // ⚡ affichage instantané
-    setMessages((prev) => [...prev, tempMessage]);
+    setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
 
     // ⚡ reset UI
     setNewMessage("");
@@ -883,8 +888,7 @@ function Tchat() {
           </EmptyState>
         ) : (
           messages.map((msg) => {
-            const isMine = msg.expediteur === monProfilId;
-            if (!monProfilId) return null;
+  const isMine = msg.isMine;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>

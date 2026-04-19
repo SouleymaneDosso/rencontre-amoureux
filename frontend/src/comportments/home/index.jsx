@@ -24,11 +24,14 @@ const Page = styled.div`
 const ProfileHero = styled.div`
   text-align: center;
   background: white;
-  padding: 40px 30px;
+ padding: 24px 16px;
   border-radius: 28px;
   box-shadow: 0 10px 35px rgba(79, 108, 255, 0.08);
   position: relative;
   overflow: hidden;
+  @media (max-width: 480px) {
+  padding: 20px 12px;
+}
 `;
 
 const Name = styled.h1`
@@ -38,13 +41,17 @@ const Name = styled.h1`
   color: #1f2a44;
   font-weight: 800;
 `;
-
 const AvatarWrapper = styled.div`
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  margin: 0 auto;
+  width: 140px;
+  height: 140px;
+  display: inline-block;
   position: relative;
+
+
+  @media (max-width: 480px) {
+    width: 120px;
+    height: 120px;
+  }
 `;
 
 const Avatar = styled.img`
@@ -67,9 +74,12 @@ const CameraButton = styled.label`
 
 const InfoGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+ grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 15px;
   margin-top: 30px;
+  @media (max-width: 480px) {
+  grid-template-columns: 1fr;
+}
 `;
 
 const InfoBox = styled.div`
@@ -107,7 +117,7 @@ const PhotoGrid = styled.div`
 const ImageWrapper = styled.div`
   position: relative;
   overflow: hidden;
-  height: 300px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,6 +132,9 @@ const ImageWrapper = styled.div`
     transform: translateY(-4px);
     box-shadow: 0 16px 30px rgba(31, 42, 68, 0.1);
   }
+    @media (max-width: 480px) {
+  height: 170px;
+}
 `;
 
 const Image = styled.img`
@@ -307,9 +320,14 @@ const Overlay = styled.div`
 const Main = styled.main`
   width: 100%;
   max-width: 1100px;
+  width: 100%;
+padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 28px;
+  @media (max-width: 480px) {
+  padding: 0;
+}
 `;
 
 const ModalImage = styled.img`
