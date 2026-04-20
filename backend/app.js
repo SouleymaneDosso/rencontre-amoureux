@@ -36,10 +36,7 @@ app.use(
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
+      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
 
@@ -49,7 +46,7 @@ app.use(
     methods: ["GET", "PUT", "DELETE", "POST", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -69,11 +66,13 @@ const mesInfosRoute = require("./Router/index");
 const routerConnexion = require("./Router/connexion");
 const routerInscription = require("./Router/inscription");
 const tchatRoutes = require("./Router/tchat");
+const interraction = require("./Router/interraction");
 
 app.use("/api/mesInfos", mesInfosRoute);
 app.use("/api", routerConnexion);
 app.use("/api", routerInscription);
 app.use("/api/tchat", tchatRoutes);
+app.use("/api/clients", interraction);
 
 // =======================
 // Route racine
