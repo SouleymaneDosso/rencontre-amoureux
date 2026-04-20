@@ -534,14 +534,20 @@ function Tchat() {
     const nextPage = page + 1;
 
     try {
+      const container = containerRef.current;
+      const prevHeight = container.scrollHeight;
       const moreMessages = await getMessagesConversation(id, token, nextPage);
 
       if (moreMessages.length === 0) {
         setHasMore(false);
       } else {
         setMessages((prev) => [...moreMessages, ...prev]);
-        setPage(nextPage);
       }
+
+      requestAnimationFrame(() => {
+        const newHeight = container.scrollHeight;
+        container.scrollTop = newHeight - prevHeight;
+      });
     } catch (error) {
       console.error("Erreur load more :", error);
     } finally {
@@ -581,7 +587,10 @@ function Tchat() {
 
         setMonProfilId(monProfilData._id);
         setProfilCible(profilData);
-      setMessages(formattedMessages);
+        setMessages(formattedMessages);
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+        }, 0);
         setPage(1);
         setHasMore(messagesData.length === 20);
       } catch (error) {
@@ -598,7 +607,7 @@ function Tchat() {
 
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
-       msg.isMine = msg.expediteur === monProfilId;
+      msg.isMine = msg.expediteur === monProfilId;
       // 📬 dire "livré"
       socket.emit("messageDelivered", {
         messageId: msg._id,
@@ -755,7 +764,7 @@ function Tchat() {
 
     // ⚡ affichage instantané
     setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
-
+shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
     setSelectedFile(null);
@@ -789,8 +798,12 @@ function Tchat() {
   };
 
   useEffect(() => {
+    if (!containerRef.current) return;
+
     if (shouldAutoScrollRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
     }
   }, [messages]);
 
@@ -870,10 +883,10 @@ function Tchat() {
           const el = e.target;
 
           // 📌 détecte si on est en bas
-          const isNearBottom =
-            el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+          const distanceFromBottom =
+            el.scrollHeight - el.scrollTop - el.clientHeight;
 
-          shouldAutoScrollRef.current = isNearBottom;
+          shouldAutoScrollRef.current = distanceFromBottom < 80;
 
           // 📌 load anciens messages
           if (el.scrollTop === 0) {
@@ -888,7 +901,7 @@ function Tchat() {
           </EmptyState>
         ) : (
           messages.map((msg) => {
-  const isMine = msg.isMine;
+            const isMine = msg.isMine;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>
