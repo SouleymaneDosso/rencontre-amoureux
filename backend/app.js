@@ -66,7 +66,7 @@ const mesInfosRoute = require("./Router/index");
 const routerConnexion = require("./Router/connexion");
 const routerInscription = require("./Router/inscription");
 const tchatRoutes = require("./Router/tchat");
-const interraction = require("./Router/interraction");
+const interraction = require("./Router/interraction.js");
 
 app.use("/api/mesInfos", mesInfosRoute);
 app.use("/api", routerConnexion);
