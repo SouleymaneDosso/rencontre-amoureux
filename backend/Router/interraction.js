@@ -5,6 +5,6 @@ const upload = require("../multer")
 
 const {uploadCloudinary} = require("../logiquemetier/interraction");
 
-router.post("/videos", upload.array("videos",10), uploadCloudinary)
+router.post("/videos", upload.array("video",10), uploadCloudinary)
 
 module.exports = router;
