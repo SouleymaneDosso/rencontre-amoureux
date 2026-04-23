@@ -19,7 +19,7 @@ return res.status(400).json({message:  "aucune video envoyée" })
              max_bytes: 10000000,
         },
         (error, result)=> {
-            if(error)reject(error);
+            if(error) return reject(error);
             else resolve({result, file});
         }
     );
@@ -29,7 +29,7 @@ return res.status(400).json({message:  "aucune video envoyée" })
 
      const results = await Promise.all(uploadpromises);
 
-  const videos = results.map(({result, file})=>({
+  const video = results.map(({result, file})=>({
     url: result.secure_url,
     public_id: result.public_id,
     nomoriginal: file.originalname,
@@ -39,7 +39,7 @@ return res.status(400).json({message:  "aucune video envoyée" })
     duree: result.duration||0,
 
   }))
-  const newvideo = new Interraction({videos});
+  const newvideo = new Interraction({video});
    await newvideo.save();
    res.status(200).json(newvideo);
 }
