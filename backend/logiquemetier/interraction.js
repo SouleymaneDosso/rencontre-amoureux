@@ -49,4 +49,16 @@ catch(error){
 }
 
 
+exports.getvideo = async (req, res)=>{
+    try{
+        const data = await Interraction.find()
+    const videos = data.flatMap(items => items.video)
+    res.status(200).json(videos)
+    }
+    catch(error){
+        res.status(500).json({message: "Erreur lors de la recuperation des videos" + error.message})
+    }
+}
+
+
  
