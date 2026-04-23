@@ -19,6 +19,7 @@ import Profilpublic from "./pages/profilpublic";
 import Decouverte from "./pages/decouverte";
 import Matchs from "./pages/match";
 import Conversations from "./pages/conversations";
+import Video from "./pages/videos";
 import { socket } from "./socket";
 
 
@@ -53,6 +54,7 @@ function Layout() {
         <Route path="/decouverte" element={<Decouverte />} />
         <Route path="/matchs" element={<Matchs />} />
         <Route path="/conversations" element={<Conversations />} />
+        <Route path="/videos" element={<Video />} />
         <Route path="*" element={<h1>Page non trouvée</h1>} />
       </Routes>
     </>
