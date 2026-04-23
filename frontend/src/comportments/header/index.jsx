@@ -11,6 +11,8 @@ import {
   FaFire,
 } from "react-icons/fa";
 
+import { FaVideo } from "react-icons/fa";
+
 const HeaderShell = styled.header`
   position: fixed;
   top: 0;
@@ -441,6 +443,12 @@ function Header() {
                 Matchs
               </MenuItem>
             </li>
+            <li>
+              <MenuItem to="/videos" $active={isActive("/videos")}>
+                <FaVideo />
+                Vidéos
+              </MenuItem>
+            </li>
           </DesktopMenu>
 
           <DesktopActions>
@@ -496,6 +504,10 @@ function Header() {
               <FaFire />
               Matchs
             </MobileLink>
+              <MobileLink to="/videos" $active={isActive("/videos")}>
+            <FaVideo />
+            Vidéos
+          </MobileLink>
           </MobileLinks>
         </div>
 
