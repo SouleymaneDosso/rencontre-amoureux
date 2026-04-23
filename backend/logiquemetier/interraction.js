@@ -2,7 +2,7 @@ const Interraction = require("../models/interraction")
 const streamifier = require("streamifier")
 const cloudinary = require("../cloudinary");
 
-const uploadCloudinary = async (req, res) =>{
+exports.uploadCloudinary = async (req, res) =>{
 try{
     if(!req.files || req.files.length === 0){
 return res.status(400).json({message:  "aucune video envoyée" })
@@ -47,6 +47,6 @@ catch(error){
     res.status(500).json({message: error.message})
 }
 }
-module.exports = {uploadCloudinary}
+
 
  
