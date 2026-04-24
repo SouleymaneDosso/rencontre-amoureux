@@ -2,7 +2,6 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { HiVideoCamera } from "react-icons/hi";
 
-
 const API_URL = import.meta.env.VITE_API_URL;
 /* ================== STYLES ================== */
 const H1 = styled.h1`
@@ -26,29 +25,31 @@ const Labelstyle = styled.label`
   cursor: pointer;
 
   background: linear-gradient(135deg, #6a11cb, #2575fc);
-  box-shadow: 0 0 20px rgba(106, 17, 203, 0.6),
-              0 0 40px rgba(37, 117, 252, 0.4);
+  box-shadow:
+    0 0 20px rgba(106, 17, 203, 0.6),
+    0 0 40px rgba(37, 117, 252, 0.4);
 
   transition: all 0.3s ease;
 
   &:hover {
     transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 0 30px rgba(106, 17, 203, 0.9),
-                0 0 60px rgba(37, 117, 252, 0.7);
+    box-shadow:
+      0 0 30px rgba(106, 17, 203, 0.9),
+      0 0 60px rgba(37, 117, 252, 0.7);
   }
 `;
 
 const Pagewrapper = styled.div`
   min-height: 100vh;
- 
+
   margin-bottom: 70px;
   color: white;
 `;
 const Titre = styled.h3`
-text-align: center;
-padding: 15px;
- background: linear-gradient(90deg, #6a11cb, #2575fc);
- -webkit-background-clip: text;
+  text-align: center;
+  padding: 15px;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `;
 const Conteneurvideo = styled.div`
@@ -62,7 +63,7 @@ const CardVideo = styled.div`
   border-radius: 20px;
   padding: 15px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 
   transition: 0.3s;
 
@@ -107,7 +108,14 @@ const Bouton = styled.button`
 function Video() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
- const [mesdeos, setMesdeos] = useState([]);
+  const [mesdeos, setMesdeos] = useState([]);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    if (!token) {
+      alert("Reconnecte-toi");
+    }
+  }, []);
 
   const uploadeMultiple = (e) => {
     const files = Array.from(e.target.files);
@@ -129,6 +137,9 @@ function Video() {
 
       const res = await fetch(`${API_URL}/api/clients/videos`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formdata,
       });
       const data = await res.json();
@@ -137,6 +148,8 @@ function Video() {
         alert("sauvegarde échoué" + data.message);
       }
       setVideos([]);
+      await getvideos();
+
       alert("sauvegarde réussie");
       setLoading(false);
     } catch (error) {
@@ -144,27 +157,30 @@ function Video() {
     }
   };
 
+  const getvideos = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/clients/mesvideos`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-useEffect(()=>{
-    const getvideos = async ()=>{
-    try{
-const res = await fetch(`${API_URL}/api/clients/mesvideos`,{
-method: "GET",
-})
+      const data = await res.json();
 
-const data = await res.json()
-if(!res.ok){
-  alert(data.message)
-  return;
-}
-setMesdeos(data)
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      setMesdeos(data);
+    } catch (error) {
+      alert(error.message);
     }
-    catch(error){
-      alert(error.message)
-    }
-  }
-  getvideos();
-},[])
+  };
+
+  useEffect(() => {
+    getvideos();
+  }, []);
 
   return (
     <Pagewrapper>
@@ -189,22 +205,27 @@ setMesdeos(data)
           <Titre>Mes videos</Titre>
 
           <Conteneurvideo>
-          {videos.map((video, index) => (
-            < CardVideo  key={index}>
-              <video src={video.url} controls width="320" />
-              <Bouton onClick={sauvegardedb} disabled={videos.length === 0}>
-                {loading ? "Envoi..." : "Ajouter"}
-              </Bouton>
-            </ CardVideo >
-          ))}
+            {videos.map((video, index) => (
+              <CardVideo key={index}>
+                <video src={video.url} controls width="320" />
+              </CardVideo>
+            ))}
           </Conteneurvideo>
 
-          <Conteneurvideo>  
-          {mesdeos.map((video, index)=>(
-            < CardVideo  key={index}>
+          {videos.length > 0 && (
+            <div>
+              <Bouton onClick={sauvegardedb} disabled={loading}>
+                {loading ? "Envoi..." : "Ajouter"}
+              </Bouton>
+            </div>
+          )}
+
+          <Conteneurvideo>
+            {mesdeos.map((video, index) => (
+              <CardVideo key={index}>
                 <video src={video.url} controls width="320" />
-            </CardVideo>
-          ))}
+              </CardVideo>
+            ))}
           </Conteneurvideo>
         </section>
       </main>
