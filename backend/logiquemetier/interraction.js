@@ -7,6 +7,12 @@ try{
     if(!req.files || req.files.length === 0){
 return res.status(400).json({message:  "aucune video envoyée" })
     }
+const userId = req.auth.userId;
+if (!userId) {
+  return res.status(401).json({ message: "Non autorisé" });
+}
+
+
        const uploadpromises = req.files.map(file =>{
       return new Promise((resolve, reject)=>{
         if (!file.mimetype.startsWith("video/")) {
@@ -37,9 +43,15 @@ return res.status(400).json({message:  "aucune video envoyée" })
     taille: result.bytes,
     format: result.format || "",
     duree: result.duration||0,
-
   }))
-  const newvideo = new Interraction({video});
+  const existing = await Interraction.findOne({ userId });
+
+if (existing) {
+  existing.video.push(...video);
+  await existing.save();
+  return res.json(existing);
+}
+  const newvideo = new Interraction({userId, video});
    await newvideo.save();
    res.status(200).json(newvideo);
 }
@@ -49,16 +61,21 @@ catch(error){
 }
 
 
-exports.getvideo = async (req, res)=>{
-    try{
-        const data = await Interraction.find()
-    const videos = data.flatMap(items => items.video)
-    res.status(200).json(videos)
-    }
-    catch(error){
-        res.status(500).json({message: "Erreur lors de la recuperation des videos" + error.message})
-    }
-}
+exports.getvideo = async (req, res) => {
+  try {
+    const data = await Interraction.findOne({
+      userId: req.auth.userId,
+    });
+
+    if (!data) return res.json([]);
+
+    res.status(200).json(data.video);
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la recuperation des videos " + error.message,
+    });
+  }
+};
 
 
  

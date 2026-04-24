@@ -37,6 +37,12 @@ const interractionSchema = new mongoose.Schema(
         },
       },
     ],
+
+   userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Connexion",
+      required: true,
+    },
   },
   { timestamps: true },
 );
