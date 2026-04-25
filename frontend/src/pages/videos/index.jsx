@@ -40,11 +40,11 @@ const Labelstyle = styled.label`
 `;
 
 const Pagewrapper = styled.div`
-  min-height: 100vh;
-
-  margin-bottom: 70px;
+  height: 100vh;
   color: white;
+  margin-bottom: 200px;
 `;
+
 const Titre = styled.h3`
   text-align: center;
   padding: 15px;
@@ -53,30 +53,29 @@ const Titre = styled.h3`
   -webkit-text-fill-color: transparent;
 `;
 const Conteneurvideo = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
-`;
-const CardVideo = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 15px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-
-  transition: 0.3s;
-
-  &:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 0 30px rgba(106, 17, 203, 0.6);
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  &::-webkit-scrollbar {
+    display: none;
   }
+`;
+
+const CardVideo = styled.div`
+  height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
 
   video {
+    height: 100%;
     width: 100%;
-    border-radius: 12px;
+    object-fit: cover;
   }
 `;
+
 const Bouton = styled.button`
   margin-top: 10px;
   width: 100%;
@@ -125,6 +124,11 @@ function Video() {
       url: URL.createObjectURL(file),
     }));
     setVideos((prev) => [...prev, ...newfile]);
+  };
+
+  const supprimerurl = () => {
+    videos.forEach((deo) => URL.revokeObjectURL(deo.url));
+    setVideos([]);
   };
 
   const sauvegardedb = async () => {
@@ -204,26 +208,29 @@ function Video() {
         <section>
           <Titre>Mes videos</Titre>
 
-          <Conteneurvideo>
-            {videos.map((video, index) => (
-              <CardVideo key={index}>
-                <video src={video.url} controls width="320" />
-              </CardVideo>
-            ))}
-          </Conteneurvideo>
+          {videos.length > 0 && (
+            <Conteneurvideo>
+              {videos.map((video, index) => (
+                <CardVideo key={index}>
+                  <video src={video.url} autoPlay muted loop />
+                </CardVideo>
+              ))}
+            </Conteneurvideo>
+          )}
 
           {videos.length > 0 && (
             <div>
               <Bouton onClick={sauvegardedb} disabled={loading}>
                 {loading ? "Envoi..." : "Ajouter"}
               </Bouton>
+              <Bouton onClick={supprimerurl}>Annuller</Bouton>
             </div>
           )}
 
           <Conteneurvideo>
             {mesdeos.map((video, index) => (
               <CardVideo key={index}>
-                <video src={video.url} controls width="320" />
+                <video src={video.url} autoPlay  controls />
               </CardVideo>
             ))}
           </Conteneurvideo>
