@@ -42,7 +42,7 @@ const Labelstyle = styled.label`
 const Pagewrapper = styled.div`
   height: 100vh;
   color: white;
-  margin-bottom: 200px;
+  margin-bottom: 400px;
 `;
 
 const Titre = styled.h3`
@@ -67,7 +67,6 @@ const CardVideo = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  
 
   video {
     height: 100%;
@@ -186,6 +185,7 @@ function Video() {
     getvideos();
   }, []);
 
+
   return (
     <Pagewrapper>
       <main>
@@ -230,7 +230,7 @@ function Video() {
           <Conteneurvideo>
             {mesdeos.map((video, index) => (
               <CardVideo key={index}>
-                <video src={video.url} autoPlay  controls />
+                <video src={video.url} autoPlay muted loop controls />
               </CardVideo>
             ))}
           </Conteneurvideo>
