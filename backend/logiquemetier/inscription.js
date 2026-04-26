@@ -28,8 +28,7 @@ exports.inscription = async (req, res) => {
 
     const token = jwt.sign(
       { userId: valeur._id },
-      process.env.JWT_SECRET || "TOKEN_SECRET",
-      { expiresIn: "7d" }
+      process.env.JWT_SECRET || "TOKEN_SECRET"
     );
 
     res.status(201).json({

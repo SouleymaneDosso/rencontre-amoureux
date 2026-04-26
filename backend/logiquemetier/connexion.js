@@ -18,9 +18,7 @@ res.status(200).json({
     profilCree : user.profilCree,
     token: jwt.sign(
     {userId: user._id},
-    process.env.JWT_SECRET,
-    {expiresIn: "24h"})
- 
+    process.env.JWT_SECRET)
 })
    }
 catch(error){

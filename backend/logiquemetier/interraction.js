@@ -78,4 +78,14 @@ exports.getvideo = async (req, res) => {
 };
 
 
+ exports.getalldeo = async (req, res)=>{
+try{
+    const data = await Interraction.find();
+    const findall = data.flatMap(items => items.video);
+    res.status(200).json(findall)
+}
+catch(error){
+    res.status(500).json({message: error.message})
+}
+ }
  
