@@ -8,6 +8,6 @@ const {uploadCloudinary, getvideo, getalldeo } = require("../logiquemetier/inter
 
 router.post("/videos",auth, upload.array("video",10), uploadCloudinary)
 router.get("/mesvideos",auth, getvideo)
-router.get("/toutes/Video", getalldeo)
+router.get("/videos", getalldeo)
 
 module.exports = router;
