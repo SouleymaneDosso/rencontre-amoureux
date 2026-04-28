@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { FaFire, FaCompass, FaComments, FaUser } from "react-icons/fa";
+import { FaVideo } from "react-icons/fa";
 
 const FooterContainer = styled.footer`
   position: fixed;
@@ -74,6 +75,14 @@ function FooterNav() {
       >
         <FaComments />
         <span>Messages</span>
+      </NavItem>
+
+      <NavItem
+        active={isActive("/publicdeo")}
+        onClick={() => navigate("/publicdeo")}
+      >
+        <FaVideo />
+        <span>Vidéos</span>
       </NavItem>
 
       <NavItem active={isActive("/")} onClick={() => navigate("/")}>

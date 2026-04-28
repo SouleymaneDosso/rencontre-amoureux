@@ -6,7 +6,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import {useEffect} from "react";
+import { useEffect } from "react";
 import Profil from "./pages/profil";
 import Header from "./comportments/header";
 import FooterNav from "./comportments/footer";
@@ -21,7 +21,7 @@ import Matchs from "./pages/match";
 import Conversations from "./pages/conversations";
 import Video from "./pages/videos";
 import { socket } from "./socket";
-
+import Videopublic from "./pages/videospublic";
 
 // 🔥 Layout principal
 function Layout() {
@@ -35,7 +35,7 @@ function Layout() {
   const shouldHideLayout =
     location.pathname.startsWith("/tchat") ||
     location.pathname === "/connexion" ||
-    location.pathname === "/inscription";
+    location.pathname === "/inscription"
 
   return (
     <>
@@ -55,12 +55,12 @@ function Layout() {
         <Route path="/matchs" element={<Matchs />} />
         <Route path="/conversations" element={<Conversations />} />
         <Route path="/videos" element={<Video />} />
+        <Route path="/publicdeo" element={<Videopublic />} />
         <Route path="*" element={<h1>Page non trouvée</h1>} />
       </Routes>
     </>
   );
 }
-
 
 // 🔥 Render app
 createRoot(document.getElementById("root")).render(
@@ -68,5 +68,5 @@ createRoot(document.getElementById("root")).render(
     <Router>
       <Layout />
     </Router>
-  </StrictMode>
+  </StrictMode>,
 );
