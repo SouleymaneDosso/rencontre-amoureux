@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
 import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
   width: 100%;
@@ -10,7 +11,6 @@ const Page = styled.div`
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
   background: black;
-  margin-bottom: 50px;
 
   /* cache scrollbar */
   scrollbar-width: none;
@@ -80,9 +80,27 @@ const ActionButton = styled.div`
   }
 `;
 
+
+const Boutonretour = styled.button`
+
+display: flex;
+text-align: center;
+z-index: 2;
+position: absolute;
+left: 5px;
+top: 13px;
+border: none;
+background: none;
+color: white;
+font-size: 15px;
+`
+
+
 function Videopublic() {
   const [videos, setvideos] = useState([]);
   const [count, setCount] = useState(0)
+
+const navigate = useNavigate()
 
   useEffect(() => {
     const getdeopublic = async () => {
@@ -106,10 +124,12 @@ function Videopublic() {
 
   return (
     <Page>
+      
       {videos.map((deo, index) => (
+        
         <VideoContainer key={index}>
           <Video src={deo.url} autoPlay muted loop playsInline />
-
+        <Boutonretour onClick={() =>navigate(-1) }>Retour</Boutonretour>
           {/* Texte bas gauche */}
           <Overlay>
             <p>@user_{index}</p>
@@ -120,7 +140,7 @@ function Videopublic() {
           <RightPanel>
             <ActionButton>
               <FaHeart />
-              <span>1.2k</span>
+               <button onClick={()=>setCount(count + 1)}> {count}</button>
             </ActionButton>
 
             <ActionButton>
@@ -135,6 +155,7 @@ function Videopublic() {
           </RightPanel>
         </VideoContainer>
       ))}
+      
     </Page>
   );
 }

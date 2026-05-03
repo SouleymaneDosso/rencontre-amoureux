@@ -42,8 +42,10 @@ function Layout() {
   const hideFooter =
     location.pathname.startsWith("/tchat") ||
     location.pathname === "/connexion" ||
-    location.pathname === "/inscription";
-  // 👆 ici tu ne mets PAS videos/publicvideo
+    location.pathname === "/inscription"||
+    location.pathname === "/videos" ||
+    location.pathname === "/publicdeo";
+ 
 
   return (
     <>
