@@ -1,15 +1,22 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
-
+import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
 
 const Page = styled.div`
   width: 100%;
   height: 100vh;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
   background: black;
-  margin-bottom: 57px;
+  margin-bottom: 50px;
+
+  /* cache scrollbar */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const VideoContainer = styled.div`
@@ -17,17 +24,16 @@ const VideoContainer = styled.div`
   width: 100%;
   height: 100vh;
   scroll-snap-align: start;
+  scroll-snap-stop: always; /* 🔥 important */
   display: flex;
   justify-content: center;
   align-items: center;
-  
 `;
 
 const Video = styled.video`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  
 `;
 
 const Overlay = styled.div`
@@ -41,23 +47,42 @@ const Overlay = styled.div`
 const RightPanel = styled.div`
   position: absolute;
   right: 10px;
-  bottom: 80px;
+  bottom: 100px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
   z-index: 2;
 `;
 
-const Button = styled.div`
-  background: rgba(0,0,0,0.5);
-  padding: 10px;
-  border-radius: 50%;
-  text-align: center;
-`;
+const ActionButton = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  cursor: pointer;
 
+  svg {
+    font-size: 28px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.15);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  span {
+    font-size: 12px;
+    margin-top: 5px;
+  }
+`;
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
     const getdeopublic = async () => {
@@ -83,14 +108,7 @@ function Videopublic() {
     <Page>
       {videos.map((deo, index) => (
         <VideoContainer key={index}>
-          
-          <Video
-            src={deo.url}
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
+          <Video src={deo.url} autoPlay muted loop playsInline />
 
           {/* Texte bas gauche */}
           <Overlay>
@@ -100,11 +118,21 @@ function Videopublic() {
 
           {/* Boutons droite */}
           <RightPanel>
-            <Button>❤️</Button>
-            <Button>💬</Button>
-            <Button>↗️</Button>
-          </RightPanel>
+            <ActionButton>
+              <FaHeart />
+              <span>1.2k</span>
+            </ActionButton>
 
+            <ActionButton>
+              <FaCommentDots />
+              <span>320</span>
+            </ActionButton>
+
+            <ActionButton>
+              <FaShare />
+              <span>Partager</span>
+            </ActionButton>
+          </RightPanel>
         </VideoContainer>
       ))}
     </Page>

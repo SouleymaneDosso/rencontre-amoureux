@@ -32,15 +32,23 @@ function Layout() {
   }, []);
 
   // routes où on cache header + footer
-  const shouldHideLayout =
+  const hideHeader =
     location.pathname.startsWith("/tchat") ||
     location.pathname === "/connexion" ||
-    location.pathname === "/inscription"
+    location.pathname === "/inscription" ||
+    location.pathname === "/videos" ||
+    location.pathname === "/publicdeo";
+
+  const hideFooter =
+    location.pathname.startsWith("/tchat") ||
+    location.pathname === "/connexion" ||
+    location.pathname === "/inscription";
+  // 👆 ici tu ne mets PAS videos/publicvideo
 
   return (
     <>
-      {!shouldHideLayout && <Header />}
-      {!shouldHideLayout && <FooterNav />}
+      {!hideHeader && <Header />}
+      {!hideFooter && <FooterNav />}
 
       <Routes>
         <Route path="/" element={<Home />} />
