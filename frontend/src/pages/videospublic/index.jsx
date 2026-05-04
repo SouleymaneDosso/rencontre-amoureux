@@ -6,12 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
   position: fixed;
-  inset: 0; 
-  height: 100dvh;
+  inset: 0;
+
   width: 100vw;
+  height: calc(var(--vh) * 100);
 
   overflow-y: scroll;
-
   scroll-snap-type: y mandatory;
 
   background: black;
@@ -20,7 +20,8 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100dvh; 
+  height: calc(var(--vh) * 100);
+
   scroll-snap-align: start;
   overflow: hidden;
 `;
@@ -127,6 +128,20 @@ function Videopublic() {
       return updated;
     });
   };
+
+  useEffect(() => {
+  const setHeight = () => {
+    document.documentElement.style.setProperty(
+      "--vh",
+      `${window.innerHeight * 0.01}px`
+    );
+  };
+
+  setHeight();
+  window.addEventListener("resize", setHeight);
+
+  return () => window.removeEventListener("resize", setHeight);
+}, []);
 
   return (
     <Page>
