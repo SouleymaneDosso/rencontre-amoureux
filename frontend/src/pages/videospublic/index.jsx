@@ -6,39 +6,36 @@ import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-
+  inset: 0; 
+  height: 100dvh;
   width: 100vw;
- height: 100dvh;
 
   overflow-y: scroll;
 
   scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-
-  overscroll-behavior-y: contain;
 
   background: black;
-
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
 `;
 
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100dvh;
+
+  padding-top: env(safe-area-inset-top); 
+
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   overflow: hidden;
 `;
 
 const Video = styled.video`
+  position: absolute;
+  top: 0;
+  left: 0;
+
   width: 100%;
   height: 100%;
+
   object-fit: cover;
 `;
 
