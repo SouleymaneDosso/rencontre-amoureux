@@ -27,7 +27,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100dvh;
+  height: 100vh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden; 
