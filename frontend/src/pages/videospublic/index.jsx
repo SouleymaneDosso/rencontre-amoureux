@@ -27,7 +27,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden; 
@@ -41,7 +41,7 @@ const Video = styled.video`
 
 const Overlay = styled.div`
   position: absolute;
-  bottom: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
   left: 15px;
   color: white;
   z-index: 2;
@@ -50,7 +50,7 @@ const Overlay = styled.div`
 const RightPanel = styled.div`
   position: absolute;
   right: 10px;
-  bottom: 100px;
+  bottom: calc(100px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 25px;
