@@ -5,14 +5,19 @@ import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100vw;
   height: 100vh;
+
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+
   background: black;
 
-  /* cache scrollbar */
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -24,10 +29,8 @@ const VideoContainer = styled.div`
   width: 100%;
   height: 100vh;
   scroll-snap-align: start;
-  scroll-snap-stop: always; /* 🔥 important */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  scroll-snap-stop: always;
+  overflow: hidden; 
 `;
 
 const Video = styled.video`
