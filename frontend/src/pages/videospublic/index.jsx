@@ -10,11 +10,14 @@ const Page = styled.div`
   left: 0;
 
   width: 100vw;
-  height: 100vh;
+  height: 100svh;
 
   overflow-y: scroll;
+
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+
+  overscroll-behavior-y: contain; /* 👈 ICI */
 
   background: black;
 
@@ -30,7 +33,7 @@ const VideoContainer = styled.div`
   height: 100svh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  overflow: hidden; 
+  overflow: hidden;
 `;
 
 const Video = styled.video`
@@ -41,21 +44,20 @@ const Video = styled.video`
 
 const Overlay = styled.div`
   position: absolute;
+  bottom: calc(20px + env(safe-area-inset-bottom));
   left: 15px;
-  bottom: calc(60px + env(safe-area-inset-bottom));
   color: white;
-  z-index: 5;
-  max-width: 70%;
+  z-index: 2;
 `;
 
 const RightPanel = styled.div`
   position: absolute;
   right: 10px;
-  bottom: calc(120px + env(safe-area-inset-bottom));
+  bottom: calc(100px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 25px;
-  z-index: 5;
+  z-index: 2;
 `;
 
 const ActionButton = styled.div`
@@ -84,27 +86,24 @@ const ActionButton = styled.div`
   }
 `;
 
-
 const Boutonretour = styled.button`
-
-display: flex;
-text-align: center;
-z-index: 2;
-position: absolute;
-left: 5px;
-top: 13px;
-border: none;
-background: none;
-color: white;
-font-size: 15px;
-`
-
+  display: flex;
+  text-align: center;
+  z-index: 2;
+  position: absolute;
+  left: 5px;
+  top: 13px;
+  border: none;
+  background: none;
+  color: white;
+  font-size: 15px;
+`;
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
-const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getdeopublic = async () => {
@@ -128,12 +127,10 @@ const navigate = useNavigate()
 
   return (
     <Page>
-      
       {videos.map((deo, index) => (
-        
         <VideoContainer key={index}>
           <Video src={deo.url} autoPlay muted loop playsInline />
-        <Boutonretour onClick={() =>navigate(-1) }>Retour</Boutonretour>
+          <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
           {/* Texte bas gauche */}
           <Overlay>
             <p>@user_{index}</p>
@@ -144,7 +141,7 @@ const navigate = useNavigate()
           <RightPanel>
             <ActionButton>
               <FaHeart />
-               <button onClick={()=>setCount(count + 1)}> {count}</button>
+              <button onClick={() => setCount(count + 1)}> {count}</button>
             </ActionButton>
 
             <ActionButton>
@@ -159,7 +156,6 @@ const navigate = useNavigate()
           </RightPanel>
         </VideoContainer>
       ))}
-      
     </Page>
   );
 }
