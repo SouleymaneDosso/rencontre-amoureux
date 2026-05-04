@@ -18,6 +18,9 @@ const Page = styled.div`
 
   background: black;
 
+  /* important */
+  overscroll-behavior-y: contain;
+
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
