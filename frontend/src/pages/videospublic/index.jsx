@@ -20,10 +20,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100dvh;
-
-  padding-top: env(safe-area-inset-top); 
-
+  height: 100dvh; 
   scroll-snap-align: start;
   overflow: hidden;
 `;
