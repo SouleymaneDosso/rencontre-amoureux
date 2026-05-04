@@ -10,7 +10,7 @@ const Page = styled.div`
   left: 0;
 
   width: 100vw;
-  height: 100svh;
+ height: 100dvh;
 
   overflow-y: scroll;
 
@@ -30,7 +30,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100svh;
+  height: 100dvh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden;
