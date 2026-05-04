@@ -17,7 +17,7 @@ const Page = styled.div`
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
 
-  overscroll-behavior-y: contain; /* 👈 ICI */
+  overscroll-behavior-y: contain;
 
   background: black;
 
@@ -44,7 +44,7 @@ const Video = styled.video`
 
 const Overlay = styled.div`
   position: absolute;
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  bottom: calc(7px + env(safe-area-inset-bottom));
   left: 15px;
   color: white;
   z-index: 2;
@@ -101,7 +101,7 @@ const Boutonretour = styled.button`
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
-  const [count, setCount] = useState(0);
+  const [likes, setLikes] = useState([]);
 
   const navigate = useNavigate();
 
@@ -117,6 +117,7 @@ function Videopublic() {
         }
 
         setvideos(data || []);
+        setLikes(new Array(data.length).fill(0));
       } catch (error) {
         alert(error.message);
       }
@@ -124,6 +125,14 @@ function Videopublic() {
 
     getdeopublic();
   }, []);
+
+  const handleLike = (index) => {
+    setLikes((prev) => {
+      const updated = [...prev];
+      updated[index] += 1;
+      return updated;
+    });
+  };
 
   return (
     <Page>
@@ -140,8 +149,8 @@ function Videopublic() {
           {/* Boutons droite */}
           <RightPanel>
             <ActionButton>
-              <FaHeart />
-              <button onClick={() => setCount(count + 1)}> {count}</button>
+              <FaHeart onClick={() => handleLike(index)} />
+              <span>{likes[index]}</span>
             </ActionButton>
 
             <ActionButton>
