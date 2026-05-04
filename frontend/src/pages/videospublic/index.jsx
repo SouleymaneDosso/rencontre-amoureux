@@ -18,9 +18,6 @@ const Page = styled.div`
 
   background: black;
 
-  /* important */
-  overscroll-behavior-y: contain;
-
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -30,7 +27,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100svh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden; 
@@ -44,20 +41,21 @@ const Video = styled.video`
 
 const Overlay = styled.div`
   position: absolute;
-  bottom: calc(20px + env(safe-area-inset-bottom));
   left: 15px;
+  bottom: calc(60px + env(safe-area-inset-bottom));
   color: white;
-  z-index: 2;
+  z-index: 5;
+  max-width: 70%;
 `;
 
 const RightPanel = styled.div`
   position: absolute;
   right: 10px;
-  bottom: calc(100px + env(safe-area-inset-bottom));
+  bottom: calc(120px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 25px;
-  z-index: 2;
+  z-index: 5;
 `;
 
 const ActionButton = styled.div`
