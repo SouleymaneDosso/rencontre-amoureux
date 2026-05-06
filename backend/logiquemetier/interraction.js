@@ -1,65 +1,63 @@
-const Interraction = require("../models/interraction")
-const streamifier = require("streamifier")
+const Interraction = require("../models/interraction");
+const streamifier = require("streamifier");
 const cloudinary = require("../cloudinary");
 
-exports.uploadCloudinary = async (req, res) =>{
-try{
-    if(!req.files || req.files.length === 0){
-return res.status(400).json({message:  "aucune video envoyée" })
+exports.uploadCloudinary = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "aucune video envoyée" });
     }
-const userId = req.auth.userId;
-if (!userId) {
-  return res.status(401).json({ message: "Non autorisé" });
-}
+    const userId = req.auth.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Non autorisé" });
+    }
 
-
-       const uploadpromises = req.files.map(file =>{
-      return new Promise((resolve, reject)=>{
+    const uploadpromises = req.files.map((file) => {
+      return new Promise((resolve, reject) => {
         if (!file.mimetype.startsWith("video/")) {
-  return reject(new Error("fichier non valide"));
-}
-        const stream = cloudinary.uploader.upload_stream({
-            folder: "rencontre amoureuse",
-            resource_type : "video",
-            chunk_size: 6000000,
-             max_bytes: 10000000,
-        },
-        (error, result)=> {
-            if(error) return reject(error);
-            else resolve({result, file});
+          return reject(new Error("fichier non valide"));
         }
-    );
-     streamifier.createReadStream(file.buffer).pipe(stream);
-    })
-     })
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "rencontre amoureuse",
+            resource_type: "video",
+            chunk_size: 6000000,
+            max_bytes: 10000000,
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            else resolve({ result, file });
+          },
+        );
+        streamifier.createReadStream(file.buffer).pipe(stream);
+      });
+    });
 
-     const results = await Promise.all(uploadpromises);
+    const results = await Promise.all(uploadpromises);
 
-  const video = results.map(({result, file})=>({
-    url: result.secure_url,
-    public_id: result.public_id,
-    nomoriginal: file.originalname,
-    nomfichier: result.original_filename,
-    taille: result.bytes,
-    format: result.format || "",
-    duree: result.duration||0,
-  }))
-  const existing = await Interraction.findOne({ userId });
+    const video = results.map(({ result, file }) => ({
+      url: result.secure_url,
+      public_id: result.public_id,
+      nomoriginal: file.originalname,
+      nomfichier: result.original_filename,
+      taille: result.bytes,
+      format: result.format || "",
+      duree: result.duration || 0,
+    }));
+    const existing = await Interraction.findOne({ userId });
 
-if (existing) {
-  existing.video.push(...video);
-  await existing.save();
-  return res.json(existing);
-}
-  const newvideo = new Interraction({userId, video});
-   await newvideo.save();
-   res.status(200).json(newvideo);
-}
-catch(error){
-    res.status(500).json({message: error.message})
-}
-}
-
+    if (existing) {
+      existing.video.push(...video);
+      await existing.save();
+      return res.json(existing);
+    }
+    const newvideo = new Interraction({ userId, video });
+    await newvideo.save();
+    res.status(200).json(newvideo);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 exports.getvideo = async (req, res) => {
   try {
@@ -77,15 +75,54 @@ exports.getvideo = async (req, res) => {
   }
 };
 
-
- exports.getalldeo = async (req, res)=>{
-try{
+exports.getalldeo = async (req, res) => {
+  try {
     const data = await Interraction.find();
-    const findall = data.flatMap(items => items.video);
-    res.status(200).json(findall)
-}
-catch(error){
-    res.status(500).json({message: error.message})
-}
- }
- 
+    const findall = data.flatMap((items) => items.video);
+    res.status(200).json(findall);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.likes = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const userId = req.auth.userId;
+
+    // 🔍 trouver le document qui contient la vidéo
+    const data = await Interraction.findOne({
+      "video._id": videoId
+    });
+
+    if (!data) {
+      return res.status(404).json({ message: "vidéo introuvable" });
+    }
+
+    // 🔍 trouver la bonne vidéo dans le tableau
+    const video = data.video.id(videoId);
+
+    // ✅ vérifier si déjà liké
+    const existelike = video.likes.includes(userId);
+
+    if (existelike) {
+      // ❌ unlike
+      video.likes = video.likes.filter(
+        (id) => id.toString() !== userId
+      );
+    } else {
+      // 👍 like
+      video.likes.push(userId);
+    }
+
+    await data.save();
+
+    res.status(200).json({
+      totalLikes: video.likes.length,
+      dejaLike: existelike
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

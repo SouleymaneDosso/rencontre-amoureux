@@ -35,15 +35,40 @@ const interractionSchema = new mongoose.Schema(
           type: String,
           default: "",
         },
+
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Connexion",
+          required: true,
+        },
+
+        likes: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Connexion",
+          },
+        ],
+
+        comments: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Connexion",
+            },
+            texte: {
+              type: String,
+              default: "",
+            },
+            date: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
       },
     ],
-
-   userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Connexion",
-      required: true,
-    },
   },
+
   { timestamps: true },
 );
 module.exports = mongoose.model("Interraction", interractionSchema);
