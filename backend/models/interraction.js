@@ -1,74 +1,44 @@
 const mongoose = require("mongoose");
 
-const interractionSchema = new mongoose.Schema(
+const videoSchema = new mongoose.Schema(
   {
-    video: [
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Connexion",
+      required: true,
+    },
+
+    url: String,
+    public_id: String,
+    nomoriginal: String,
+    nomfichier: String,
+    duree: Number,
+    taille: Number,
+    format: String,
+
+    likes: [
       {
-        url: {
-          type: String,
-          default: "",
-        },
-        public_id: {
-          type: String,
-          default: "",
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Connexion",
+      }
+    ],
 
-        nomoriginal: {
-          type: String,
-          default: "",
-        },
-
-        nomfichier: {
-          type: String,
-          default: "",
-        },
-
-        duree: {
-          type: Number,
-          default: 0,
-        },
-        taille: {
-          type: Number,
-          default: 0,
-        },
-        format: {
-          type: String,
-          default: "",
-        },
-
+    comments: [
+      {
         userId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Connexion",
-          required: true,
         },
+        texte: String,
+        date: {
+          type: Date,
+          default: Date.now,
+        }
+      }
+    ]
 
-        likes: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Connexion",
-          },
-        ],
-
-        comments: [
-          {
-            userId: {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: "Connexion",
-            },
-            texte: {
-              type: String,
-              default: "",
-            },
-            date: {
-              type: Date,
-              default: Date.now,
-            },
-          },
-        ],
-      },
-    ],
   },
-
-  { timestamps: true },
+  { timestamps: true }
 );
-module.exports = mongoose.model("Interraction", interractionSchema);
+
+module.exports = mongoose.model("Video", videoSchema);

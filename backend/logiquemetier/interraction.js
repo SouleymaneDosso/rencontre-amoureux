@@ -1,59 +1,48 @@
-const Interraction = require("../models/interraction");
 const streamifier = require("streamifier");
 const cloudinary = require("../cloudinary");
+const Video = require("../models/interraction");
+
 
 exports.uploadCloudinary = async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "aucune video envoyée" });
-    }
     const userId = req.auth.userId;
-    if (!userId) {
-      return res.status(401).json({ message: "Non autorisé" });
-    }
 
-    const uploadpromises = req.files.map((file) => {
+    const uploadpromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
-        if (!file.mimetype.startsWith("video/")) {
-          return reject(new Error("fichier non valide"));
-        }
         const stream = cloudinary.uploader.upload_stream(
           {
             folder: "rencontre amoureuse",
             resource_type: "video",
-            chunk_size: 6000000,
-            max_bytes: 10000000,
           },
           (error, result) => {
             if (error) return reject(error);
-            else resolve({ result, file });
-          },
+            resolve({ result, file });
+          }
         );
+
         streamifier.createReadStream(file.buffer).pipe(stream);
       });
     });
 
     const results = await Promise.all(uploadpromises);
 
-    const video = results.map(({ result, file }) => ({
-      url: result.secure_url,
-      public_id: result.public_id,
-      nomoriginal: file.originalname,
-      nomfichier: result.original_filename,
-      taille: result.bytes,
-      format: result.format || "",
-      duree: result.duration || 0,
-    }));
-    const existing = await Interraction.findOne({ userId });
+    const videos = await Promise.all(
+      results.map(({ result, file }) =>
+        Video.create({
+          userId,
+          url: result.secure_url,
+          public_id: result.public_id,
+          nomoriginal: file.originalname,
+          nomfichier: result.original_filename,
+          taille: result.bytes,
+          format: result.format,
+          duree: result.duration,
+        })
+      )
+    );
 
-    if (existing) {
-      existing.video.push(...video);
-      await existing.save();
-      return res.json(existing);
-    }
-    const newvideo = new Interraction({ userId, video });
-    await newvideo.save();
-    res.status(200).json(newvideo);
+    res.json(videos);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -77,9 +66,8 @@ exports.getvideo = async (req, res) => {
 
 exports.getalldeo = async (req, res) => {
   try {
-    const data = await Interraction.find();
-    const findall = data.flatMap((items) => items.video);
-    res.status(200).json(findall);
+    const videos = await Video.find().sort({ createdAt: -1 });
+    res.json(videos);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -90,34 +78,26 @@ exports.likes = async (req, res) => {
     const { videoId } = req.params;
     const userId = req.auth.userId;
 
-    // 🔍 trouver le document qui contient la vidéo
-    const data = await Interraction.findOne({
-      "video._id": videoId
-    });
+    const video = await Video.findById(videoId);
 
-    if (!data) {
+    if (!video) {
       return res.status(404).json({ message: "vidéo introuvable" });
     }
 
-    // 🔍 trouver la bonne vidéo dans le tableau
-    const video = data.video.id(videoId);
-
-    // ✅ vérifier si déjà liké
     const existelike = video.likes.includes(userId);
 
     if (existelike) {
-      // ❌ unlike
       video.likes = video.likes.filter(
         (id) => id.toString() !== userId
       );
     } else {
-      // 👍 like
       video.likes.push(userId);
     }
 
-    await data.save();
+    await video.save();
 
-    res.status(200).json({
+    res.json({
+      likes: video.likes,
       totalLikes: video.likes.length,
       dejaLike: existelike
     });
