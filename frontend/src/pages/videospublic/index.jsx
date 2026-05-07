@@ -18,23 +18,22 @@ const Page = styled.div`
 `;
 
 const VideoContainer = styled.div`
-  position: relative;
   width: 100%;
-  height: calc(var(--vh) * 100);
-
-  scroll-snap-align: start;
+  height: 100vh;
+  position: relative;
   overflow: hidden;
 `;
 
 const Video = styled.video`
-  position: absolute;
-  top: 0;
-  left: 0;
-
   width: 100%;
   height: 100%;
-
   object-fit: cover;
+
+  /* 🔥 évite les bugs d'affichage */
+  display: block;
+
+  /* 🔥 force rendu GPU (important mobile) */
+  transform: translateZ(0);
 `;
 
 const Overlay = styled.div`
@@ -154,7 +153,7 @@ function Videopublic() {
     <Page>
       {videos.map((deo, index) => (
         <VideoContainer key={index}>
-          <video src={deo.url} muted loop playsInline autoPlay controls />
+          <Video src={deo.url} muted loop playsInline autoPlay controls />
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
         
           <Overlay>
