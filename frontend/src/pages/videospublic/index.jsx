@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 const API_URL = import.meta.env.VITE_API_URL;
 import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const Page = styled.div`
   position: fixed;
@@ -99,6 +100,33 @@ function Videopublic() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+ const videoRefs = useRef([]);
+
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+
+        if (entry.isIntersecting) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
+    },
+    {
+      threshold: 0.6, 
+    }
+  );
+
+  videoRefs.current.forEach((video) => {
+    if (video) observer.observe(video);
+  });
+
+  return () => observer.disconnect();
+}, [videos]);
+
   useEffect(() => {
     const getdeopublic = async () => {
       try {
@@ -121,18 +149,18 @@ function Videopublic() {
   }, []);
 
   useEffect(() => {
-  const setVh = () => {
-    document.documentElement.style.setProperty(
-      "--vh",
-      `${window.innerHeight * 0.01}px`
-    );
-  };
+    const setVh = () => {
+      document.documentElement.style.setProperty(
+        "--vh",
+        `${window.innerHeight * 0.01}px`,
+      );
+    };
 
-  setVh();
-  window.addEventListener("resize", setVh);
+    setVh();
+    window.addEventListener("resize", setVh);
 
-  return () => window.removeEventListener("resize", setVh);
-}, []);
+    return () => window.removeEventListener("resize", setVh);
+  }, []);
 
   const handleLike = async (videoId) => {
     try {
@@ -167,10 +195,16 @@ function Videopublic() {
   return (
     <Page>
       {videos.map((deo, index) => (
-        <VideoContainer key={index}>
-          <Video src={deo.url} muted loop playsInline autoPlay controls />
+        <VideoContainer key={deo._id}>
+          <Video
+            ref={(el) => (videoRefs.current[index] = el)}
+            src={deo.url}
+            muted
+            loop
+            playsInline
+          />
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-        
+
           <Overlay>
             <p>@user_{index}</p>
             <p>Description de la vidéo 🔥</p>
