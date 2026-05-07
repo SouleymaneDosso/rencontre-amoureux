@@ -82,6 +82,10 @@ exports.likes = async (req, res) => {
     const { videoId } = req.params;
     const userId = req.auth.userId;
 
+    if (!userId) {
+      return res.status(401).json({ message: "Non autorisé" });
+    }
+
     const video = await Video.findById(videoId);
 
     if (!video) {
@@ -92,18 +96,17 @@ exports.likes = async (req, res) => {
       (id) => id.toString() === userId
     );
 
-    if (existelike) {
-      video.likes = video.likes.filter(
-        (id) => id.toString() !== userId
-      );
-    } else {
-      video.likes.push(userId);
-    }
-
-    await video.save();
+    const updated = await Video.findByIdAndUpdate(
+      videoId,
+      existelike
+        ? { $pull: { likes: userId } }
+        : { $addToSet: { likes: userId } },
+      { new: true }
+    );
 
     res.json({
-      totalLikes: video.likes.length,
+      likes: updated.likes,
+      totalLikes: updated.likes.length,
       dejaLike: existelike,
     });
   } catch (error) {
