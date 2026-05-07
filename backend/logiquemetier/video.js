@@ -69,13 +69,14 @@ exports.getAllVideos = async (req, res) => {
   try {
     const videos = await Video.find()
       .sort({ createdAt: -1 })
-      .populate("userId", "nom photo"); // optionnel
+      .populate({userId: req.auth.userId}); 
 
-    res.json(videos);
-  } catch (error) {
+    res.status(200).json(videos);
+  } catch(error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.likes = async (req, res) => {
   try {
@@ -125,7 +126,6 @@ exports.likes = async (req, res) => {
 //       userId: req.auth.userId,
 //       texte,
 //     });
-
 //     await video.save();
 
 //     res.json(video.comments);
