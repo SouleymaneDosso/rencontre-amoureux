@@ -66,17 +66,18 @@ const mesInfosRoute = require("./Router/index");
 const routerConnexion = require("./Router/connexion");
 const routerInscription = require("./Router/inscription");
 const tchatRoutes = require("./Router/tchat");
-const interraction = require("./Router/interraction");
+const videos = require("./Router/video");
 
 app.use("/api/mesInfos", mesInfosRoute);
 app.use("/api", routerConnexion);
 app.use("/api", routerInscription);
 app.use("/api/tchat", tchatRoutes);
-app.use("/api/clients", interraction);
+app.use("/api/clients", videos);
 
 // =======================
 // Route racine
 // =======================
+
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "Backend rencontre-amoureux actif 🚀",
