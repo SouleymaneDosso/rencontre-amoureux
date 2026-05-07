@@ -69,8 +69,6 @@ exports.getAllVideos = async (req, res) => {
   try {
     const videos = await Video.find()
       .sort({ createdAt: -1 }) 
-      .populate("userId"); 
-
     res.status(200).json(videos);
   } catch(error) {
     res.status(500).json({ message: error.message });
