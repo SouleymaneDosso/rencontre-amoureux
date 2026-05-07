@@ -97,36 +97,61 @@ const Boutonretour = styled.button`
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [userPaused, setUserPaused] = useState({});
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
- const videoRefs = useRef([]);
+  const videoRefs = useRef([]);
 
-useEffect(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const video = entry.target;
+  useEffect(() => {
+    const unlock = () => {
+      setHasInteracted(true);
+      window.removeEventListener("click", unlock);
+    };
 
-        if (entry.isIntersecting) {
-          video.play();
-        } else {
-          video.pause();
-        }
-      });
-    },
-    {
-      threshold: 0.6, 
+    window.addEventListener("click", unlock);
+
+    return () => window.removeEventListener("click", unlock);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target;
+          const id = video.dataset.id;
+
+          if (entry.isIntersecting) {
+            if (!userPaused[id]) {
+              video.play();
+            }
+          } else {
+            video.pause();
+          }
+        });
+      },
+      {
+        threshold: 0.6,
+      },
+    );
+
+    videoRefs.current.forEach((video) => {
+      if (video) observer.observe(video);
+    });
+
+    return () => observer.disconnect();
+  }, [videos, userPaused]);
+
+  const handleToggle = (video, id) => {
+    if (video.paused) {
+      video.play();
+      setUserPaused((prev) => ({ ...prev, [id]: false }));
+    } else {
+      video.pause();
+      setUserPaused((prev) => ({ ...prev, [id]: true }));
     }
-  );
-
-  videoRefs.current.forEach((video) => {
-    if (video) observer.observe(video);
-  });
-
-  return () => observer.disconnect();
-}, [videos]);
-
+  };
   useEffect(() => {
     const getdeopublic = async () => {
       try {
@@ -197,14 +222,15 @@ useEffect(() => {
       {videos.map((deo, index) => (
         <VideoContainer key={deo._id}>
           <Video
+            data-id={deo._id}
             ref={(el) => (videoRefs.current[index] = el)}
             src={deo.url}
-            muted
+            muted={!hasInteracted} 
             loop
             playsInline
+            onClick={(e) => handleToggle(e.target, deo._id)}
           />
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-
           <Overlay>
             <p>@user_{index}</p>
             <p>Description de la vidéo 🔥</p>
