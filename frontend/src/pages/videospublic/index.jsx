@@ -135,14 +135,12 @@ function Videopublic() {
         alert(data.message);
         return;
       }
-
-      console.log("LIKES BACKEND :", data);
       setvideos((prev) =>
         prev.map((v) =>
           v._id === videoId
             ? {
                 ...v,
-                likes: Array(data.totalLikes).fill(0), // hack simple pour length
+                likes: Array(data.totalLikes).fill(0),
               }
             : v,
         ),
@@ -156,15 +154,13 @@ function Videopublic() {
     <Page>
       {videos.map((deo, index) => (
         <VideoContainer key={index}>
-          <Video src={deo.url} muted loop playsInline autoPlay controls />
+          <video src={deo.url} muted loop playsInline autoPlay controls />
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-
+        
           <Overlay>
             <p>@user_{index}</p>
             <p>Description de la vidéo 🔥</p>
           </Overlay>
-
-          {/* Boutons droite */}
           <RightPanel>
             <ActionButton>
               <FaHeart onClick={() => handleLike(deo._id, index)} />

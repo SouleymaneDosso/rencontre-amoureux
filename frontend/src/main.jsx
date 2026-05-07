@@ -72,7 +72,7 @@ function Layout() {
   );
 }
 
-// 🔥 Render app
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Router>
