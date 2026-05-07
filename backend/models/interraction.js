@@ -41,6 +41,30 @@ const interractionSchema = new mongoose.Schema(
           ref: "Connexion",
           required: true,
         },
+
+        likes: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Connexion",
+          },
+        ],
+
+        comments: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Connexion",
+            },
+            texte: {
+              type: String,
+              default: "",
+            },
+            date: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
       },
     ],
   },
