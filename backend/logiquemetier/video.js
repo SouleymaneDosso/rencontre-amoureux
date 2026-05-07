@@ -68,8 +68,8 @@ exports.getMyVideos = async (req, res) => {
 exports.getAllVideos = async (req, res) => {
   try {
     const videos = await Video.find()
-      .sort({ createdAt: -1 })
-      .populate({userId: req.auth.userId}); 
+      .sort({ createdAt: -1 }) 
+      .populate("userId"); 
 
     res.status(200).json(videos);
   } catch(error) {
