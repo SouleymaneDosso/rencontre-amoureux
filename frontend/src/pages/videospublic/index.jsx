@@ -96,10 +96,9 @@ const Boutonretour = styled.button`
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
-  const [likes, setLikes] = useState([]);
 
   const navigate = useNavigate();
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
     const getdeopublic = async () => {
       try {
@@ -112,7 +111,7 @@ function Videopublic() {
         }
 
         setvideos(data || []);
-        setLikes(new Array(data.length).fill(0));
+        console.log("VIDEOS BACKEND :", data);
       } catch (error) {
         alert(error.message);
       }
@@ -121,35 +120,45 @@ function Videopublic() {
     getdeopublic();
   }, []);
 
-  const handleLike = (index) => {
-    setLikes((prev) => {
-      const updated = [...prev];
-      updated[index] += 1;
-      return updated;
-    });
+  const handleLike = async (videoId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/clients/likes/${videoId}`, {
+        method: "PUT",
+        headers: {
+          authorization: `bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      console.log("LIKES BACKEND :", data);
+      setvideos((prev) =>
+        prev.map((v) =>
+          v._id === videoId
+            ? {
+                ...v,
+                likes: Array(data.totalLikes).fill(0), // hack simple pour length
+              }
+            : v,
+        ),
+      );
+    } catch (error) {
+      alert(error.message);
+    }
   };
-
-  useEffect(() => {
-  const setHeight = () => {
-    document.documentElement.style.setProperty(
-      "--vh",
-      `${window.innerHeight * 0.01}px`
-    );
-  };
-
-  setHeight();
-  window.addEventListener("resize", setHeight);
-
-  return () => window.removeEventListener("resize", setHeight);
-}, []);
 
   return (
     <Page>
       {videos.map((deo, index) => (
         <VideoContainer key={index}>
-          <Video src={deo.url} autoPlay muted loop playsInline />
+          <Video src={deo.url} muted loop playsInline autoPlay controls />
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-          {/* Texte bas gauche */}
+
           <Overlay>
             <p>@user_{index}</p>
             <p>Description de la vidéo 🔥</p>
@@ -158,8 +167,9 @@ function Videopublic() {
           {/* Boutons droite */}
           <RightPanel>
             <ActionButton>
-              <FaHeart onClick={() => handleLike(index)} />
-              <span>{likes[index]}</span>
+              <FaHeart onClick={() => handleLike(deo._id, index)} />
+
+              <span>{deo.likes?.length || 0}</span>
             </ActionButton>
 
             <ActionButton>
