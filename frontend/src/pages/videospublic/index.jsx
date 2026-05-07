@@ -18,22 +18,23 @@ const Page = styled.div`
 `;
 
 const VideoContainer = styled.div`
-  width: 100%;
-  height: 100vh;
   position: relative;
+  width: 100%;
+  height: calc(var(--vh) * 100);
+
+  scroll-snap-align: start;
   overflow: hidden;
 `;
 
 const Video = styled.video`
+  position: absolute;
+  top: 0;
+  left: 0;
+
   width: 100%;
   height: 100%;
+
   object-fit: cover;
-
-  /* 🔥 évite les bugs d'affichage */
-  display: block;
-
-  /* 🔥 force rendu GPU (important mobile) */
-  transform: translateZ(0);
 `;
 
 const Overlay = styled.div`
@@ -118,6 +119,20 @@ function Videopublic() {
 
     getdeopublic();
   }, []);
+
+  useEffect(() => {
+  const setVh = () => {
+    document.documentElement.style.setProperty(
+      "--vh",
+      `${window.innerHeight * 0.01}px`
+    );
+  };
+
+  setVh();
+  window.addEventListener("resize", setVh);
+
+  return () => window.removeEventListener("resize", setVh);
+}, []);
 
   const handleLike = async (videoId) => {
     try {
