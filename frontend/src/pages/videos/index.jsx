@@ -254,6 +254,8 @@ function Video() {
 
   const token = localStorage.getItem("token");
 const navigate = useNavigate()
+
+
   const togglePlay = () => {
     const video = modalVideoRef.current;
 
@@ -429,7 +431,7 @@ const navigate = useNavigate()
               autoPlay
               onClick={togglePlay}
             />
-            <GradientOverlay />
+           
             <ModalInfo>
               <p>{selectedVideo.description || "Pas de description"}</p>
 
