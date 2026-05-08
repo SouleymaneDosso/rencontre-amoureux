@@ -155,6 +155,71 @@ const SendButton = styled.button`
   color: white;
   cursor: pointer;
 `;
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 999;
+`;
+
+const ModalBox = styled.div`
+  width: 100%;
+  max-height: 80%;
+  background: #111;
+  border-radius: 20px 20px 0 0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  margin-bottom: 10px;
+`;
+
+const CloseBtn = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+`;
+
+const CommentList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  color: white;
+`;
+
+const CommentItem = styled.div`
+  padding: 8px;
+  border-bottom: 1px solid #333;
+`;
+
+const CommentInputBox = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+  }
+
+  button {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #ff0050;
+    color: white;
+  }
+`;
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
@@ -165,11 +230,17 @@ function Videopublic() {
 
   const [commentText, setCommentText] = useState("");
   const [activeVideo, setActiveVideo] = useState(null);
-
+  const [comments, setComments] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const videoRefs = useRef([]);
   const userId = localStorage.getItem("userId");
+
+const openComments = (video) => {
+  setActiveVideo(video._id);
+  setComments(video.comments || []);
+  setCommentText(""); // clean input
+};
 
   useEffect(() => {
     const unlock = () => {
@@ -182,35 +253,33 @@ function Videopublic() {
     return () => window.removeEventListener("click", unlock);
   }, []);
 
-  const handleComment = async (videoId) => {
-    try {
-      const res = await fetch(`${API_URL}/api/clients/commente/${videoId}`, {
+ const handleComment = async () => {
+  try {
+    const res = await fetch(
+      `${API_URL}/api/clients/commente/${activeVideo}`,
+      {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          texte: commentText,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message);
-        return;
+        body: JSON.stringify({ texte: commentText }),
       }
+    );
 
-      setvideos((prev) =>
-        prev.map((v) => (v._id === videoId ? { ...v, comments: data } : v)),
-      );
+    const data = await res.json();
 
-      setCommentText("");
-    } catch (error) {
-      alert(error.message);
+    if (!res.ok) {
+      alert(data.message);
+      return;
     }
-  };
+
+    setComments(data);    
+    setCommentText("");    
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -381,19 +450,45 @@ function Videopublic() {
 
           {/* {modal} */}
 
-          {activeVideo === deo._id && (
-            <CommentBox>
-              <CommentInput
-                type="text"
-                placeholder="Écris un commentaire..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
+          {activeVideo && (
+            <ModalOverlay>
+              <ModalBox>
+                {/* HEADER */}
+                <ModalHeader>
+                  <h3>Commentaires</h3>
+                  <CloseBtn onClick={() => setActiveVideo(null)}>✕</CloseBtn>
+                </ModalHeader>
 
-              <SendButton onClick={() => handleComment(deo._id)}>
-                Envoyer
-              </SendButton>
-            </CommentBox>
+                {/* LISTE COMMENTAIRES */}
+                <CommentList>
+                  {comments.length === 0 ? (
+                    <p>Aucun commentaire</p>
+                  ) : (
+                    comments.map((c, i) => (
+                      <CommentItem key={i}>{c.texte}</CommentItem>
+                    ))
+                  )}
+                </CommentList>
+
+                {/* INPUT */}
+                <CommentInputBox>
+                  <input
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Écris un commentaire..."
+                  />
+
+                  <button
+                    onClick={() => {
+                      handleComment(activeVideo);
+                      setActiveVideo(null); 
+                    }}
+                  >
+                    Envoyer
+                  </button>
+                </CommentInputBox>
+              </ModalBox>
+            </ModalOverlay>
           )}
           <RightPanel>
             <ActionButton
@@ -404,11 +499,7 @@ function Videopublic() {
               <span>{deo.likes?.length || 0}</span>
             </ActionButton>
 
-            <ActionButton
-              onClick={() =>
-                setActiveVideo(activeVideo === deo._id ? null : deo._id)
-              }
-            >
+            <ActionButton onClick={() => openComments(deo)}>
               <FaCommentDots />
               <span>{deo.comments?.length || 0}</span>
             </ActionButton>
