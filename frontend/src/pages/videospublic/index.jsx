@@ -71,12 +71,7 @@ const ActionButton = styled.div`
     transition: all 0.2s ease;
     color: ${(props) => (props.dejaLike ? "red" : "white")};
   }
-
-  &:hover svg {
-    transform: scale(1.15);
-    background: rgba(255, 255, 255, 0.2);
-  }
-
+    
   span {
     font-size: 12px;
     margin-top: 5px;
