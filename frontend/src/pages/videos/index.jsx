@@ -2,7 +2,8 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { HiVideoCamera } from "react-icons/hi";
 import { FaHeart, FaCommentDots } from "react-icons/fa";
-
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 /* ================== STYLES ================== */
 const H1 = styled.h1`
@@ -54,11 +55,10 @@ const Titre = styled.h3`
   -webkit-text-fill-color: transparent;
 `;
 const Conteneurvideo = styled.div`
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-gap: 20px;
-
-`;  
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+`;
 
 const Overlay = styled.div`
   position: absolute;
@@ -71,8 +71,8 @@ const Overlay = styled.div`
 
   background: linear-gradient(
     to top,
-    rgba(0,0,0,0.8),
-    rgba(0,0,0,0.2),
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 0.2),
     transparent
   );
 `;
@@ -85,7 +85,7 @@ const CardVideo = styled.div`
   overflow: hidden;
 
   background: #111;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 
   transition: 0.3s;
 
@@ -94,13 +94,11 @@ const CardVideo = styled.div`
   }
 `;
 
-
 const Videos = styled.video`
-width: 100%;
-height: 100%;
-object-fit: cover;
-`
-
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
 
 const Bouton = styled.button`
   margin-top: 10px;
@@ -165,26 +163,114 @@ const IconBox = styled.div`
   }
 `;
 const Badge = styled.div`
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   padding: 5px 10px;
   border-radius: 10px;
   font-size: 12px;
+`;
+const Boutonretour = styled.button`
+  display: flex;
+  text-align: center;
+  z-index: 2;
+  position: absolute;
+  left: 5px;
+  top: 13px;
+  border: none;
+  background: none;
+  color: bleu;
+  font-size: 15px;
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
+
+const ModalVideo = styled.video`
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover; 
+`;
+
+const ModalInfo = styled.div`
+  position: absolute;
+  bottom: 30px;
+  left: 15px;
+  right: 15px;
+
+  color: white;
+  z-index: 2;
+`;
+
+const ModalActions = styled.div`
+  position: absolute;
+  right: 10px;
+  bottom: 120px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+
+  z-index: 2;
+`;
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.8),
+    transparent 40%
+  );
+
+  z-index: 1;
 `;
 
 function Video() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mesdeos, setMesdeos] = useState([]);
+ 
+
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const modalVideoRef = useRef(null);
+
   const token = localStorage.getItem("token");
+const navigate = useNavigate()
+  const togglePlay = () => {
+    const video = modalVideoRef.current;
+
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  };
 
   useEffect(() => {
     if (!token) {
       alert("Reconnecte-toi");
     }
   }, []);
-
-
 
   const uploadeMultiple = (e) => {
     const files = Array.from(e.target.files);
@@ -256,12 +342,11 @@ function Video() {
     getvideos();
   }, []);
 
-
   return (
     <Pagewrapper>
+      <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
       <main>
         <H1>Moments chill</H1>
-
         <section>
           <Labelstyle htmlFor="masque">
             <HiVideoCamera size={30} />
@@ -283,7 +368,7 @@ function Video() {
             <Conteneurvideo>
               {videos.map((video, index) => (
                 <CardVideo key={index}>
-                  <Videos  src={video.url} autoPlay muted loop />
+                  <Videos src={video.url} autoPlay muted loop />
                 </CardVideo>
               ))}
             </Conteneurvideo>
@@ -299,43 +384,70 @@ function Video() {
           )}
 
           <Conteneurvideo>
-  {mesdeos.map((video) => (
-    <CardVideo key={video._id}>
-      
-      <Videos src={video.url}  muted loop />
+            {mesdeos.map((video) => (
+              <CardVideo
+                key={video._id}
+                onClick={() => setSelectedVideo(video)}
+              >
+                <Videos src={video.url} muted loop />
 
-      <Overlay>
-      
-        <TopInfo>
-          <Badge>🎬 vidéo</Badge>
-        </TopInfo>
+                <Overlay>
+                  <TopInfo>
+                    <Badge>🎬 vidéo</Badge>
+                  </TopInfo>
 
-        
-        <div>
-          <Description>
-            {video.description || "Pas de description"}
-          </Description>
+                  <div>
+                    <Description>
+                      {video.description || "Pas de description"}
+                    </Description>
 
-          <RightPanel>
-            <IconBox>
-              <FaHeart />
-              <span>{video.likes?.length || 0}</span>
-            </IconBox>
+                    <RightPanel>
+                      <IconBox>
+                        <FaHeart />
+                        <span>{video.likes?.length || 0}</span>
+                      </IconBox>
 
-            <IconBox>
-              <FaCommentDots />
-              <span>{video.comments?.length || 0}</span>
-            </IconBox>
-          </RightPanel>
-        </div>
-      </Overlay>
-
-    </CardVideo>
-  ))}
-</Conteneurvideo>
-          
+                      <IconBox>
+                        <FaCommentDots />
+                        <span>{video.comments?.length || 0}</span>
+                      </IconBox>
+                    </RightPanel>
+                  </div>
+                </Overlay>
+              </CardVideo>
+            ))}
+          </Conteneurvideo>
         </section>
       </main>
+
+      {selectedVideo && (
+        <ModalOverlay onClick={() => setSelectedVideo(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalVideo
+              ref={modalVideoRef}
+              src={selectedVideo.url}
+              autoPlay
+              onClick={togglePlay}
+            />
+            <GradientOverlay />
+            <ModalInfo>
+              <p>{selectedVideo.description || "Pas de description"}</p>
+
+              <ModalActions>
+                <IconBox>
+                  <FaHeart />
+                  <span>{selectedVideo.likes?.length || 0}</span>
+                </IconBox>
+
+                <IconBox>
+                  <FaCommentDots />
+                  <span>{selectedVideo.comments?.length || 0}</span>
+                </IconBox>
+              </ModalActions>
+            </ModalInfo>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Pagewrapper>
   );
 }
