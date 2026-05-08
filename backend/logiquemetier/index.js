@@ -98,17 +98,17 @@ exports.deletePhotos = async (req, res) => {
       return res.status(404).json({ message: "Profil introuvable" });
     }
 
-    // Supprimer de Cloudinary
+   
     await cloudinary.uploader.destroy(public_id);
 
-    // Filtrer photos (sécurisé)
+    
     if (profil.photos) {
       profil.photos = profil.photos.filter(
         (photo) => photo.public_id !== public_id
       );
     }
 
-    // Si avatar correspond → reset
+    
     if (profil.avatar && profil.avatar.public_id === public_id) {
       profil.avatar = null;
     }

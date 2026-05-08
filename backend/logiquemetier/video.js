@@ -1,7 +1,8 @@
 const Video = require("../models/video");
 const streamifier = require("streamifier");
+const Profil = require("../models/profil");
 const cloudinary = require("../cloudinary");
-
+ 
 exports.uploadCloudinary = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -66,12 +67,32 @@ exports.getMyVideos = async (req, res) => {
   }
 };
 
+const Profil = require("../models/profil");
+
 exports.getAllVideos = async (req, res) => {
   try {
-    const videos = await Video.find()
-      .sort({ createdAt: -1 }) 
-    res.status(200).json(videos);
-  } catch(error) {
+    const videos = await Video.find().sort({ createdAt: -1 });
+
+    const videosWithUser = await Promise.all(
+      videos.map(async (video) => {
+        const profil = await Profil.findOne({ userId: video.userId });
+
+        return {
+          ...video._doc,
+          user: profil
+            ? {
+                nom: profil.nom,
+                prenom: profil.prenom,
+                pseudo: profil.pseudo,
+                avatar: profil.avatar,
+              }
+            : null,
+        };
+      })
+    );
+
+    res.status(200).json(videosWithUser);
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -138,7 +159,7 @@ try{
 const {videoId} = req.params;
 const {description} = req.body;
 
-const video =await Video.findById(videoId)
+const video = await Video.findById(videoId)
     if (!video) {
       return res.status(404).json({ message: "Vidéo introuvable" });
     }
