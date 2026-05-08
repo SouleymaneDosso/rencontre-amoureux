@@ -44,6 +44,7 @@ exports.uploadCloudinary = async (req, res) => {
           taille: result.bytes,
           format: result.format,
           duree: result.duration,
+           description: req.body.description || "",
         })
       )
     );
@@ -106,28 +107,49 @@ exports.likes = async (req, res) => {
     res.json({
       likes: updated.likes,
       totalLikes: updated.likes.length,
-      dejaLike: existelike,
+      dejaLike: !existelike,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// exports.comment = async (req, res) => {
-//   try {
-//     const { videoId } = req.params;
-//     const { texte } = req.body;
+exports.comment = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const { texte } = req.body;
 
-//     const video = await Video.findById(videoId);
+    const video = await Video.findById(videoId);
 
-//     video.comments.push({
-//       userId: req.auth.userId,
-//       texte,
-//     });
-//     await video.save();
+    video.comments.push({
+      userId: req.auth.userId,
+      texte,
+    });
+    await video.save();
 
-//     res.json(video.comments);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    res.json(video.comments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.description = async (req,res)=>{
+try{
+const {videoId} = req.params;
+const {description} = req.body;
+
+const video =await Video.findById(videoId)
+    if (!video) {
+      return res.status(404).json({ message: "Vidéo introuvable" });
+    }
+    if(video.userId.toString() !== req.auth.userId){
+      return res.status(403).json({ message: "Non autorisé" });
+    }
+    video.description = description;
+    await video.save()
+    res.json(video)
+}
+catch(error){
+  res.status(500).json({message: error.message})
+}
+}
