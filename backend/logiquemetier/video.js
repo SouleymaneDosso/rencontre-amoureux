@@ -79,6 +79,7 @@ exports.getAllVideos = async (req, res) => {
           ...video._doc,
           user: profil
             ? {
+               _id: profil._id,
                 nom: profil.nom,
                 prenom: profil.prenom,
                 pseudo: profil.pseudo,
