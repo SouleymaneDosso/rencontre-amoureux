@@ -240,7 +240,7 @@ function Videopublic() {
 const openComments = (video) => {
   setActiveVideo(video._id);
   setComments(video.comments || []);
-  setCommentText(""); // clean input
+  setCommentText(""); 
 };
 
   useEffect(() => {
@@ -462,7 +462,31 @@ const openComments = (video) => {
 
           {/* {modal} */}
 
-          {activeVideo && (
+         
+          <RightPanel>
+            <ActionButton
+              dejaLike={deo.likes?.some((id) => id.toString() === userId)}
+            >
+              <FaHeart onClick={() => handleLike(deo._id, index)} />
+
+              <span>{deo.likes?.length || 0}</span>
+            </ActionButton>
+
+            <ActionButton onClick={() => openComments(deo)}>
+              <FaCommentDots />
+              <span>{deo.comments?.length || 0}</span>
+            </ActionButton>
+
+            <ActionButton>
+              <FaShare />
+              <span>Partager</span>
+            </ActionButton>
+          </RightPanel>
+        </VideoContainer>
+      ))}
+
+
+       {activeVideo && (
             <ModalOverlay>
               <ModalBox>
                 {/* HEADER */}
@@ -493,7 +517,6 @@ const openComments = (video) => {
                   <button
                     onClick={() => {
                       handleComment(activeVideo);
-                      setActiveVideo(null); 
                     }}
                   >
                     Envoyer
@@ -502,27 +525,6 @@ const openComments = (video) => {
               </ModalBox>
             </ModalOverlay>
           )}
-          <RightPanel>
-            <ActionButton
-              dejaLike={deo.likes?.some((id) => id.toString() === userId)}
-            >
-              <FaHeart onClick={() => handleLike(deo._id, index)} />
-
-              <span>{deo.likes?.length || 0}</span>
-            </ActionButton>
-
-            <ActionButton onClick={() => openComments(deo)}>
-              <FaCommentDots />
-              <span>{deo.comments?.length || 0}</span>
-            </ActionButton>
-
-            <ActionButton>
-              <FaShare />
-              <span>Partager</span>
-            </ActionButton>
-          </RightPanel>
-        </VideoContainer>
-      ))}
     </Page>
   );
 }
