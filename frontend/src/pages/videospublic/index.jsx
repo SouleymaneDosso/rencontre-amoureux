@@ -11,7 +11,7 @@ const Page = styled.div`
   inset: 0;
 
   width: 100vw;
-  height: height: 100vh;
+  height: 100vh; 
 
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -22,7 +22,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: calc(var(--vh) * 100);
+  height: 100vh; 
 
   scroll-snap-align: start;
   overflow: hidden;
