@@ -210,6 +210,7 @@ const CommentInputBox = styled.div`
     padding: 10px;
     border-radius: 10px;
     border: none;
+    font-size: 16px;
   }
 
   button {
@@ -274,13 +275,24 @@ const openComments = (video) => {
       return;
     }
 
-    setComments(data);    
-    setCommentText("");    
+    // 1. update modal
+    setComments(data);
+
+    // 2. update videos global (IMPORTANT)
+    setvideos((prev) =>
+      prev.map((v) =>
+        v._id === activeVideo
+          ? { ...v, comments: data }
+          : v
+      )
+    );
+
+    setCommentText("");
+
   } catch (error) {
     alert(error.message);
   }
 };
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
