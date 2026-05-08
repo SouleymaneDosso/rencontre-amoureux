@@ -11,7 +11,7 @@ const Page = styled.div`
   inset: 0;
 
   width: 100vw;
-  height: 100vh; 
+  height: calc(var(--vh) * 100);
 
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -22,7 +22,7 @@ const Page = styled.div`
 const VideoContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 100vh; 
+  height: calc(var(--vh) * 100);
 
   scroll-snap-align: start;
   overflow: hidden;
@@ -120,6 +120,40 @@ const CenterIcon = styled.div`
       transform: translate(-50%, -50%) scale(1.2);
     }
   }
+`;
+const CommentBox = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+
+  padding: 15px;
+  z-index: 10;
+
+  display: flex;
+  gap: 10px;
+`;
+const CommentInput = styled.input`
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+`;
+const SendButton = styled.button`
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: none;
+
+  background: #ff0050;
+  color: white;
+  cursor: pointer;
 `;
 
 function Videopublic() {
@@ -348,33 +382,18 @@ function Videopublic() {
           {/* {modal} */}
 
           {activeVideo === deo._id && (
-            <div style={{ marginTop: "10px" }}>
-              <input
+            <CommentBox>
+              <CommentInput
                 type="text"
                 placeholder="Écris un commentaire..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                style={{
-                  padding: "8px",
-                  borderRadius: "10px",
-                  border: "none",
-                  width: "200px",
-                }}
               />
 
-              <button
-                onClick={() => handleComment(deo._id)}
-                style={{
-                  marginLeft: "5px",
-                  padding: "8px",
-                  borderRadius: "10px",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
+              <SendButton onClick={() => handleComment(deo._id)}>
                 Envoyer
-              </button>
-            </div>
+              </SendButton>
+            </CommentBox>
           )}
           <RightPanel>
             <ActionButton
@@ -385,7 +404,11 @@ function Videopublic() {
               <span>{deo.likes?.length || 0}</span>
             </ActionButton>
 
-            <ActionButton onClick={() => setActiveVideo(deo._id)}>
+            <ActionButton
+              onClick={() =>
+                setActiveVideo(activeVideo === deo._id ? null : deo._id)
+              }
+            >
               <FaCommentDots />
               <span>{deo.comments?.length || 0}</span>
             </ActionButton>
