@@ -67,8 +67,6 @@ exports.getMyVideos = async (req, res) => {
   }
 };
 
-const Profil = require("../models/profil");
-
 exports.getAllVideos = async (req, res) => {
   try {
     const videos = await Video.find().sort({ createdAt: -1 });
