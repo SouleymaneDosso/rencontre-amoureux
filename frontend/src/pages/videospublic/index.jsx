@@ -71,7 +71,7 @@ const ActionButton = styled.div`
     transition: all 0.2s ease;
     color: ${(props) => (props.dejaLike ? "red" : "white")};
   }
-    
+
   span {
     font-size: 12px;
     margin-top: 5px;
@@ -108,9 +108,17 @@ const CenterIcon = styled.div`
   animation: fade 0.8s ease;
 
   @keyframes fade {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    50% { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
   }
 `;
 
@@ -119,6 +127,7 @@ function Videopublic() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [userPaused, setUserPaused] = useState({});
   const [showIcon, setShowIcon] = useState(null);
+  const [infos, setInfos] = useState("");
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -183,6 +192,32 @@ function Videopublic() {
       setShowIcon(null);
     }, 800);
   };
+
+  useEffect(() => {
+    const fetchProfil = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Erreur chargement profil");
+        }
+
+        setInfos(data);
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchProfil();
+  }, []);
 
   useEffect(() => {
     const getdeopublic = async () => {
@@ -264,11 +299,14 @@ function Videopublic() {
           />
 
           {showIcon?.id === deo._id && (
-            <CenterIcon>{showIcon.type === "play" ? <FaPlay /> : <FaPause />}</CenterIcon>
+            <CenterIcon>
+              {showIcon.type === "play" ? <FaPlay /> : <FaPause />}
+            </CenterIcon>
           )}
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
+
           <Overlay>
-            <p>@user_{index}</p>
+            <p>{infos?.nom}-{infos?.prenom} </p>
             <p>Description de la vidéo 🔥</p>
           </Overlay>
           <RightPanel>
