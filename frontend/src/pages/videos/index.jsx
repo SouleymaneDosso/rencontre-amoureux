@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { HiVideoCamera } from "react-icons/hi";
+import { FaHeart, FaCommentDots } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API_URL;
 /* ================== STYLES ================== */
@@ -53,27 +54,53 @@ const Titre = styled.h3`
   -webkit-text-fill-color: transparent;
 `;
 const Conteneurvideo = styled.div`
-  height: 100vh;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+gap: 20px;
+
+`;  
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 15px;
+
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.8),
+    rgba(0,0,0,0.2),
+    transparent
+  );
 `;
 
 const CardVideo = styled.div`
-  height: 100vh;
-  scroll-snap-align: start;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 350px;
+  border-radius: 20px;
+  overflow: hidden;
 
-  video {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
+  background: #111;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+
+  transition: 0.3s;
+
+  &:hover {
+    transform: translateY(-5px) scale(1.02);
   }
 `;
+
+
+const Videos = styled.video`
+width: 100%;
+height: 100%;
+object-fit: cover;
+`
+
 
 const Bouton = styled.button`
   margin-top: 10px;
@@ -102,6 +129,48 @@ const Bouton = styled.button`
     cursor: not-allowed;
   }
 `;
+const TopInfo = styled.div`
+  font-size: 14px;
+  font-weight: bold;
+`;
+
+const Description = styled.p`
+  font-size: 13px;
+  opacity: 0.9;
+`;
+
+const RightPanel = styled.div`
+  position: absolute;
+  right: 10px;
+  bottom: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+`;
+
+const IconBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+
+  svg {
+    font-size: 24px;
+  }
+
+  span {
+    font-size: 12px;
+  }
+`;
+const Badge = styled.div`
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+`;
 
 function Video() {
   const [videos, setVideos] = useState([]);
@@ -114,6 +183,8 @@ function Video() {
       alert("Reconnecte-toi");
     }
   }, []);
+
+
 
   const uploadeMultiple = (e) => {
     const files = Array.from(e.target.files);
@@ -212,7 +283,7 @@ function Video() {
             <Conteneurvideo>
               {videos.map((video, index) => (
                 <CardVideo key={index}>
-                  <video src={video.url} autoPlay muted loop />
+                  <Videos  src={video.url} autoPlay muted loop />
                 </CardVideo>
               ))}
             </Conteneurvideo>
@@ -228,12 +299,41 @@ function Video() {
           )}
 
           <Conteneurvideo>
-            {mesdeos.map((video, index) => (
-              <CardVideo key={index}>
-                <video src={video.url} autoPlay muted loop controls />
-              </CardVideo>
-            ))}
-          </Conteneurvideo>
+  {mesdeos.map((video) => (
+    <CardVideo key={video._id}>
+      
+      <Videos src={video.url}  muted loop />
+
+      <Overlay>
+      
+        <TopInfo>
+          <Badge>🎬 vidéo</Badge>
+        </TopInfo>
+
+        
+        <div>
+          <Description>
+            {video.description || "Pas de description"}
+          </Description>
+
+          <RightPanel>
+            <IconBox>
+              <FaHeart />
+              <span>{video.likes?.length || 0}</span>
+            </IconBox>
+
+            <IconBox>
+              <FaCommentDots />
+              <span>{video.comments?.length || 0}</span>
+            </IconBox>
+          </RightPanel>
+        </div>
+      </Overlay>
+
+    </CardVideo>
+  ))}
+</Conteneurvideo>
+          
         </section>
       </main>
     </Pagewrapper>
