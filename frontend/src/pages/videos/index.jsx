@@ -4,7 +4,9 @@ import { HiVideoCamera } from "react-icons/hi";
 import { FaHeart, FaCommentDots } from "react-icons/fa";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
+
 /* ================== STYLES ================== */
 const H1 = styled.h1`
   text-align: center;
@@ -239,22 +241,60 @@ const GradientOverlay = styled.div`
   z-index: 1;
 `;
 const Boutonfermer = styled.button`
-position: absolute;
-z-index: 1;
-display: flex;
-background: none;
-border: none;
-color: white;
-font-size: 24px;
-right: 0;
-padding: 12px;
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  right: 0;
+  padding: 12px;
+`;
+
+const CenterIcon = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 70px;
+  color: white;
+  z-index: 3;
+  pointer-events: none;
+
+  animation: fade 0.7s ease;
+
+  @keyframes fade {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.7);
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+  }
+`;
+
+const SoundButton = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 50px;
+  z-index: 3;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
 `;
 
 function Video() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mesdeos, setMesdeos] = useState([]);
-
+  const [showIcon, setShowIcon] = useState(null);
+  const [isMuted, setIsMuted] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const modalVideoRef = useRef(null);
 
@@ -263,14 +303,31 @@ function Video() {
 
   const togglePlay = () => {
     const video = modalVideoRef.current;
-
     if (!video) return;
+
+    let type;
 
     if (video.paused) {
       video.play();
+      type = "play";
     } else {
       video.pause();
+      type = "pause";
     }
+
+    setShowIcon(type);
+
+    setTimeout(() => {
+      setShowIcon(null);
+    }, 700);
+  };
+
+  const toggleSound = () => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
   };
 
   useEffect(() => {
@@ -430,29 +487,51 @@ function Video() {
       {selectedVideo && (
         <ModalOverlay onClick={() => setSelectedVideo(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <Boutonfermer onClick={() => setSelectedVideo(null)}>X</Boutonfermer>
+            <Boutonfermer onClick={() => setSelectedVideo(null)}>
+              ✕
+            </Boutonfermer>
+
+            {/* VIDEO */}
             <ModalVideo
               ref={modalVideoRef}
               src={selectedVideo.url}
               autoPlay
+              playsInline
+              muted={isMuted}
               onClick={togglePlay}
             />
 
+          
+
+            
+            {showIcon && (
+              <CenterIcon>
+                {showIcon === "play" ? <FaPlay /> : <FaPause />}
+              </CenterIcon>
+            )}
+
+            {/* SON */}
+            <SoundButton onClick={toggleSound}>
+              {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+            </SoundButton>
+
+            {/* INFOS */}
             <ModalInfo>
               <p>{selectedVideo.description || "Pas de description"}</p>
-
-              <ModalActions>
-                <IconBox>
-                  <FaHeart />
-                  <span>{selectedVideo.likes?.length || 0}</span>
-                </IconBox>
-
-                <IconBox>
-                  <FaCommentDots />
-                  <span>{selectedVideo.comments?.length || 0}</span>
-                </IconBox>
-              </ModalActions>
             </ModalInfo>
+
+            {/* ACTIONS DROITE */}
+            <ModalActions>
+              <IconBox>
+                <FaHeart />
+                <span>{selectedVideo.likes?.length || 0}</span>
+              </IconBox>
+
+              <IconBox>
+                <FaCommentDots />
+                <span>{selectedVideo.comments?.length || 0}</span>
+              </IconBox>
+            </ModalActions>
           </ModalContent>
         </ModalOverlay>
       )}
