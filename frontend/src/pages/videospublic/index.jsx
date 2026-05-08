@@ -11,7 +11,7 @@ const Page = styled.div`
   inset: 0;
 
   width: 100vw;
-  height: calc(var(--vh) * 100);
+  height: height: 100vh;
 
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -129,6 +129,9 @@ function Videopublic() {
   const [showIcon, setShowIcon] = useState(null);
   const [infos, setInfos] = useState("");
 
+  const [commentText, setCommentText] = useState("");
+  const [activeVideo, setActiveVideo] = useState(null);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const videoRefs = useRef([]);
@@ -144,6 +147,36 @@ function Videopublic() {
 
     return () => window.removeEventListener("click", unlock);
   }, []);
+
+  const handleComment = async (videoId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/clients/commente/${videoId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          texte: commentText,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      setvideos((prev) =>
+        prev.map((v) => (v._id === videoId ? { ...v, comments: data } : v)),
+      );
+
+      setCommentText("");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -306,9 +339,43 @@ function Videopublic() {
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
 
           <Overlay>
-            <p>{infos?.nom}-{infos?.prenom} </p>
-            <p>Description de la vidéo 🔥</p>
+            <p>
+              @{infos?.nom}-{infos?.prenom}{" "}
+            </p>
+            <p>{deo?.description || "Pas de description"}</p>
           </Overlay>
+
+          {/* {modal} */}
+
+          {activeVideo === deo._id && (
+            <div style={{ marginTop: "10px" }}>
+              <input
+                type="text"
+                placeholder="Écris un commentaire..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "10px",
+                  border: "none",
+                  width: "200px",
+                }}
+              />
+
+              <button
+                onClick={() => handleComment(deo._id)}
+                style={{
+                  marginLeft: "5px",
+                  padding: "8px",
+                  borderRadius: "10px",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Envoyer
+              </button>
+            </div>
+          )}
           <RightPanel>
             <ActionButton
               dejaLike={deo.likes?.some((id) => id.toString() === userId)}
@@ -318,9 +385,9 @@ function Videopublic() {
               <span>{deo.likes?.length || 0}</span>
             </ActionButton>
 
-            <ActionButton>
+            <ActionButton onClick={() => setActiveVideo(deo._id)}>
               <FaCommentDots />
-              <span>320</span>
+              <span>{deo.comments?.length || 0}</span>
             </ActionButton>
 
             <ActionButton>
