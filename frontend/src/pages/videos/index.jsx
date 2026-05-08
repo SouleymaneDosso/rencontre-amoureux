@@ -205,7 +205,7 @@ const ModalVideo = styled.video`
   width: 100%;
   height: 100%;
 
-  object-fit: cover; 
+  object-fit: cover;
 `;
 
 const ModalInfo = styled.div`
@@ -234,27 +234,32 @@ const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
 
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.8),
-    transparent 40%
-  );
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 40%);
 
   z-index: 1;
+`;
+const Boutonfermer = styled.button`
+position: absolute;
+z-index: 1;
+display: flex;
+background: none;
+border: none;
+color: white;
+font-size: 24px;
+right: 0;
+padding: 12px;
 `;
 
 function Video() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mesdeos, setMesdeos] = useState([]);
- 
 
   const [selectedVideo, setSelectedVideo] = useState(null);
   const modalVideoRef = useRef(null);
 
   const token = localStorage.getItem("token");
-const navigate = useNavigate()
-
+  const navigate = useNavigate();
 
   const togglePlay = () => {
     const video = modalVideoRef.current;
@@ -425,13 +430,14 @@ const navigate = useNavigate()
       {selectedVideo && (
         <ModalOverlay onClick={() => setSelectedVideo(null)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
+            <Boutonfermer onClick={() => setSelectedVideo(null)}>X</Boutonfermer>
             <ModalVideo
               ref={modalVideoRef}
               src={selectedVideo.url}
               autoPlay
               onClick={togglePlay}
             />
-           
+
             <ModalInfo>
               <p>{selectedVideo.description || "Pas de description"}</p>
 
