@@ -288,6 +288,23 @@ const SoundButton = styled.div`
   font-size: 22px;
   cursor: pointer;
 `;
+const InputDescription = styled.textarea`
+  width: 90%;
+  margin: 15px auto;
+  display: block;
+
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.1);
+  color: black;
+
+  &::placeholder {
+    color: black;
+  }
+`;
 
 function Video() {
   const [videos, setVideos] = useState([]);
@@ -295,6 +312,7 @@ function Video() {
   const [mesdeos, setMesdeos] = useState([]);
   const [showIcon, setShowIcon] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [description, setDescription] = useState("");
   const [selectedVideo, setSelectedVideo] = useState(null);
   const modalVideoRef = useRef(null);
 
@@ -354,10 +372,14 @@ function Video() {
   const sauvegardedb = async () => {
     try {
       setLoading(true);
+
       const formdata = new FormData();
+
       videos.forEach((video) => {
         formdata.append("video", video.file);
       });
+
+      formdata.append("description", description);
 
       const res = await fetch(`${API_URL}/api/clients/videos`, {
         method: "POST",
@@ -366,18 +388,22 @@ function Video() {
         },
         body: formdata,
       });
+
       const data = await res.json();
 
       if (!res.ok) {
-        alert("sauvegarde échoué" + data.message);
+        alert("sauvegarde échoué " + data.message);
+        return;
       }
+
       setVideos([]);
+      setDescription("");
       await getvideos();
 
       alert("sauvegarde réussie");
       setLoading(false);
     } catch (error) {
-      alert("sauvegrde impossible" + error.message);
+      alert("sauvegarde impossible " + error.message);
     }
   };
 
@@ -411,20 +437,21 @@ function Video() {
       <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
       <main>
         <H1>Moments chill</H1>
+
         <section>
           <Labelstyle htmlFor="masque">
             <HiVideoCamera size={30} />
-            <input
-              id="masque"
-              type="file"
-              accept="video/*"
-              multiple
-              onChange={uploadeMultiple}
-              hidden
-            />
           </Labelstyle>
-        </section>
 
+          <input
+            id="masque"
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={uploadeMultiple}
+            hidden
+          />
+        </section>
         <section>
           <Titre>Mes videos</Titre>
 
@@ -444,6 +471,12 @@ function Video() {
                 {loading ? "Envoi..." : "Ajouter"}
               </Bouton>
               <Bouton onClick={supprimerurl}>Annuller</Bouton>
+
+              <InputDescription 
+                placeholder="Ajoute une description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
           )}
 
@@ -501,9 +534,6 @@ function Video() {
               onClick={togglePlay}
             />
 
-          
-
-            
             {showIcon && (
               <CenterIcon>
                 {showIcon === "play" ? <FaPlay /> : <FaPause />}
