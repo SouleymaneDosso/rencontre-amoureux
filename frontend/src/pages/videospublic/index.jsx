@@ -4,6 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { FaPlay, FaPause } from "react-icons/fa";
 
 const Page = styled.div`
   position: fixed;
@@ -65,10 +66,10 @@ const ActionButton = styled.div`
 
   svg {
     font-size: 28px;
-    background: rgba(0, 0, 0, 0.4);
+    background: none;
     padding: 12px;
-    border-radius: 50%;
     transition: all 0.2s ease;
+    color: ${(props) => (props.dejaLike ? "red" : "white")};
   }
 
   &:hover svg {
@@ -95,14 +96,39 @@ const Boutonretour = styled.button`
   font-size: 15px;
 `;
 
+const CenterIcon = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+
+  font-size: 70px;
+  color: white;
+
+  opacity: 0.85;
+
+  pointer-events: none;
+
+  animation: fade 0.8s ease;
+
+  @keyframes fade {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+  }
+`;
+
 function Videopublic() {
   const [videos, setvideos] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [userPaused, setUserPaused] = useState({});
+  const [showIcon, setShowIcon] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const videoRefs = useRef([]);
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     const unlock = () => {
@@ -144,14 +170,25 @@ function Videopublic() {
   }, [videos, userPaused]);
 
   const handleToggle = (video, id) => {
+    let type;
+
     if (video.paused) {
       video.play();
       setUserPaused((prev) => ({ ...prev, [id]: false }));
+      type = "play";
     } else {
       video.pause();
       setUserPaused((prev) => ({ ...prev, [id]: true }));
+      type = "pause";
     }
+
+    setShowIcon({ id, type });
+
+    setTimeout(() => {
+      setShowIcon(null);
+    }, 800);
   };
+
   useEffect(() => {
     const getdeopublic = async () => {
       try {
@@ -207,7 +244,7 @@ function Videopublic() {
           v._id === videoId
             ? {
                 ...v,
-                likes: Array(data.totalLikes).fill(0),
+                likes: data.likes,
               }
             : v,
         ),
@@ -225,18 +262,24 @@ function Videopublic() {
             data-id={deo._id}
             ref={(el) => (videoRefs.current[index] = el)}
             src={deo.url}
-            muted={!hasInteracted} 
+            muted={!hasInteracted}
             loop
             playsInline
             onClick={(e) => handleToggle(e.target, deo._id)}
           />
+
+          {showIcon?.id === deo._id && (
+            <CenterIcon>{showIcon.type === "play" ? <FaPlay /> : <FaPause />}</CenterIcon>
+          )}
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
           <Overlay>
             <p>@user_{index}</p>
             <p>Description de la vidéo 🔥</p>
           </Overlay>
           <RightPanel>
-            <ActionButton>
+            <ActionButton
+              dejaLike={deo.likes?.some((id) => id.toString() === userId)}
+            >
               <FaHeart onClick={() => handleLike(deo._id, index)} />
 
               <span>{deo.likes?.length || 0}</span>
