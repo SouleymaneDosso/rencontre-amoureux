@@ -202,8 +202,33 @@ const CommentList = styled.div`
 `;
 
 const CommentItem = styled.div`
-  padding: 8px;
-  border-bottom: 1px solid #333;
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #222;
+`;
+
+const CommentAvatar = styled.img`
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const CommentContent = styled.div`
+  flex: 1;
+`;
+
+const CommentPseudo = styled.p`
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0;
+`;
+
+const CommentText = styled.p`
+  font-size: 14px;
+  margin: 2px 0;
+  color: #ddd;
 `;
 
 const CommentInputBox = styled.div`
@@ -746,7 +771,20 @@ function Videopublic() {
                 <p>Aucun commentaire</p>
               ) : (
                 comments.map((c, i) => (
-                  <CommentItem key={i}>{c.texte}</CommentItem>
+                  <CommentItem key={i}>
+                    <CommentAvatar
+                      src={c.user?.avatar?.url || "/default-avatar.png"}
+                      alt="avatar"
+                    />
+
+                    <CommentContent>
+                      <CommentPseudo>
+                        @{c.user?.pseudo || "utilisateur"}
+                      </CommentPseudo>
+
+                      <CommentText>{c.texte}</CommentText>
+                    </CommentContent>
+                  </CommentItem>
                 ))
               )}
             </CommentList>
