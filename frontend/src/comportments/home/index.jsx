@@ -763,9 +763,6 @@ function Home() {
 
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
-                  {/* bouton close */}
-                  <CloseButton onClick={() => setModal(false)}>✕</CloseButton>
-
                   <ModalImage
                     src={photos[currentIndex].url}
                     alt="photo"
