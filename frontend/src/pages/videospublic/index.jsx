@@ -349,8 +349,10 @@ function Videopublic() {
   const [showUI, setShowUI] = useState(true);
   const [replyTo, setReplyTo] = useState(null);
   const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
   const hideTimeout = useRef(null);
   const pageRef = useRef(null);
+  const inputRef = useRef(null);
 
   const handleReply = async (commentId) => {
     try {
@@ -793,7 +795,15 @@ function Videopublic() {
           <ModalBox>
             <ModalHeader>
               <h3>Commentaires</h3>
-              <CloseBtn onClick={() => setActiveVideo(null)}>✕</CloseBtn>
+              <CloseBtn
+                onClick={() => {
+                  setActiveVideo(null);
+                  setReplyTo(null);
+                  setCommentText("");
+                }}
+              >
+                ✕
+              </CloseBtn>
             </ModalHeader>
 
             <CommentList>
@@ -801,19 +811,32 @@ function Videopublic() {
                 <p>Aucun commentaire</p>
               ) : (
                 comments.map((c, i) => (
-                  <CommentItem key={c._id}
-                    onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+                  <CommentItem
+                    key={c._id}
+                    onTouchStart={(e) => {
+                      setTouchStartX(e.touches[0].clientX);
+                      setTouchStartY(e.touches[0].clientY);
+                    }}
                     onTouchEnd={(e) => {
                       const touchEndX = e.changedTouches[0].clientX;
+                      const touchEndY = e.changedTouches[0].clientY;
 
-                      if (touchEndX - touchStartX > 80) {
-                        // 👉 swipe vers la droite détecté
+                      const diffX = touchEndX - touchStartX;
+                      const diffY = touchEndY - touchStartY;
+
+                      // 👉 swipe vers la droite UNIQUEMENT (ignore scroll vertical)
+                      if (diffX > 80 && Math.abs(diffY) < 50) {
                         setReplyTo({
                           commentId: c._id,
                           pseudo: c.user?.pseudo,
                         });
 
                         setCommentText(`@${c.user?.pseudo} `);
+
+                        // 🔥 focus automatique (optionnel mais stylé)
+                        setTimeout(() => {
+                          inputRef.current?.focus();
+                        }, 100);
                       }
                     }}
                   >
@@ -831,19 +854,6 @@ function Videopublic() {
                       </CommentPseudo>
 
                       <CommentText>{c.texte}</CommentText>
-
-                      <button
-                        onClick={() => {
-                          setReplyTo({
-                            commentId: c._id,
-                            pseudo: c.user?.pseudo,
-                          });
-
-                          setCommentText(`@${c.user?.pseudo} `);
-                        }}
-                      >
-                        Répondre
-                      </button>
 
                       {/* 🔥 AFFICHAGE DES REPONSES */}
                       {c.replies?.map((r, index) => (
@@ -873,6 +883,7 @@ function Videopublic() {
             )}
             <CommentInputBox>
               <input
+                ref={inputRef}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Écris un commentaire..."
