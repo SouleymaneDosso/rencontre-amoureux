@@ -79,20 +79,20 @@ exports.getAllVideos = async (req, res) => {
 
     const videosWithUser = await Promise.all(
       videos.map(async (video) => {
-        // 👤 profil du créateur de la vidéo
+        
         const profil = await Profil.findOne({ userId: video.userId });
 
-        // ⚠️ sécurité si pas de commentaires
+        
         const comments = video.comments || [];
 
-        // 🚀 récupérer tous les profils d’un coup
+
         const userIds = [...new Set(comments.map(c => c.userId.toString()))];
 
         const profils = await Profil.find({
           userId: { $in: userIds },
         });
 
-        // 🧠 enrichir les commentaires
+        
         const commentsWithUser = comments.map((c) => {
           const p = profils.find(
             (p) => p.userId.toString() === c.userId.toString()
@@ -183,7 +183,7 @@ exports.comment = async (req, res) => {
       return res.status(404).json({ message: "Vidéo introuvable" });
     }
 
-    // ✅ ajouter commentaire
+    
     video.comments.push({
       userId: req.auth.userId,
       texte,
@@ -193,14 +193,14 @@ exports.comment = async (req, res) => {
 
     const comments = video.comments || [];
 
-    // 🚀 récupérer tous les profils en 1 seule requête
+
     const userIds = [...new Set(comments.map(c => c.userId.toString()))];
 
     const profils = await Profil.find({
       userId: { $in: userIds },
     });
 
-    // 🧠 enrichir commentaires
+    
     const commentsWithUser = comments.map((c) => {
       const profil = profils.find(
         (p) => p.userId.toString() === c.userId.toString()
