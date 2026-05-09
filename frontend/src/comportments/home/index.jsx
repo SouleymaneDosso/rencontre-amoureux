@@ -446,10 +446,15 @@ function Home() {
   const touchEndX = useRef(null);
   const token = localStorage.getItem("token");
 
-  const getPrevIndex = () =>
-    currentIndex === 0 ? photos.length - 1 : currentIndex - 1;
+  const photos = profil?.photos || [];
 
-  const getNextIndex = () => (currentIndex + 1) % photos.length;
+const getPrevIndex = () =>
+  photos.length
+    ? currentIndex === 0
+      ? photos.length - 1
+      : currentIndex - 1
+    : 0;
+
 
   useEffect(() => {
     if (!token) {
@@ -462,15 +467,24 @@ function Home() {
     setModal(true);
   };
 
-  const photos = profil?.photos || [];
+const getNextIndex = () =>
+  photos.length ? (currentIndex + 1) % photos.length : 0;  
 
-  const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % photos.length);
-  };
+const nextImage = () => {
+  if (!photos.length) return;
+  setCurrentIndex((prev) => (prev + 1) % photos.length);
+};
 
-  const prevImage = () => {
-    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
-  };
+const prevImage = () => {
+  if (!photos.length) return;
+  setCurrentIndex((prev) =>
+    prev === 0 ? photos.length - 1 : prev - 1
+  );
+};
+
+
+
+
 
   useEffect(() => {
     const handleKey = (e) => {
