@@ -130,7 +130,7 @@ exports.getAllVideos = async (req, res) => {
 
     res.status(200).json(videosWithUser);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "pas de connexion internet " + error.message });
   }
 };
 
@@ -221,6 +221,36 @@ exports.comment = async (req, res) => {
     });
 
     res.status(200).json(commentsWithUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.replyComment = async (req, res) => {
+  try {
+    const { videoId, commentId } = req.params;
+    const { texte } = req.body;
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      return res.status(404).json({ message: "Vidéo introuvable" });
+    }
+
+    const comment = video.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Commentaire introuvable" });
+    }
+
+    comment.replies.push({
+      userId: req.auth.userId,
+      texte,
+    });
+
+    await video.save();
+
+    res.json(video.comments);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

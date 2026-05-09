@@ -34,6 +34,19 @@ const videoSchema = new mongoose.Schema(
           ref: "Connexion",
         },
         texte: String,
+        replies: [
+          {
+            userId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Connexion",
+            },
+            texte: String,
+            date: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
         date: {
           type: Date,
           default: Date.now,

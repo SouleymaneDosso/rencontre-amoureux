@@ -10,4 +10,5 @@ router.get("/mesvideos",auth, videos.getMyVideos)
 router.get("/videos/public", videos.getAllVideos)
 router.put("/likes/:videoId", auth, videos.likes)
 router.put("/commente/:videoId", auth, videos.comment)
+router.put("/reply/:videoId/:commentId", auth, videos.replyComment);
 module.exports = router;
