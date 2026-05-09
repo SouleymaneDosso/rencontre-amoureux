@@ -308,7 +308,7 @@ const Span = styled.span``;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.95);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -329,15 +329,10 @@ const Main = styled.main`
 `;
 
 const ModalImage = styled.img`
-  width: 100%;
-  height: 100%;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: 100vw;
+  height: 100vh;
   object-fit: contain;
-  border-radius: 18px;
   background: black;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  transition: transform 0.3s ease;
 `;
 
 const CloseButton = styled.button`
@@ -419,28 +414,6 @@ const SuccessText = styled.p`
   line-height: 1.6;
 `;
 
-const NavButton = styled.button`
-  position: absolute;
-  top: 50%;
-  ${({ left }) => (left ? "left: 20px;" : "right: 20px;")}
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: white;
-  font-size: 40px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: 0.2s ease;
-
-  &:hover {
-    background: rgba(255,255,255,0.25);
-    transform: translateY(-50%) scale(1.1);
-  }
-`;
-
 function Home() {
   const [profil, setProfil] = useState(null);
   const [interet, setInteret] = useState([]);
@@ -473,20 +446,18 @@ function Home() {
     setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   };
 
-useEffect(() => {
-  const handleKey = (e) => {
-    if (!modal) return;
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (!modal) return;
 
-    if (e.key === "ArrowRight") nextImage();
-    if (e.key === "ArrowLeft") prevImage();
-    if (e.key === "Escape") setModal(false);
-  };
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "ArrowLeft") prevImage();
+      if (e.key === "Escape") setModal(false);
+    };
 
-  window.addEventListener("keydown", handleKey);
-  return () => window.removeEventListener("keydown", handleKey);
-}, [modal, currentIndex]);
-
-
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [modal, currentIndex]);
 
   const suppression = async (public_id) => {
     try {
@@ -766,34 +737,20 @@ useEffect(() => {
                   {/* bouton close */}
                   <CloseButton onClick={() => setModal(false)}>✕</CloseButton>
 
-                  {/* prev */}
-                  <NavButton
-                    left
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prevImage();
-                    }}
-                  >
-                    ‹
-                  </NavButton>
-
-                  {/* image */}
                   <ModalImage
                     src={photos[currentIndex].url}
                     alt="photo"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-
-                  {/* next */}
-                  <NavButton
-                    right
                     onClick={(e) => {
-                      e.stopPropagation();
-                      nextImage();
+                      const x = e.clientX;
+                      const width = window.innerWidth;
+
+                      if (x < width / 2) {
+                        prevImage(); 
+                      } else {
+                        nextImage(); 
+                      }
                     }}
-                  >
-                    ›
-                  </NavButton>
+                  />
                 </Overlay>
               )}
 
