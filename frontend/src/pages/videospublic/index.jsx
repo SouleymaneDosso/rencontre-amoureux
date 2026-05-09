@@ -325,6 +325,58 @@ const Loader = styled.div`
   }
 `;
 
+const ReplyList = styled.div`
+  margin-left: 35px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const ReplyItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+`;
+
+const ReplyAvatarBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
+
+const ReplyAvatar = styled.img`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const ReplyContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ReplyPseudo = styled.p`
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+`;
+
+const ReplyText = styled.p`
+  font-size: 13px;
+  margin: 2px 0 0 0;
+  color: #bbb;
+  line-height: 1.3;
+`;
+const ReplyWrapper = styled.div`
+  margin-left: 30px;
+  padding-left: 10px;
+  border-left: 1px solid #222;
+`;
+
 function Videopublic() {
   const [videos, setvideos] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -350,6 +402,7 @@ function Videopublic() {
   const [replyTo, setReplyTo] = useState(null);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
+  
   const hideTimeout = useRef(null);
   const pageRef = useRef(null);
   const inputRef = useRef(null);
@@ -824,7 +877,6 @@ function Videopublic() {
                       const diffX = touchEndX - touchStartX;
                       const diffY = touchEndY - touchStartY;
 
-                     
                       if (diffX > 80 && Math.abs(diffY) < 50) {
                         setReplyTo({
                           commentId: c._id,
@@ -852,21 +904,29 @@ function Videopublic() {
                       </CommentPseudo>
 
                       <CommentText>{c.texte}</CommentText>
-
-                      {/* 🔥 AFFICHAGE DES REPONSES */}
+                      <ReplyWrapper>
                       {c.replies?.map((r, index) => (
-                        <div
-                          key={index}
-                          style={{ marginLeft: "30px", marginTop: "5px" }}
-                        >
-                          <small style={{ color: "#999" }}>
-                            @{r.user?.pseudo || "utilisateur"}
-                          </small>
-                          <p style={{ fontSize: "13px", color: "#ddd" }}>
-                            {r.texte}
-                          </p>
-                        </div> 
+                        <ReplyItem key={index}>
+                          <ReplyAvatarBtn
+                            onClick={() =>
+                              navigate(`/profilpublic/${r.user?._id}`)
+                            }
+                          >
+                            <ReplyAvatar
+                              src={r.user?.avatar?.url || "/default-avatar.png"}
+                            />
+                          </ReplyAvatarBtn>
+
+                          <ReplyContent>
+                            <ReplyPseudo>
+                              @{r.user?.pseudo || "user"}
+                            </ReplyPseudo>
+
+                            <ReplyText>{r.texte}</ReplyText>
+                          </ReplyContent>
+                        </ReplyItem>
                       ))}
+                      </ReplyWrapper>
                     </CommentContent>
                   </CommentItem>
                 ))
