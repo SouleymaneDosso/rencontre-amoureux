@@ -860,11 +860,12 @@ function Videopublic() {
                           style={{ marginLeft: "30px", marginTop: "5px" }}
                         >
                           <small style={{ color: "#999" }}>
+                            @{r.user?.pseudo || "utilisateur"}
                           </small>
                           <p style={{ fontSize: "13px", color: "#ddd" }}>
                             {r.texte}
                           </p>
-                        </div>
+                        </div> 
                       ))}
                     </CommentContent>
                   </CommentItem>
