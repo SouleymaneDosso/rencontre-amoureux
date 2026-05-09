@@ -150,9 +150,23 @@ exports.comment = async (req, res) => {
       userId: req.auth.userId,
       texte,
     });
+
     await video.save();
 
-    res.json(video.comments);
+    // 🔥 ENRICHIR LES COMMENTAIRES
+    const profil = await Profil.findOne({ userId: req.auth.userId });
+
+    const commentsWithUser = video.comments.map((c) => ({
+      ...c._doc,
+      user: profil
+        ? {
+            pseudo: profil.pseudo,
+            avatar: profil.avatar,
+          }
+        : null,
+    }));
+
+    res.json(commentsWithUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
