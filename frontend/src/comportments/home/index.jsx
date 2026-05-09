@@ -332,7 +332,9 @@ const ModalImage = styled.img`
   width: 100vw;
   height: 100vh;
   object-fit: contain;
-  background: black;
+
+  transform: translateX(${({ translateX }) => translateX}px);
+  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.3s ease")};
 `;
 
 const CloseButton = styled.button`
@@ -422,10 +424,12 @@ function Home() {
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
   const navigate = useNavigate();
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
   const token = localStorage.getItem("token");
+
   useEffect(() => {
     if (!token) {
       navigate("/connexion");
@@ -465,24 +469,25 @@ function Home() {
   };
 
   const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX;
+    const currentX = e.touches[0].clientX;
+    touchEndX.current = currentX;
+
+    const diff = currentX - touchStartX.current;
+
+    setTranslateX(diff);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-
     const diff = touchStartX.current - touchEndX.current;
-
-    // swipe minimum (sensibilité)
-    const threshold = 50;
+    const threshold = 80;
 
     if (diff > threshold) {
-      nextImage(); // swipe gauche
+      nextImage();
+    } else if (diff < -threshold) {
+      prevImage();
     }
 
-    if (diff < -threshold) {
-      prevImage(); // swipe droite
-    }
+    setTranslateX(0);
 
     touchStartX.current = null;
     touchEndX.current = null;
@@ -766,19 +771,12 @@ function Home() {
                   <ModalImage
                     src={photos[currentIndex].url}
                     alt="photo"
-                    onClick={(e) => {
-                      const x = e.clientX;
-                      const width = window.innerWidth;
-
-                      if (x < width / 2) {
-                        prevImage();
-                      } else {
-                        nextImage();
-                      }
-                    }}
+                    translateX={translateX}
+                    dragging={touchStartX.current !== null}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </Overlay>
               )}
