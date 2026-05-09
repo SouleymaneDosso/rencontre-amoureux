@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
@@ -423,7 +423,8 @@ function Home() {
   const [modal, setModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
-
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (!token) {
@@ -458,6 +459,34 @@ function Home() {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [modal, currentIndex]);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const diff = touchStartX.current - touchEndX.current;
+
+    // swipe minimum (sensibilité)
+    const threshold = 50;
+
+    if (diff > threshold) {
+      nextImage(); // swipe gauche
+    }
+
+    if (diff < -threshold) {
+      prevImage(); // swipe droite
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   const suppression = async (public_id) => {
     try {
@@ -745,11 +774,14 @@ function Home() {
                       const width = window.innerWidth;
 
                       if (x < width / 2) {
-                        prevImage(); 
+                        prevImage();
                       } else {
-                        nextImage(); 
+                        nextImage();
                       }
                     }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   />
                 </Overlay>
               )}
