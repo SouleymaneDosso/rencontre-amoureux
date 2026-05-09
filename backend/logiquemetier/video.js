@@ -69,7 +69,12 @@ exports.getMyVideos = async (req, res) => {
 
 exports.getAllVideos = async (req, res) => {
   try {
-    const videos = await Video.find().sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3;
+
+    const videos = await Video.find().sort({ createdAt: -1 })
+    .skip((page - 1) *limit)
+    .limit(limit);
 
     const videosWithUser = await Promise.all(
       videos.map(async (video) => {
