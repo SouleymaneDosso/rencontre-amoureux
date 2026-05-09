@@ -416,6 +416,22 @@ const SuccessText = styled.p`
   line-height: 1.6;
 `;
 
+const Slider = styled.div`
+  display: flex;
+  width: 300vw;
+  height: 100vh;
+
+  transform: translateX(calc(-100vw + ${({ translateX }) => translateX}px));
+  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.3s ease")};
+`;
+
+const Slide = styled.img`
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  flex-shrink: 0;
+`;
+
 function Home() {
   const [profil, setProfil] = useState(null);
   const [interet, setInteret] = useState([]);
@@ -429,6 +445,11 @@ function Home() {
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
   const token = localStorage.getItem("token");
+
+  const getPrevIndex = () =>
+    currentIndex === 0 ? photos.length - 1 : currentIndex - 1;
+
+  const getNextIndex = () => (currentIndex + 1) % photos.length;
 
   useEffect(() => {
     if (!token) {
@@ -477,21 +498,33 @@ function Home() {
     setTranslateX(diff);
   };
 
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 80;
+ const handleTouchEnd = () => {
+  const diff = touchStartX.current - touchEndX.current;
+  const threshold = 80;
 
-    if (diff > threshold) {
+  if (diff > threshold) {
+    // swipe gauche
+    setTranslateX(-window.innerWidth);
+
+    setTimeout(() => {
       nextImage();
-    } else if (diff < -threshold) {
+      setTranslateX(0);
+    }, 200);
+  } else if (diff < -threshold) {
+    // swipe droite
+    setTranslateX(window.innerWidth);
+
+    setTimeout(() => {
       prevImage();
-    }
-
+      setTranslateX(0);
+    }, 200);
+  } else {
     setTranslateX(0);
+  }
 
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
+  touchStartX.current = null;
+  touchEndX.current = null;
+};
 
   const suppression = async (public_id) => {
     try {
@@ -768,16 +801,18 @@ function Home() {
 
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
-                  <ModalImage
-                    src={photos[currentIndex].url}
-                    alt="photo"
+                  <Slider
                     translateX={translateX}
                     dragging={touchStartX.current !== null}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onClick={(e) => e.stopPropagation()}
-                  />
+                  >
+                    <Slide src={photos[getPrevIndex()].url} />
+                    <Slide src={photos[currentIndex].url} />
+                    <Slide src={photos[getNextIndex()].url} />
+                  </Slider>
                 </Overlay>
               )}
 
