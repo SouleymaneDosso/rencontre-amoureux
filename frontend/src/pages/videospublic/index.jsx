@@ -45,6 +45,10 @@ const Overlay = styled.div`
   left: 15px;
   color: white;
   z-index: 2;
+
+  ...
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  transition: opacity 0.3s ease;
 `;
 
 const RightPanel = styled.div`
@@ -55,6 +59,8 @@ const RightPanel = styled.div`
   flex-direction: column;
   gap: 25px;
   z-index: 2;
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  transition: opacity 0.3s ease;
 `;
 
 const ActionButton = styled.div`
@@ -228,10 +234,70 @@ const Img = styled.img`
   object-fit: cover;
   margin-bottom: 10px;
 `;
+const ProgressBarContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
 
+  touch-action: none; /* 🔥 IMPORTANT */
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  transition: opacity 0.3s ease;
+`;
 const Button = styled.button`
   background: none;
   border: none;
+`;
+const VideoInfo = styled.small`
+  opacity: 0.7;
+  font-size: 12px;
+  display: block;
+  margin-top: 5px;
+`;
+
+const ProgressBar = styled.div`
+  height: 100%;
+  background: #ff0050;
+  width: ${(props) => props.width || 0}%;
+  transition: width 0.1s linear;
+`;
+const Tooltip = styled.div`
+  position: absolute;
+  bottom: 12px;
+  left: ${(props) => props.left || 0}%;
+
+  transform: translateX(-50%);
+  background: black;
+  color: white;
+  font-size: 11px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  pointer-events: none;
+  white-space: nowrap;
+`;
+
+const Loader = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
 `;
 
 function Videopublic() {
@@ -249,9 +315,104 @@ function Videopublic() {
   const videoRefs = useRef([]);
   const userId = localStorage.getItem("userId");
   const [hasMore, setHasMore] = useState(true);
-
+  const [progress, setProgress] = useState({});
+  const [durations, setDurations] = useState({});
+  const [isDragging, setIsDragging] = useState(false);
+  const [hoverTime, setHoverTime] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState(0);
+  const [loadingMap, setLoadingMap] = useState({});
+  const [showUI, setShowUI] = useState(true);
+  const hideTimeout = useRef(null);
   const pageRef = useRef(null);
 
+  const triggerUI = () => {
+    setShowUI(true);
+
+    if (hideTimeout.current) {
+      clearTimeout(hideTimeout.current);
+    }
+
+    hideTimeout.current = setTimeout(() => {
+      setShowUI(false);
+    }, 2500); // ⏱️ 2.5s comme TikTok
+  };
+
+  const formatTime = (sec = 0) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  const handleHover = (e, videoId) => {
+    const video = videoRefs.current[videoId];
+    if (!video || !video.duration) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+
+    const percent = Math.min(Math.max(x / rect.width, 0), 1);
+    const time = percent * video.duration;
+
+    setHoverTime(time);
+    setHoverPosition(percent * 100);
+  };
+  const handleLeave = () => {
+    setHoverTime(null);
+  };
+
+  const setLoadin = (id, value) => {
+    setLoadingMap((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleTimeUpdate = (e, id) => {
+    const video = e.target;
+
+    setProgress((prev) => ({
+      ...prev,
+      [id]: (video.currentTime / video.duration) * 100,
+    }));
+  };
+  const seekToPercent = (video, percent) => {
+    if (video && video.duration) {
+      video.currentTime = percent * video.duration;
+    }
+  };
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e, videoId) => {
+    if (!isDragging) return;
+
+    e.preventDefault();
+
+    const video = videoRefs.current[videoId];
+    if (!video) return;
+
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const percent = Math.min(Math.max(x / rect.width, 0), 1);
+
+    seekToPercent(video, percent);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleLoadedMetadata = (e, id) => {
+    const video = e.target;
+
+    setDurations((prev) => ({
+      ...prev,
+      [id]: video.duration,
+    }));
+  };
   const openComments = (video) => {
     setActiveVideo(video._id);
     setComments(video.comments || []);
@@ -339,6 +500,8 @@ function Videopublic() {
   const userPausedRef = useRef(userPaused);
 
   const handleToggle = (video, id) => {
+    triggerUI();
+
     let type;
 
     if (video.paused) {
@@ -467,47 +630,106 @@ function Videopublic() {
             }}
             src={deo.url}
             muted={!hasInteracted}
+            preload="metadata"
             loop
             playsInline
             onClick={(e) => handleToggle(e.target, deo._id)}
+            onTimeUpdate={(e) => handleTimeUpdate(e, deo._id)}
+            onLoadedMetadata={(e) => handleLoadedMetadata(e, deo._id)}
+            onWaiting={() => setLoadin(deo._id, true)}
+            onPlaying={() => setLoadin(deo._id, false)}
+            onCanPlay={() => setLoadin(deo._id, false)}
+            onTouchStart={triggerUI}
+            onMouseMove={triggerUI}
           />
+          {loadingMap[deo._id] && <Loader />}
 
           {showIcon?.id === deo._id && (
             <CenterIcon>
               {showIcon.type === "play" ? <FaPlay /> : <FaPause />}
             </CenterIcon>
           )}
-          <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
+          <Boutonretour onClick={() => navigate(-1)}> ← Retour</Boutonretour>
 
-          <Overlay>
-            <p>@{deo.user?.pseudo || `${deo.user?.nom}-${deo.user?.prenom}`}</p>
-            <p>{deo?.description || "Pas de description"}</p>
-          </Overlay>
+          {showUI && (
+            <Overlay show={showUI}>
+              <p style={{ fontWeight: "bold" }}>
+                @{deo.user?.pseudo || `${deo.user?.nom}-${deo.user?.prenom}`}
+              </p>
+
+              <p>{deo?.description || "Pas de description"}</p>
+
+              <small style={{ opacity: 0.7 }}></small>
+              <small>{formatTime(deo.duree)}</small>
+            </Overlay>
+          )}
 
           {/* {modal} */}
 
-          <RightPanel>
-            <Button onClick={() => navigate(`/profilpublic/${deo.user._id}`)}>
-              <Img src={deo.user?.avatar?.url} alt={deo.user?.pseudo} />
-            </Button>
-            <ActionButton
-              dejaLike={deo.likes?.some((id) => id.toString() === userId)}
-            >
-              <FaHeart onClick={() => handleLike(deo._id, index)} />
+          {showUI && (
+            <RightPanel show={showUI}>
+              <Button onClick={() => navigate(`/profilpublic/${deo.user._id}`)}>
+                <Img src={deo.user?.avatar?.url} alt={deo.user?.pseudo} />
+              </Button>
+              <ActionButton
+                dejaLike={deo.likes?.some((id) => id.toString() === userId)}
+              >
+                <FaHeart onClick={() => handleLike(deo._id, index)} />
 
-              <span>{deo.likes?.length || 0}</span>
-            </ActionButton>
+                <span>{deo.likes?.length || 0}</span>
+              </ActionButton>
 
-            <ActionButton onClick={() => openComments(deo)}>
-              <FaCommentDots />
-              <span>{deo.comments?.length || 0}</span>
-            </ActionButton>
+              <ActionButton onClick={() => openComments(deo)}>
+                <FaCommentDots />
+                <span>{deo.comments?.length || 0}</span>
+              </ActionButton>
 
-            {/* <ActionButton>
+              {/* <ActionButton>
               <FaShare />
               <span>Partager</span>
             </ActionButton> */}
-          </RightPanel>
+            </RightPanel>
+          )}
+
+          {showUI && (
+            <ProgressBarContainer
+              onMouseDown={(e) => {
+                triggerUI();
+                handleDragStart(e);
+              }}
+              onMouseMove={(e) => {
+                handleDragMove(e, deo._id);
+                handleHover(e, deo._id);
+              }}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={() => {
+                handleDragEnd();
+                handleLeave();
+              }}
+              onTouchStart={(e) => {
+                triggerUI();
+                handleDragStart(e);
+              }}
+              onTouchMove={(e) => {
+                handleDragMove(e, deo._id);
+                handleHover(e, deo._id);
+              }}
+              onTouchEnd={() => {
+                handleDragEnd();
+                handleLeave();
+              }}
+              show={showUI}
+            >
+              <ProgressBar width={progress[deo._id] || 0} />
+
+              {hoverTime !== null && (
+                <Tooltip left={hoverPosition}>
+                  {formatTime(hoverTime)} /{" "}
+                  {formatTime(durations[deo._id] || 0)}
+                </Tooltip>
+              )}
+            </ProgressBarContainer>
+          )}
         </VideoContainer>
       ))}
 
