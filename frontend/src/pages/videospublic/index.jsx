@@ -347,6 +347,8 @@ function Videopublic() {
   const [hoverPosition, setHoverPosition] = useState(0);
   const [loadingMap, setLoadingMap] = useState({});
   const [showUI, setShowUI] = useState(true);
+  const [replyTo, setReplyTo] = useState(null);
+  const [touchStartX, setTouchStartX] = useState(0);
   const hideTimeout = useRef(null);
   const pageRef = useRef(null);
 
@@ -370,7 +372,7 @@ function Videopublic() {
         alert(data.message);
         return;
       }
-
+      setReplyTo(null);
       setComments(data);
       setCommentText("");
     } catch (error) {
@@ -387,7 +389,7 @@ function Videopublic() {
 
     hideTimeout.current = setTimeout(() => {
       setShowUI(false);
-    }, 2500); // ⏱️ 2.5s comme TikTok
+    }, 2500);
   };
 
   const formatTime = (sec = 0) => {
@@ -799,7 +801,22 @@ function Videopublic() {
                 <p>Aucun commentaire</p>
               ) : (
                 comments.map((c, i) => (
-                  <CommentItem key={i}>
+                  <CommentItem key={c._id}
+                    onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+                    onTouchEnd={(e) => {
+                      const touchEndX = e.changedTouches[0].clientX;
+
+                      if (touchEndX - touchStartX > 80) {
+                        // 👉 swipe vers la droite détecté
+                        setReplyTo({
+                          commentId: c._id,
+                          pseudo: c.user?.pseudo,
+                        });
+
+                        setCommentText(`@${c.user?.pseudo} `);
+                      }
+                    }}
+                  >
                     <Button
                       onClick={() => navigate(`/profilpublic/${c.user._id}`)}
                     >
@@ -815,7 +832,16 @@ function Videopublic() {
 
                       <CommentText>{c.texte}</CommentText>
 
-                      <button onClick={() => handleReply(c._id)}>
+                      <button
+                        onClick={() => {
+                          setReplyTo({
+                            commentId: c._id,
+                            pseudo: c.user?.pseudo,
+                          });
+
+                          setCommentText(`@${c.user?.pseudo} `);
+                        }}
+                      >
                         Répondre
                       </button>
 
@@ -840,6 +866,11 @@ function Videopublic() {
             </CommentList>
 
             {/* INPUT */}
+            {replyTo && (
+              <p style={{ color: "#aaa", fontSize: "13px" }}>
+                Réponse à @{replyTo.pseudo}
+              </p>
+            )}
             <CommentInputBox>
               <input
                 value={commentText}
@@ -849,7 +880,11 @@ function Videopublic() {
 
               <button
                 onClick={() => {
-                  handleComment(activeVideo);
+                  if (replyTo) {
+                    handleReply(replyTo.commentId);
+                  } else {
+                    handleComment(activeVideo);
+                  }
                 }}
               >
                 Envoyer
