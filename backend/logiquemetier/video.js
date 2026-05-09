@@ -2,7 +2,7 @@ const Video = require("../models/video");
 const streamifier = require("streamifier");
 const Profil = require("../models/profil");
 const cloudinary = require("../cloudinary");
- 
+
 exports.uploadCloudinary = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -25,7 +25,7 @@ exports.uploadCloudinary = async (req, res) => {
           (error, result) => {
             if (error) return reject(error);
             resolve({ result, file });
-          }
+          },
         );
 
         streamifier.createReadStream(file.buffer).pipe(stream);
@@ -45,9 +45,9 @@ exports.uploadCloudinary = async (req, res) => {
           taille: result.bytes,
           format: result.format,
           duree: result.duration,
-           description: req.body.description || "",
-        })
-      )
+          description: req.body.description || "",
+        }),
+      ),
     );
 
     res.status(200).json(videos);
@@ -58,8 +58,9 @@ exports.uploadCloudinary = async (req, res) => {
 
 exports.getMyVideos = async (req, res) => {
   try {
-    const videos = await Video.find({ userId: req.auth.userId })
-      .sort({ createdAt: -1 });
+    const videos = await Video.find({ userId: req.auth.userId }).sort({
+      createdAt: -1,
+    });
 
     res.json(videos);
   } catch (error) {
@@ -79,23 +80,26 @@ exports.getAllVideos = async (req, res) => {
 
     const videosWithUser = await Promise.all(
       videos.map(async (video) => {
-        
         const profil = await Profil.findOne({ userId: video.userId });
 
-        
         const comments = video.comments || [];
 
-
-        const userIds = [...new Set(comments.map(c => c.userId.toString()))];
-
+        // 🔥 récupérer userId des commentaires + replies
+        const userIds = [
+          ...new Set([
+            ...comments.map((c) => c.userId.toString()),
+            ...comments.flatMap((c) =>
+              (c.replies || []).map((r) => r.userId.toString()),
+            ),
+          ]),
+        ];
         const profils = await Profil.find({
           userId: { $in: userIds },
         });
 
-        
         const commentsWithUser = comments.map((c) => {
           const p = profils.find(
-            (p) => p.userId.toString() === c.userId.toString()
+            (p) => p.userId.toString() === c.userId.toString(),
           );
 
           return {
@@ -109,6 +113,24 @@ exports.getAllVideos = async (req, res) => {
                   avatar: p.avatar,
                 }
               : null,
+
+            // 🔥 AJOUTE ÇA
+            replies: (c.replies || []).map((r) => {
+              const rp = profils.find(
+                (p) => p.userId.toString() === r.userId.toString(),
+              );
+
+              return {
+                ...r._doc,
+                user: rp
+                  ? {
+                      _id: rp._id,
+                      pseudo: rp.pseudo,
+                      avatar: rp.avatar,
+                    }
+                  : null,
+              };
+            }),
           };
         });
 
@@ -125,15 +147,16 @@ exports.getAllVideos = async (req, res) => {
             : null,
           comments: commentsWithUser,
         };
-      })
+      }),
     );
 
     res.status(200).json(videosWithUser);
   } catch (error) {
-    res.status(500).json({ message: "pas de connexion internet " + error.message });
+    res
+      .status(500)
+      .json({ message: "pas de connexion internet " + error.message });
   }
 };
-
 
 exports.likes = async (req, res) => {
   try {
@@ -150,16 +173,14 @@ exports.likes = async (req, res) => {
       return res.status(404).json({ message: "Vidéo introuvable" });
     }
 
-    const existelike = video.likes.some(
-      (id) => id.toString() === userId
-    );
+    const existelike = video.likes.some((id) => id.toString() === userId);
 
     const updated = await Video.findByIdAndUpdate(
       videoId,
       existelike
         ? { $pull: { likes: userId } }
         : { $addToSet: { likes: userId } },
-      { new: true }
+      { new: true },
     );
 
     res.json({
@@ -183,7 +204,6 @@ exports.comment = async (req, res) => {
       return res.status(404).json({ message: "Vidéo introuvable" });
     }
 
-    
     video.comments.push({
       userId: req.auth.userId,
       texte,
@@ -193,17 +213,15 @@ exports.comment = async (req, res) => {
 
     const comments = video.comments || [];
 
-
-    const userIds = [...new Set(comments.map(c => c.userId.toString()))];
+    const userIds = [...new Set(comments.map((c) => c.userId.toString()))];
 
     const profils = await Profil.find({
       userId: { $in: userIds },
     });
 
-    
     const commentsWithUser = comments.map((c) => {
       const profil = profils.find(
-        (p) => p.userId.toString() === c.userId.toString()
+        (p) => p.userId.toString() === c.userId.toString(),
       );
 
       return {
@@ -250,7 +268,58 @@ exports.replyComment = async (req, res) => {
 
     await video.save();
 
-    res.json(video.comments);
+    const comments = video.comments || [];
+
+    const userIds = [
+      ...new Set([
+        ...comments.map((c) => c.userId.toString()),
+        ...comments.flatMap((c) =>
+          (c.replies || []).map((r) => r.userId.toString()),
+        ),
+      ]),
+    ];
+
+    const profils = await Profil.find({
+      userId: { $in: userIds },
+    });
+
+    const commentaires = comments.map((c) => {
+      const profil = profils.find(
+        (p) => p.userId.toString() === c.userId.toString(),
+      );
+
+      return {
+        ...c._doc,
+        user: profil
+          ? {
+              _id: profil._id,
+              nom: profil.nom,
+              prenom: profil.prenom,
+              pseudo: profil.pseudo,
+              avatar: profil.avatar,
+            }
+          : null,
+
+        replies: (c.replies || []).map((r) => {
+          const rp = profils.find(
+            (p) => p.userId.toString() === r.userId.toString(),
+          );
+
+          return {
+            ...r._doc,
+            user: rp
+              ? {
+                  _id: rp._id,
+                  pseudo: rp.pseudo,
+                  avatar: rp.avatar,
+                }
+              : null,
+          };
+        }),
+      };
+    });
+
+    res.json(commentaires);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
