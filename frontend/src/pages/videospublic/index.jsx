@@ -827,7 +827,7 @@ function Videopublic() {
                      
                       if (diffX > 80 && Math.abs(diffY) < 50) {
                         setReplyTo({
-                          commentId: c._id,
+                  
                           pseudo: c.user?.pseudo,
                         });
 
@@ -859,9 +859,9 @@ function Videopublic() {
                           key={index}
                           style={{ marginLeft: "30px", marginTop: "5px" }}
                         >
-                          <small style={{ color: "#999" }}>
-                            @{r.userId || "user"}
-                          </small>
+                          {/* <small style={{ color: "#999" }}>
+                            {r.user?.pseudo || "utilisateur"}
+                          </small> */}
                           <p style={{ fontSize: "13px", color: "#ddd" }}>
                             {r.texte}
                           </p>
