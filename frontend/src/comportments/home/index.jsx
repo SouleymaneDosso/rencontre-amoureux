@@ -421,8 +421,12 @@ const Slider = styled.div`
   width: 300vw;
   height: 100vh;
 
-  transform: translateX(calc(-100vw + ${({ translateX }) => translateX}px));
-  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.3s ease")};
+  transform: translateX(
+    calc(-100vw + ${({ translateX }) => translateX}px)
+  );
+
+  transition: ${({ dragging }) =>
+    dragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)"};
 `;
 
 const Slide = styled.img`
@@ -443,7 +447,6 @@ function Home() {
   const [translateX, setTranslateX] = useState(0);
   const navigate = useNavigate();
   const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
   const token = localStorage.getItem("token");
 
   const photos = profil?.photos || [];
@@ -499,46 +502,33 @@ const prevImage = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [modal, currentIndex]);
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
+ const handleTouchStart = (e) => {
+  touchStartX.current = e.touches[0].clientX;
+  setTranslateX(0);
+};
 
-  const handleTouchMove = (e) => {
-    const currentX = e.touches[0].clientX;
-    touchEndX.current = currentX;
+const handleTouchMove = (e) => {
+  const currentX = e.touches[0].clientX;
+  const diff = currentX - touchStartX.current;
 
-    const diff = currentX - touchStartX.current;
+  setTranslateX(diff);
+};
 
-    setTranslateX(diff);
-  };
+const handleTouchEnd = () => {
+  const threshold = window.innerWidth * 0.25; // 25% écran
+  const diff = translateX;
 
- const handleTouchEnd = () => {
-  const diff = touchStartX.current - touchEndX.current;
-  const threshold = 80;
-
-  if (diff > threshold) {
-    // swipe gauche
-    setTranslateX(-window.innerWidth);
-
-    setTimeout(() => {
-      nextImage();
-      setTranslateX(0);
-    }, 200);
-  } else if (diff < -threshold) {
-    // swipe droite
-    setTranslateX(window.innerWidth);
-
-    setTimeout(() => {
-      prevImage();
-      setTranslateX(0);
-    }, 200);
-  } else {
-    setTranslateX(0);
+  if (diff < -threshold) {
+    nextImage();
+  } else if (diff > threshold) {
+    prevImage();
   }
 
+  setTranslateX(0);
   touchStartX.current = null;
-  touchEndX.current = null;
 };
+
+
 
   const suppression = async (public_id) => {
     try {
