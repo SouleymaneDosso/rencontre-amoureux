@@ -350,6 +350,34 @@ function Videopublic() {
   const hideTimeout = useRef(null);
   const pageRef = useRef(null);
 
+  const handleReply = async (commentId) => {
+    try {
+      const res = await fetch(
+        `${API_URL}/api/clients/reply/${activeVideo}/${commentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ texte: commentText }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      setComments(data);
+      setCommentText("");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   const triggerUI = () => {
     setShowUI(true);
 
@@ -772,10 +800,13 @@ function Videopublic() {
               ) : (
                 comments.map((c, i) => (
                   <CommentItem key={i}>
-                    <CommentAvatar
-                      src={c.user?.avatar?.url || "/default-avatar.png"}
-                      alt="avatar"
-                    />
+                    <Button
+                      onClick={() => navigate(`/profilpublic/${c.user._id}`)}
+                    >
+                      <CommentAvatar
+                        src={c.user?.avatar?.url || "/default-avatar.png"}
+                      />
+                    </Button>
 
                     <CommentContent>
                       <CommentPseudo>
@@ -783,6 +814,25 @@ function Videopublic() {
                       </CommentPseudo>
 
                       <CommentText>{c.texte}</CommentText>
+
+                      <button onClick={() => handleReply(c._id)}>
+                        Répondre
+                      </button>
+
+                      {/* 🔥 AFFICHAGE DES REPONSES */}
+                      {c.replies?.map((r, index) => (
+                        <div
+                          key={index}
+                          style={{ marginLeft: "30px", marginTop: "5px" }}
+                        >
+                          <small style={{ color: "#999" }}>
+                            @{r.userId || "user"}
+                          </small>
+                          <p style={{ fontSize: "13px", color: "#ddd" }}>
+                            {r.texte}
+                          </p>
+                        </div>
+                      ))}
                     </CommentContent>
                   </CommentItem>
                 ))
