@@ -841,9 +841,9 @@ function Videopublic() {
                     <Button
                       onClick={() => navigate(`/profilpublic/${c.user._id}`)}
                     >
-                      {/* <CommentAvatar
+                      <CommentAvatar
                         src={c.user?.avatar?.url || "/default-avatar.png"}
-                      /> */}
+                      />
                     </Button>
 
                     <CommentContent>
