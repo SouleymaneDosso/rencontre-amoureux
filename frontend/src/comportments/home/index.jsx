@@ -308,10 +308,12 @@ const Span = styled.span``;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: black;
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
-  overflow: hidden;
+  justify-content: center;
+  align-items: center;
   z-index: 9999;
+  backdrop-filter: blur(12px);
 `;
 const Main = styled.main`
   width: 100%;
@@ -410,14 +412,6 @@ const SuccessText = styled.p`
   font-size: 14px;
   color: #4b6b58;
   line-height: 1.6;
-`;
-
-const Slider = styled.div`
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  transition: transform 0.35s ease;
-  transform: ${({ index }) => `translateX(-${index * 100}vw)`};
 `;
 
 function Home() {
@@ -769,22 +763,23 @@ function Home() {
 
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
-                  <Slider index={currentIndex}>
-                    {photos.map((img) => (
-                      <img
-                        key={img.public_id}
-                        src={img.url}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          width: "100vw",
-                          height: "100vh",
-                          objectFit: "contain",
-                          background: "black",
-                          flexShrink: 0,
-                        }}
-                      />
-                    ))}
-                  </Slider>
+                  <ModalImage
+                    src={photos[currentIndex].url}
+                    alt="photo"
+                    onClick={(e) => {
+                      const x = e.clientX;
+                      const width = window.innerWidth;
+
+                      if (x < width / 2) {
+                        prevImage();
+                      } else {
+                        nextImage();
+                      }
+                    }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  />
                 </Overlay>
               )}
 
