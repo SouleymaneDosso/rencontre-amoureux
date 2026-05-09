@@ -158,7 +158,7 @@ const SendButton = styled.button`
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -221,14 +221,26 @@ const CommentInputBox = styled.div`
     color: white;
   }
 `;
+const Img = styled.img`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+`;
+
+const Button = styled.button`
+  background: none;
+  border: none;
+`;
 
 function Videopublic() {
   const [videos, setvideos] = useState([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [userPaused, setUserPaused] = useState({});
   const [showIcon, setShowIcon] = useState(null);
-  const [infos, setInfos] = useState("");
-
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [activeVideo, setActiveVideo] = useState(null);
   const [comments, setComments] = useState([]);
@@ -236,12 +248,19 @@ function Videopublic() {
   const token = localStorage.getItem("token");
   const videoRefs = useRef([]);
   const userId = localStorage.getItem("userId");
+  const [hasMore, setHasMore] = useState(true);
 
-const openComments = (video) => {
-  setActiveVideo(video._id);
-  setComments(video.comments || []);
-  setCommentText(""); 
-};
+  const pageRef = useRef(null);
+
+  const openComments = (video) => {
+    setActiveVideo(video._id);
+    setComments(video.comments || []);
+    setCommentText("");
+  };
+
+  useEffect(() => {
+    userPausedRef.current = userPaused;
+  }, [userPaused]);
 
   useEffect(() => {
     const unlock = () => {
@@ -254,45 +273,38 @@ const openComments = (video) => {
     return () => window.removeEventListener("click", unlock);
   }, []);
 
- const handleComment = async () => {
-  try {
-    const res = await fetch(
-      `${API_URL}/api/clients/commente/${activeVideo}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+  const handleComment = async () => {
+    try {
+      const res = await fetch(
+        `${API_URL}/api/clients/commente/${activeVideo}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ texte: commentText }),
         },
-        body: JSON.stringify({ texte: commentText }),
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
       }
-    );
 
-    const data = await res.json();
+      setComments(data);
 
-    if (!res.ok) {
-      alert(data.message);
-      return;
+      setvideos((prev) =>
+        prev.map((v) => (v._id === activeVideo ? { ...v, comments: data } : v)),
+      );
+
+      setCommentText("");
+    } catch (error) {
+      alert(error.message);
     }
-
-    // 1. update modal
-    setComments(data);
-
-    // 2. update videos global (IMPORTANT)
-    setvideos((prev) =>
-      prev.map((v) =>
-        v._id === activeVideo
-          ? { ...v, comments: data }
-          : v
-      )
-    );
-
-    setCommentText("");
-
-  } catch (error) {
-    alert(error.message);
-  }
-};
+  };
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -301,7 +313,7 @@ const openComments = (video) => {
           const id = video.dataset.id;
 
           if (entry.isIntersecting) {
-            if (!userPaused[id]) {
+            if (!userPausedRef.current[id]) {
               video.play();
             }
           } else {
@@ -309,17 +321,22 @@ const openComments = (video) => {
           }
         });
       },
-      {
-        threshold: 0.6,
-      },
+      { threshold: 0.6 },
     );
 
-    videoRefs.current.forEach((video) => {
-      if (video) observer.observe(video);
-    });
+    Object.values(videoRefs.current)
+      .filter(Boolean)
+      .forEach((video) => observer.observe(video));
 
-    return () => observer.disconnect();
-  }, [videos, userPaused]);
+    return () => {
+      Object.values(videoRefs.current)
+        .filter(Boolean)
+        .forEach((video) => observer.unobserve(video));
+      observer.disconnect();
+    };
+  }, [videos]);
+
+  const userPausedRef = useRef(userPaused);
 
   const handleToggle = (video, id) => {
     let type;
@@ -342,35 +359,15 @@ const openComments = (video) => {
   };
 
   useEffect(() => {
-    const fetchProfil = async () => {
+    const getdeopublic = async () => {
+      if (loading) return;
+
+      setLoading(true);
+
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          `${API_URL}/api/clients/videos/public?page=${page}`,
         );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Erreur chargement profil");
-        }
-
-        setInfos(data);
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-    fetchProfil();
-  }, []);
-
-  useEffect(() => {
-    const getdeopublic = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/clients/videos/public`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -378,15 +375,42 @@ const openComments = (video) => {
           return;
         }
 
-        setvideos(data || []);
-        console.log("VIDEOS BACKEND :", data);
+        setvideos((prev) => {
+          const newVideos = data.filter(
+            (v) => !prev.some((p) => p._id === v._id),
+          );
+          return [...prev, ...newVideos];
+        });
+        if (data.length === 0) setHasMore(false);
       } catch (error) {
         alert(error.message);
       }
+
+      setLoading(false);
     };
 
     getdeopublic();
-  }, []);
+  }, [page]);
+
+  useEffect(() => {
+    const container = pageRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (loading || !hasMore) return;
+
+      if (
+        container.scrollTop + container.clientHeight >=
+        container.scrollHeight - 100
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [loading, hasMore]);
 
   useEffect(() => {
     const setVh = () => {
@@ -433,12 +457,14 @@ const openComments = (video) => {
   };
 
   return (
-    <Page>
+    <Page ref={pageRef}>
       {videos.map((deo, index) => (
         <VideoContainer key={deo._id}>
           <Video
             data-id={deo._id}
-            ref={(el) => (videoRefs.current[index] = el)}
+            ref={(el) => {
+              if (el) videoRefs.current[deo._id] = el;
+            }}
             src={deo.url}
             muted={!hasInteracted}
             loop
@@ -454,16 +480,16 @@ const openComments = (video) => {
           <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
 
           <Overlay>
-            <p>
-              @{infos?.nom}-{infos?.prenom}{" "}
-            </p>
+            <p>@{deo.user?.pseudo || `${deo.user?.nom}-${deo.user?.prenom}`}</p>
             <p>{deo?.description || "Pas de description"}</p>
           </Overlay>
 
           {/* {modal} */}
 
-         
           <RightPanel>
+            <Button onClick={() => navigate(`/profilpublic/${deo.user._id}`)}>
+              <Img src={deo.user?.avatar?.url} alt={deo.user?.pseudo} />
+            </Button>
             <ActionButton
               dejaLike={deo.likes?.some((id) => id.toString() === userId)}
             >
@@ -477,54 +503,51 @@ const openComments = (video) => {
               <span>{deo.comments?.length || 0}</span>
             </ActionButton>
 
-            <ActionButton>
+            {/* <ActionButton>
               <FaShare />
               <span>Partager</span>
-            </ActionButton>
+            </ActionButton> */}
           </RightPanel>
         </VideoContainer>
       ))}
 
+      {activeVideo && (
+        <ModalOverlay>
+          <ModalBox>
+            <ModalHeader>
+              <h3>Commentaires</h3>
+              <CloseBtn onClick={() => setActiveVideo(null)}>✕</CloseBtn>
+            </ModalHeader>
 
-       {activeVideo && (
-            <ModalOverlay>
-              <ModalBox>
-                {/* HEADER */}
-                <ModalHeader>
-                  <h3>Commentaires</h3>
-                  <CloseBtn onClick={() => setActiveVideo(null)}>✕</CloseBtn>
-                </ModalHeader>
+            <CommentList>
+              {comments.length === 0 ? (
+                <p>Aucun commentaire</p>
+              ) : (
+                comments.map((c, i) => (
+                  <CommentItem key={i}>{c.texte}</CommentItem>
+                ))
+              )}
+            </CommentList>
 
-                {/* LISTE COMMENTAIRES */}
-                <CommentList>
-                  {comments.length === 0 ? (
-                    <p>Aucun commentaire</p>
-                  ) : (
-                    comments.map((c, i) => (
-                      <CommentItem key={i}>{c.texte}</CommentItem>
-                    ))
-                  )}
-                </CommentList>
+            {/* INPUT */}
+            <CommentInputBox>
+              <input
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Écris un commentaire..."
+              />
 
-                {/* INPUT */}
-                <CommentInputBox>
-                  <input
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Écris un commentaire..."
-                  />
-
-                  <button
-                    onClick={() => {
-                      handleComment(activeVideo);
-                    }}
-                  >
-                    Envoyer
-                  </button>
-                </CommentInputBox>
-              </ModalBox>
-            </ModalOverlay>
-          )}
+              <button
+                onClick={() => {
+                  handleComment(activeVideo);
+                }}
+              >
+                Envoyer
+              </button>
+            </CommentInputBox>
+          </ModalBox>
+        </ModalOverlay>
+      )}
     </Page>
   );
 }

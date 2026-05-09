@@ -18,7 +18,7 @@ const Page = styled.div`
   background: linear-gradient(135deg, #f8f9ff, #e6ecff);
   display: flex;
   justify-content: center;
-  padding: 28px 20px 120px;
+  margin-bottom: 100px;
 `;
 
 const ProfileHero = styled.div`
