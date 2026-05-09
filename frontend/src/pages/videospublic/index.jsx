@@ -206,6 +206,22 @@ const CommentItem = styled.div`
   gap: 10px;
   padding: 10px 0;
   border-bottom: 1px solid #222;
+  position: relative;
+
+  transform: translateX(${(props) => props.offset || 0}px);
+  transition: transform 0.15s ease;
+`;
+
+const SwipeBackground = styled.div`
+  position: absolute;
+  inset: 0;
+  background: #ff3b30;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  color: white;
+  font-weight: bold;
+  z-index: 0;
 `;
 
 const CommentAvatar = styled.img`
@@ -402,7 +418,9 @@ function Videopublic() {
   const [replyTo, setReplyTo] = useState(null);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchStartY, setTouchStartY] = useState(0);
-  
+  const [swipingId, setSwipingId] = useState(null);
+  const [swipeX, setSwipeX] = useState(0);
+
   const hideTimeout = useRef(null);
   const pageRef = useRef(null);
   const inputRef = useRef(null);
@@ -866,24 +884,39 @@ function Videopublic() {
                 comments.map((c, i) => (
                   <CommentItem
                     key={c._id}
+                    offset={swipingId === c._id ? swipeX : 0}
                     onTouchStart={(e) => {
+                      setSwipingId(c._id);
+                      setSwipeX(0);
+
                       setTouchStartX(e.touches[0].clientX);
                       setTouchStartY(e.touches[0].clientY);
                     }}
+                    onTouchMove={(e) => {
+                      if (swipingId !== c._id) return;
+
+                      const currentX = e.touches[0].clientX;
+                      const diffX = currentX - touchStartX;
+
+                      if (diffX > 0) {
+                        setSwipeX(Math.min(diffX, 100)); // effet visuel
+                      }
+                    }}
                     onTouchEnd={(e) => {
                       const touchEndX = e.changedTouches[0].clientX;
-                      const touchEndY = e.changedTouches[0].clientY;
-
                       const diffX = touchEndX - touchStartX;
-                      const diffY = touchEndY - touchStartY;
 
-                      if (diffX > 80 && Math.abs(diffY) < 50) {
+                      setSwipingId(null);
+                      setSwipeX(0);
+
+                      if (diffX > 80) {
                         setReplyTo({
                           commentId: c._id,
                           pseudo: c.user?.pseudo,
                         });
 
                         setCommentText(`@${c.user?.pseudo} `);
+
                         setTimeout(() => {
                           inputRef.current?.focus();
                         }, 100);
@@ -905,27 +938,29 @@ function Videopublic() {
 
                       <CommentText>{c.texte}</CommentText>
                       <ReplyWrapper>
-                      {c.replies?.map((r, index) => (
-                        <ReplyItem key={index}>
-                          <ReplyAvatarBtn
-                            onClick={() =>
-                              navigate(`/profilpublic/${r.user?._id}`)
-                            }
-                          >
-                            <ReplyAvatar
-                              src={r.user?.avatar?.url || "/default-avatar.png"}
-                            />
-                          </ReplyAvatarBtn>
+                        {c.replies?.map((r, index) => (
+                          <ReplyItem key={index}>
+                            <ReplyAvatarBtn
+                              onClick={() =>
+                                navigate(`/profilpublic/${r.user?._id}`)
+                              }
+                            >
+                              <ReplyAvatar
+                                src={
+                                  r.user?.avatar?.url || "/default-avatar.png"
+                                }
+                              />
+                            </ReplyAvatarBtn>
 
-                          <ReplyContent>
-                            <ReplyPseudo>
-                              @{r.user?.pseudo || "user"}
-                            </ReplyPseudo>
+                            <ReplyContent>
+                              <ReplyPseudo>
+                                @{r.user?.pseudo || "user"}
+                              </ReplyPseudo>
 
-                            <ReplyText>{r.texte}</ReplyText>
-                          </ReplyContent>
-                        </ReplyItem>
-                      ))}
+                              <ReplyText>{r.texte}</ReplyText>
+                            </ReplyContent>
+                          </ReplyItem>
+                        ))}
                       </ReplyWrapper>
                     </CommentContent>
                   </CommentItem>
