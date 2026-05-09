@@ -146,6 +146,11 @@ exports.comment = async (req, res) => {
 
     const video = await Video.findById(videoId);
 
+    if (!video) {
+      return res.status(404).json({ message: "Vidéo introuvable" });
+    }
+
+    // 1. ajouter commentaire
     video.comments.push({
       userId: req.auth.userId,
       texte,
@@ -153,18 +158,24 @@ exports.comment = async (req, res) => {
 
     await video.save();
 
-    // 🔥 ENRICHIR LES COMMENTAIRES
-    const profil = await Profil.findOne({ userId: req.auth.userId });
+    // 2. enrichir chaque commentaire avec son propre user
+    const commentsWithUser = await Promise.all(
+      video.comments.map(async (c) => {
+        const profil = await Profil.findOne({ userId: c.userId });
 
-    const commentsWithUser = video.comments.map((c) => ({
-      ...c._doc,
-      user: profil
-        ? {
-            pseudo: profil.pseudo,
-            avatar: profil.avatar,
-          }
-        : null,
-    }));
+        return {
+          _id: c._id,
+          texte: c.texte,
+          date: c.date,
+          user: profil
+            ? {
+                pseudo: profil.pseudo,
+                avatar: profil.avatar,
+              }
+            : null,
+        };
+      })
+    );
 
     res.json(commentsWithUser);
   } catch (error) {
