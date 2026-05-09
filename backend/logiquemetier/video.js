@@ -158,17 +158,18 @@ exports.comment = async (req, res) => {
 
     await video.save();
 
-    // 2. enrichir chaque commentaire avec son propre user
+    
     const commentsWithUser = await Promise.all(
       video.comments.map(async (c) => {
         const profil = await Profil.findOne({ userId: c.userId });
 
-        return {
-          _id: c._id,
-          texte: c.texte,
-          date: c.date,
+             return {
+          ...c._doc,
           user: profil
             ? {
+               _id: profil._id,
+                nom: profil.nom,
+                prenom: profil.prenom,
                 pseudo: profil.pseudo,
                 avatar: profil.avatar,
               }
@@ -177,7 +178,7 @@ exports.comment = async (req, res) => {
       })
     );
 
-    res.json(commentsWithUser);
+    res.status(200).json(videosWithUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
