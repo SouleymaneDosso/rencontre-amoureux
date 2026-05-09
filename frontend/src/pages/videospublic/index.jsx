@@ -824,7 +824,7 @@ function Videopublic() {
                       const diffX = touchEndX - touchStartX;
                       const diffY = touchEndY - touchStartY;
 
-                      // 👉 swipe vers la droite UNIQUEMENT (ignore scroll vertical)
+                     
                       if (diffX > 80 && Math.abs(diffY) < 50) {
                         setReplyTo({
                           commentId: c._id,
@@ -832,8 +832,6 @@ function Videopublic() {
                         });
 
                         setCommentText(`@${c.user?.pseudo} `);
-
-                        // 🔥 focus automatique (optionnel mais stylé)
                         setTimeout(() => {
                           inputRef.current?.focus();
                         }, 100);
@@ -843,9 +841,9 @@ function Videopublic() {
                     <Button
                       onClick={() => navigate(`/profilpublic/${c.user._id}`)}
                     >
-                      <CommentAvatar
+                      {/* <CommentAvatar
                         src={c.user?.avatar?.url || "/default-avatar.png"}
-                      />
+                      /> */}
                     </Button>
 
                     <CommentContent>
