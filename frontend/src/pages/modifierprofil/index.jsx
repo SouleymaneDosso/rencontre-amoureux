@@ -21,7 +21,6 @@ const Page = styled.main`
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 40px 20px;
   margin-bottom: 80px;
 `;
 

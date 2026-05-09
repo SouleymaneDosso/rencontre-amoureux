@@ -208,8 +208,11 @@ const CommentItem = styled.div`
   border-bottom: 1px solid #222;
   position: relative;
 
+  background: #111; /* 🔥 IMPORTANT */
+
   transform: translateX(${(props) => props.offset || 0}px);
   transition: transform 0.15s ease;
+  overflow: hidden;
 `;
 
 const SwipeBackground = styled.div`
@@ -221,7 +224,7 @@ const SwipeBackground = styled.div`
   padding-left: 20px;
   color: white;
   font-weight: bold;
-  z-index: 0;
+  z-index: 1;
 `;
 
 const CommentAvatar = styled.img`
@@ -229,10 +232,14 @@ const CommentAvatar = styled.img`
   height: 35px;
   border-radius: 50%;
   object-fit: cover;
+  position: relative;
+  z-index: 2;
 `;
 
 const CommentContent = styled.div`
   flex: 1;
+  position: relative;
+  z-index: 2;
 `;
 
 const CommentPseudo = styled.p`
@@ -899,7 +906,7 @@ function Videopublic() {
                       const diffX = currentX - touchStartX;
 
                       if (diffX > 0) {
-                        setSwipeX(Math.min(diffX, 100)); // effet visuel
+                        setSwipeX(Math.min(diffX, 100));
                       }
                     }}
                     onTouchEnd={(e) => {
@@ -923,6 +930,9 @@ function Videopublic() {
                       }
                     }}
                   >
+                    {swipingId === c._id && (
+                      <SwipeBackground>↩ Reply</SwipeBackground>
+                    )}
                     <Button
                       onClick={() => navigate(`/profilpublic/${c.user._id}`)}
                     >
