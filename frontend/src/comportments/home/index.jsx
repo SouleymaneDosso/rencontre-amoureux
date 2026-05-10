@@ -422,11 +422,10 @@ const Slider = styled.div`
   height: 100vh;
 
   transform: translateX(
-    calc(-100vw + ${({ translateX }) => translateX}px)
+    calc(-100vw * ${({ index }) => index} + ${({ drag }) => drag}px)
   );
 
-  transition: ${({ dragging }) =>
-    dragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)"};
+  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.35s ease")};
 `;
 
 const Slide = styled.img`
@@ -451,13 +450,12 @@ function Home() {
 
   const photos = profil?.photos || [];
 
-const getPrevIndex = () =>
-  photos.length
-    ? currentIndex === 0
-      ? photos.length - 1
-      : currentIndex - 1
-    : 0;
-
+  const getPrevIndex = () =>
+    photos.length
+      ? currentIndex === 0
+        ? photos.length - 1
+        : currentIndex - 1
+      : 0;
 
   useEffect(() => {
     if (!token) {
@@ -470,24 +468,18 @@ const getPrevIndex = () =>
     setModal(true);
   };
 
-const getNextIndex = () =>
-  photos.length ? (currentIndex + 1) % photos.length : 0;  
+  const getNextIndex = () =>
+    photos.length ? (currentIndex + 1) % photos.length : 0;
 
-const nextImage = () => {
-  if (!photos.length) return;
-  setCurrentIndex((prev) => (prev + 1) % photos.length);
-};
+  const nextImage = () => {
+    if (!photos.length) return;
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
+  };
 
-const prevImage = () => {
-  if (!photos.length) return;
-  setCurrentIndex((prev) =>
-    prev === 0 ? photos.length - 1 : prev - 1
-  );
-};
-
-
-
-
+  const prevImage = () => {
+    if (!photos.length) return;
+    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+  };
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -502,34 +494,41 @@ const prevImage = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [modal, currentIndex]);
 
- const handleTouchStart = (e) => {
-  touchStartX.current = e.touches[0].clientX;
-  setTranslateX(0);
-};
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    setTranslateX(0);
+  };
 
-const handleTouchMove = (e) => {
-  const currentX = e.touches[0].clientX;
-  const diff = currentX - touchStartX.current;
+  const handleTouchMove = (e) => {
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStartX.current;
 
-  setTranslateX(diff);
-};
+    setTranslateX(diff);
+  };
 
-const handleTouchEnd = () => {
-  const threshold = window.innerWidth * 0.25; // 25% écran
-  const diff = translateX;
+  const handleTouchEnd = () => {
+    const threshold = window.innerWidth * 0.2;
 
-  if (diff < -threshold) {
-    nextImage();
-  } else if (diff > threshold) {
-    prevImage();
-  }
+    if (translateX < -threshold) {
+      setTranslateX(-window.innerWidth);
 
-  setTranslateX(0);
-  touchStartX.current = null;
-};
+      setTimeout(() => {
+        nextImage();
+        setTranslateX(0);
+      }, 300);
+    } else if (translateX > threshold) {
+      setTranslateX(window.innerWidth);
 
+      setTimeout(() => {
+        prevImage();
+        setTranslateX(0);
+      }, 300);
+    } else {
+      setTranslateX(0);
+    }
 
-
+    touchStartX.current = null;
+  };
   const suppression = async (public_id) => {
     try {
       const res = await fetch(
@@ -690,6 +689,7 @@ const handleTouchEnd = () => {
       : progress < 80
         ? "Beau début. Encore quelques détails pour le rendre plus complet."
         : "Excellent profil. Tu es prêt à te démarquer.";
+
   return (
     <Page>
       <Main>
@@ -806,7 +806,8 @@ const handleTouchEnd = () => {
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
                   <Slider
-                    translateX={translateX}
+                    index={1}
+                    drag={translateX}
                     dragging={touchStartX.current !== null}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
