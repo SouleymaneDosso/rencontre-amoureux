@@ -309,11 +309,7 @@ const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.95);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 9999;
-  backdrop-filter: blur(12px);
 `;
 const Main = styled.main`
   width: 100%;
@@ -418,11 +414,11 @@ const SuccessText = styled.p`
 
 const Slider = styled.div`
   display: flex;
-  width: 300vw;
+  width: 100%;
   height: 100vh;
 
   transform: translateX(
-    calc(-100vw * ${({ index }) => index} + ${({ drag }) => drag}px)
+    calc(-100% * ${({ index }) => index} + ${({ drag }) => drag}px)
   );
 
   transition: ${({ dragging }) => (dragging ? "none" : "transform 0.35s ease")};
@@ -433,6 +429,13 @@ const Slide = styled.img`
   height: 100vh;
   object-fit: contain;
   flex-shrink: 0;
+`;
+
+const SliderWrapper = styled.div`
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 `;
 
 function Home() {
@@ -804,20 +807,21 @@ function Home() {
               />
 
               {modal && photos.length > 0 && (
-                <Overlay onClick={() => setModal(false)}>
-                  <Slider
-                    index={1}
-                    drag={translateX}
-                    dragging={touchStartX.current !== null}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Slide src={photos[getPrevIndex()].url} />
-                    <Slide src={photos[currentIndex].url} />
-                    <Slide src={photos[getNextIndex()].url} />
-                  </Slider>
+                <Overlay>
+                  <SliderWrapper>
+                    <Slider
+                      index={1}
+                      drag={translateX}
+                      dragging={touchStartX.current !== null}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                    >
+                      <Slide src={photos[getPrevIndex()].url} />
+                      <Slide src={photos[currentIndex].url} />
+                      <Slide src={photos[getNextIndex()].url} />
+                    </Slider>
+                  </SliderWrapper>
                 </Overlay>
               )}
 
