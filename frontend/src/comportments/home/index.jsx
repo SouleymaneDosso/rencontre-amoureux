@@ -771,6 +771,7 @@ function Home() {
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
                   <SliderWrapper
+                  
                     onClick={(e) => e.stopPropagation()}
                     onTouchStart={(e) => {
                       touchStartX.current = e.touches[0].clientX;
@@ -787,12 +788,12 @@ function Home() {
                         prev(); 
                       }
                     }}
+                    
                   >
-                    <CloseButton onClick={() => setModal(false)}>✕</CloseButton>
 
                     <Slider index={currentIndex}>
                       {photos.map((img) => (
-                        <Slide key={img.public_id} src={img.url} />
+                        <Slide key={img.public_id} src={img.url}  onClick={() => setModal(false)}/>
                       ))}
                     </Slider>
                   </SliderWrapper>
