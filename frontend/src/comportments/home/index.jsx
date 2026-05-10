@@ -308,8 +308,24 @@ const Span = styled.span``;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(15, 20, 40, 0.85);
+  backdrop-filter: blur(12px);
   z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  animation: fadeIn 0.25s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 `;
 const Main = styled.main`
   width: 100%;
@@ -414,14 +430,11 @@ const SuccessText = styled.p`
 
 const Slider = styled.div`
   display: flex;
+  height: 100%;
   width: 100%;
-  height: 100vh;
 
-  transform: translateX(
-    calc(-100% * ${({ index }) => index} + ${({ drag }) => drag}px)
-  );
-
-  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.35s ease")};
+  transform: translateX(-${({ index }) => index * 100}%);
+  transition: transform 0.35s ease;
 `;
 
 const Slide = styled.img`
@@ -446,19 +459,21 @@ function Home() {
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [translateX, setTranslateX] = useState(0);
   const navigate = useNavigate();
-  const touchStartX = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
   const token = localStorage.getItem("token");
 
   const photos = profil?.photos || [];
 
-  const getPrevIndex = () =>
-    photos.length
-      ? currentIndex === 0
-        ? photos.length - 1
-        : currentIndex - 1
-      : 0;
+  useEffect(() => {
+    if (modal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [modal]);
 
   useEffect(() => {
     if (!token) {
@@ -471,67 +486,14 @@ function Home() {
     setModal(true);
   };
 
-  const getNextIndex = () =>
-    photos.length ? (currentIndex + 1) % photos.length : 0;
-
-  const nextImage = () => {
-    if (!photos.length) return;
-    setCurrentIndex((prev) => (prev + 1) % photos.length);
+  const next = () => {
+    setCurrentIndex((prev) => (prev < photos.length - 1 ? prev + 1 : prev));
   };
 
-  const prevImage = () => {
-    if (!photos.length) return;
-    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+  const prev = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
   };
 
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (!modal) return;
-
-      if (e.key === "ArrowRight") nextImage();
-      if (e.key === "ArrowLeft") prevImage();
-      if (e.key === "Escape") setModal(false);
-    };
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [modal, currentIndex]);
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    setTranslateX(0);
-  };
-
-  const handleTouchMove = (e) => {
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - touchStartX.current;
-
-    setTranslateX(diff);
-  };
-
-  const handleTouchEnd = () => {
-    const threshold = window.innerWidth * 0.2;
-
-    if (translateX < -threshold) {
-      setTranslateX(-window.innerWidth);
-
-      setTimeout(() => {
-        nextImage();
-        setTranslateX(0);
-      }, 300);
-    } else if (translateX > threshold) {
-      setTranslateX(window.innerWidth);
-
-      setTimeout(() => {
-        prevImage();
-        setTranslateX(0);
-      }, 300);
-    } else {
-      setTranslateX(0);
-    }
-
-    touchStartX.current = null;
-  };
   const suppression = async (public_id) => {
     try {
       const res = await fetch(
@@ -807,19 +769,31 @@ function Home() {
               />
 
               {modal && photos.length > 0 && (
-                <Overlay>
-                  <SliderWrapper>
-                    <Slider
-                      index={1}
-                      drag={translateX}
-                      dragging={touchStartX.current !== null}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    >
-                      <Slide src={photos[getPrevIndex()].url} />
-                      <Slide src={photos[currentIndex].url} />
-                      <Slide src={photos[getNextIndex()].url} />
+                <Overlay onClick={() => setModal(false)}>
+                  <SliderWrapper
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => {
+                      touchStartX.current = e.touches[0].clientX;
+                    }}
+                    onTouchMove={(e) => {
+                      touchEndX.current = e.touches[0].clientX;
+                    }}
+                    onTouchEnd={() => {
+                      const diff = touchStartX.current - touchEndX.current;
+
+                      if (diff > 50) {
+                        next(); 
+                      } else if (diff < -50) {
+                        prev(); 
+                      }
+                    }}
+                  >
+                    <CloseButton onClick={() => setModal(false)}>✕</CloseButton>
+
+                    <Slider index={currentIndex}>
+                      {photos.map((img) => (
+                        <Slide key={img.public_id} src={img.url} />
+                      ))}
                     </Slider>
                   </SliderWrapper>
                 </Overlay>
