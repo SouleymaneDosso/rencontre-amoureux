@@ -434,7 +434,8 @@ const Slider = styled.div`
   width: 100%;
 
   transform: translateX(-${({ index }) => index * 100}%);
-  transition: transform 0.35s ease;
+  transition: ${({ noTransition }) =>
+    noTransition ? "none" : "transform 0.35s ease"};
 `;
 
 const Slide = styled.img`
@@ -458,7 +459,8 @@ function Home() {
   const [progress, setProgress] = useState(0);
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [noTransition, setNoTransition] = useState(false);
   const navigate = useNavigate();
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -466,6 +468,11 @@ function Home() {
   const token = localStorage.getItem("token");
 
   const photos = profil?.photos || [];
+  const loopedPhotos = [
+    photos[photos.length - 1], // dernière au début
+    ...photos,
+    photos[0], // première à la fin
+  ];
 
   useEffect(() => {
     if (modal) {
@@ -487,12 +494,37 @@ function Home() {
   };
 
   const next = () => {
-    setCurrentIndex((prev) => (prev < photos.length - 1 ? prev + 1 : prev));
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const prev = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    setCurrentIndex((prev) => prev - 1);
   };
+
+  useEffect(() => {
+    if (!photos.length) return;
+
+    // fin (clone de la première)
+    if (currentIndex === loopedPhotos.length - 1) {
+      setTimeout(() => {
+        setNoTransition(true);
+        setCurrentIndex(1); // vrai premier
+      }, 350);
+    }
+
+    // début (clone de la dernière)
+    if (currentIndex === 0) {
+      setTimeout(() => {
+        setNoTransition(true);
+        setCurrentIndex(loopedPhotos.length - 2); // vrai dernier
+      }, 350);
+    }
+
+    // réactiver animation
+    setTimeout(() => {
+      setNoTransition(false);
+    }, 360);
+  }, [currentIndex, loopedPhotos.length]);
 
   const suppression = async (public_id) => {
     try {
@@ -771,7 +803,6 @@ function Home() {
               {modal && photos.length > 0 && (
                 <Overlay onClick={() => setModal(false)}>
                   <SliderWrapper
-                  
                     onClick={(e) => e.stopPropagation()}
                     onTouchStart={(e) => {
                       touchStartX.current = e.touches[0].clientX;
@@ -783,17 +814,15 @@ function Home() {
                       const diff = touchStartX.current - touchEndX.current;
 
                       if (diff > 50) {
-                        next(); 
+                        next();
                       } else if (diff < -50) {
-                        prev(); 
+                        prev();
                       }
                     }}
-                    
                   >
-
-                    <Slider index={currentIndex}>
-                      {photos.map((img) => (
-                        <Slide key={img.public_id} src={img.url}  onClick={() => setModal(false)}/>
+                    <Slider index={currentIndex} noTransition={noTransition}>
+                      {loopedPhotos.map((img, i) => (
+                        <Slide key={i} src={img?.url} />
                       ))}
                     </Slider>
                   </SliderWrapper>
