@@ -461,7 +461,7 @@ const SlideContainer = styled.div`
 
 const CloseOnImage = styled.button`
   position: absolute;
-  top: 20px;
+  top: 35px;
   right: 20px;
 
   background: rgba(0, 0, 0, 0.4);
