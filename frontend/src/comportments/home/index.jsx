@@ -461,7 +461,7 @@ const SlideContainer = styled.div`
 
 const CloseOnImage = styled.button`
   position: absolute;
-  top: 70px;
+  top: 90px;
   right: 20px;
 
   background: rgba(0, 0, 0, 0.4);
@@ -496,7 +496,7 @@ function Home() {
   const [progress, setProgress] = useState(0);
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [noTransition, setNoTransition] = useState(false);
   const navigate = useNavigate();
   const touchStartX = useRef(0);
