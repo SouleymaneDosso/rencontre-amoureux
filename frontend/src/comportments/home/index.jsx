@@ -452,6 +452,43 @@ const SliderWrapper = styled.div`
   position: relative;
 `;
 
+const SlideContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  flex-shrink: 0;
+`;
+
+const CloseOnImage = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: none;
+  color: white;
+  font-size: 22px;
+
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  z-index: 10;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+    transform: scale(1.1);
+  }
+`;
+
 function Home() {
   const [profil, setProfil] = useState(null);
   const [interet, setInteret] = useState([]);
@@ -822,7 +859,13 @@ function Home() {
                   >
                     <Slider index={currentIndex} noTransition={noTransition}>
                       {loopedPhotos.map((img, i) => (
-                        <Slide key={i} src={img?.url} />
+                        <SlideContainer key={i}>
+                          <Slide src={img?.url} />
+
+                          <CloseOnImage onClick={() => setModal(false)}>
+                            ✕
+                          </CloseOnImage>
+                        </SlideContainer>
                       ))}
                     </Slider>
                   </SliderWrapper>
