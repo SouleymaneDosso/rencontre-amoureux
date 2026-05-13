@@ -1,4 +1,4 @@
-import { useState, useEffect , useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import {
@@ -261,7 +261,7 @@ const ModalImage = styled.img`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 14px;
+  top: 80px;
   right: 14px;
   background: rgba(255, 255, 255, 0.85);
   border: none;
@@ -339,6 +339,37 @@ const CenterText = styled.h3`
   text-align: center;
   margin-top: 80px;
   color: ${({ error }) => (error ? "#dc2626" : "#374151")};
+`;
+
+const SliderWrapper = styled.div`
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+`;
+
+const Slider = styled.div`
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  transform: translateX(-${({ index }) => index * 100}%);
+  transition: ${({ noTransition }) =>
+    noTransition ? "none" : "transform 0.35s ease"};
+`;
+
+const SlideContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  position: relative;
+  background: black;
+`;
+
+const SlideImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 `;
 
 // ======================================
@@ -430,8 +461,8 @@ function Profilpublic() {
   };
 
   useEffect(() => {
-  document.body.style.overflow = modal ? "hidden" : "auto";
-}, [modal]);
+    document.body.style.overflow = modal ? "hidden" : "auto";
+  }, [modal]);
 
   // ------------------ Fetch profil public
   useEffect(() => {
@@ -519,7 +550,7 @@ function Profilpublic() {
         </BackButton>
 
         <Card>
-          <Hero> 
+          <Hero>
             <AvatarWrapper>
               {profil.avatar?.url ? (
                 <Avatar
@@ -623,13 +654,7 @@ function Profilpublic() {
 
       {modal && photos.length > 0 && (
         <ModalOverlay onClick={() => setModal(false)}>
-          <div
-            style={{
-              width: "100vw",
-              height: "100vh",
-              overflow: "hidden",
-              position: "relative",
-            }}
+          <SliderWrapper
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => {
               touchStartX.current = e.touches[0].clientX;
@@ -644,42 +669,18 @@ function Profilpublic() {
               else if (diff < -50) prev();
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                height: "100%",
-                width: "100%",
-                transform: `translateX(-${currentIndex * 100}%)`,
-                transition: noTransition ? "none" : "transform 0.35s ease",
-              }}
-            >
+            <Slider index={currentIndex} noTransition={noTransition}>
               {loopedPhotos.map((img, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: "100vw",
-                    height: "100vh",
-                    flexShrink: 0,
-                    position: "relative",
-                  }}
-                >
-                  <img
-                    src={img?.url}
-                    alt=""
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                    }}
-                  />
+                <SlideContainer key={i}>
+                  <SlideImage src={img?.url} alt="" />
 
                   <CloseButton onClick={() => setModal(false)}>
                     <FaTimes />
                   </CloseButton>
-                </div>
+                </SlideContainer>
               ))}
-            </div>
-          </div>
+            </Slider>
+          </SliderWrapper>
         </ModalOverlay>
       )}
     </Page>
