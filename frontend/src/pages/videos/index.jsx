@@ -289,20 +289,45 @@ const SoundButton = styled.div`
   cursor: pointer;
 `;
 const InputDescription = styled.textarea`
-  width: 90%;
-  margin: 16px;
+  width: 100%;
+  max-width: 600px;
+
+  margin: 16px auto;
   display: block;
 
-  padding: 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
   border: none;
   outline: none;
 
-  background: rgba(255, 255, 255, 0.1);
+  resize: none; /* 🔥 empêche agrandissement manuel */
+  min-height: 100px;
+  max-height: 180px;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
   color: black;
 
+  box-sizing: border-box; /* 🔥 très important */
+
   &::placeholder {
-    color: black;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  /* 📱 Mobile */
+  @media (max-width: 480px) {
+    width: 92%;
+    margin: 12px auto;
+    font-size: 13px;
+    padding: 12px;
+  }
+
+  /* 💻 Tablette */
+  @media (max-width: 768px) {
+    width: 95%;
   }
 `;
 
