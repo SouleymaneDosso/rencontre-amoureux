@@ -293,7 +293,7 @@ const InputDescription = styled.textarea`
   margin: 16px;
   display: block;
 
-  padding: 12px;
+  padding: 16px;
   border-radius: 12px;
   border: none;
   outline: none;
