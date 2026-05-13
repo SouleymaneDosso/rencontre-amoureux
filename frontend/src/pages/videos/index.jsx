@@ -290,7 +290,7 @@ const SoundButton = styled.div`
 `;
 const InputDescription = styled.textarea`
   width: 90%;
-  margin: 15px auto;
+  margin: 16px;
   display: block;
 
   padding: 12px;
