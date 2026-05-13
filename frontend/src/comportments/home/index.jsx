@@ -340,28 +340,9 @@ const Main = styled.main`
   }
 `;
 
-const ModalImage = styled.img`
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
 
-  transform: translateX(${({ translateX }) => translateX}px);
-  transition: ${({ dragging }) => (dragging ? "none" : "transform 0.3s ease")};
-`;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 25px;
-  right: 25px;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: none;
-  font-size: 28px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  cursor: pointer;
-`;
+
 const Conteneur = styled.section`
   margin-top: 30px;
   width: 100%;

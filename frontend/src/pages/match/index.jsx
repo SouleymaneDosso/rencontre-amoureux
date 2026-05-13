@@ -218,42 +218,69 @@ const Empty = styled.div`
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: rgba(10, 12, 25, 0.95);
+  backdrop-filter: blur(10px);
   z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  animation: fadeIn 0.25s ease;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 `;
 
 const ModalContent = styled.div`
-  max-width: 90%;
-  max-height: 90%;
-  overflow: auto;
-  border-radius: 20px;
+  width: 100vw;
+  height: 100vh;
   position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const ModalImage = styled.img`
   width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 20px;
+  height: 100%;
+  object-fit: contain; /* 🔥 très important */
+
+  user-select: none;
+  pointer-events: none;
 `;
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 14px;
-  right: 14px;
-  background: rgba(255, 255, 255, 0.85);
-  border: none;
+  top: 25px;
+  right: 25px;
+
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  padding: 8px;
-  font-size: 18px;
+
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+
+  border: none;
+  color: white;
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
-  z-index: 10;
+  z-index: 20;
+
+  transition: all 0.25s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 1);
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
   }
 `;
 
@@ -268,6 +295,11 @@ function Matchs() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+useEffect(()=>{
+  document.body.style.overflow = modalPhoto ? "hidden" : "auto"
+}, [modalPhoto])
+
 
   useEffect(() => {
     const fetchMatchs = async () => {
