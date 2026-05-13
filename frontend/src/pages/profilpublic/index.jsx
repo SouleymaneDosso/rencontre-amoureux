@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect , useRef} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import {
@@ -165,14 +165,14 @@ const Badge = styled.span`
     type === "online"
       ? "#dcfce7"
       : type === "verified"
-      ? "#eef2ff"
-      : "#ffe4f1"};
+        ? "#eef2ff"
+        : "#ffe4f1"};
   color: ${({ type }) =>
     type === "online"
       ? "#15803d"
       : type === "verified"
-      ? "#4f46e5"
-      : "#db2777"};
+        ? "#4f46e5"
+        : "#db2777"};
 `;
 
 // Bio
@@ -341,7 +341,6 @@ const CenterText = styled.h3`
   color: ${({ error }) => (error ? "#dc2626" : "#374151")};
 `;
 
-
 // ======================================
 // Composant Profilpublic
 function Profilpublic() {
@@ -351,11 +350,51 @@ function Profilpublic() {
   const [loading, setLoading] = useState(true);
   const [isMatch, setIsMatch] = useState(false);
   const [checkingMatch, setCheckingMatch] = useState(true);
-  const [modalPhoto, setModalPhoto] = useState(null);
+  const [modal, setModal] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(1);
+  const [noTransition, setNoTransition] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  const photos = profil?.photos || [];
+
+  const loopedPhotos =
+    photos.length > 0 ? [photos[photos.length - 1], ...photos, photos[0]] : [];
+
+  const openModal = (index) => {
+    setCurrentIndex(index + 1);
+    setModal(true);
+  };
+
+  const next = () => setCurrentIndex((prev) => prev + 1);
+  const prev = () => setCurrentIndex((prev) => prev - 1);
+
+  useEffect(() => {
+    if (!photos.length) return;
+
+    if (currentIndex === loopedPhotos.length - 1) {
+      setTimeout(() => {
+        setNoTransition(true);
+        setCurrentIndex(1);
+      }, 300);
+    }
+
+    if (currentIndex === 0) {
+      setTimeout(() => {
+        setNoTransition(true);
+        setCurrentIndex(loopedPhotos.length - 2);
+      }, 300);
+    }
+
+    setTimeout(() => {
+      setNoTransition(false);
+    }, 310);
+  }, [currentIndex, loopedPhotos.length]);
 
   // ------------------ Like
   const like = async () => {
@@ -367,13 +406,16 @@ function Profilpublic() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await res.json();
 
       if (!res.ok) {
-        setTopBar({ type: "error", text: data.message || "Erreur lors du like" });
+        setTopBar({
+          type: "error",
+          text: data.message || "Erreur lors du like",
+        });
         return;
       }
 
@@ -387,6 +429,10 @@ function Profilpublic() {
     }
   };
 
+  useEffect(() => {
+  document.body.style.overflow = modal ? "hidden" : "auto";
+}, [modal]);
+
   // ------------------ Fetch profil public
   useEffect(() => {
     const infospublic = async () => {
@@ -394,10 +440,13 @@ function Profilpublic() {
         setLoading(true);
         setMessage("");
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          },
+        );
 
         const data = await res.json();
 
@@ -433,7 +482,7 @@ function Profilpublic() {
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         const data = await res.json();
@@ -470,10 +519,14 @@ function Profilpublic() {
         </BackButton>
 
         <Card>
-          <Hero>
+          <Hero> 
             <AvatarWrapper>
               {profil.avatar?.url ? (
-                <Avatar src={profil.avatar.url} alt={profil.pseudo} onClick={() => setModalPhoto(profil.avatar.url)} />
+                <Avatar
+                  src={profil.avatar.url}
+                  alt={profil.pseudo}
+                  onClick={() => setModal(profil.avatar.url)}
+                />
               ) : (
                 <AvatarPlaceholder>
                   <FaUserCircle />
@@ -513,7 +566,8 @@ function Profilpublic() {
               {!checkingMatch && !isMatch && (
                 <InfoMatch>
                   <FaLock style={{ marginRight: "8px" }} />
-                  Tu pourras envoyer un message uniquement après un match réciproque.
+                  Tu pourras envoyer un message uniquement après un match
+                  réciproque.
                 </InfoMatch>
               )}
             </Infos>
@@ -533,7 +587,7 @@ function Profilpublic() {
             {profil.photos && profil.photos.length > 0 ? (
               <PhotosGrid>
                 {profil.photos.map((photo, index) => (
-                  <PhotoCard key={index} onClick={() => setModalPhoto(photo.url)}>
+                  <PhotoCard key={index} onClick={() => openModal(index)}>
                     <Photo src={photo.url} alt={`photo-${index}`} />
                   </PhotoCard>
                 ))}
@@ -545,7 +599,10 @@ function Profilpublic() {
 
           <Actions>
             {isMatch ? (
-              <ActionButton className="message" onClick={() => navigate(`/tchat/${profil._id}`)}>
+              <ActionButton
+                className="message"
+                onClick={() => navigate(`/tchat/${profil._id}`)}
+              >
                 <FaComments />
                 Envoyer un message
               </ActionButton>
@@ -564,14 +621,65 @@ function Profilpublic() {
         </Card>
       </Container>
 
-      {modalPhoto && (
-        <ModalOverlay onClick={() => setModalPhoto(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <CloseButton onClick={() => setModalPhoto(null)}>
-              <FaTimes />
-            </CloseButton>
-            <ModalImage src={modalPhoto} alt="agrandi" />
-          </ModalContent>
+      {modal && photos.length > 0 && (
+        <ModalOverlay onClick={() => setModal(false)}>
+          <div
+            style={{
+              width: "100vw",
+              height: "100vh",
+              overflow: "hidden",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              touchStartX.current = e.touches[0].clientX;
+            }}
+            onTouchMove={(e) => {
+              touchEndX.current = e.touches[0].clientX;
+            }}
+            onTouchEnd={() => {
+              const diff = touchStartX.current - touchEndX.current;
+
+              if (diff > 50) next();
+              else if (diff < -50) prev();
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                height: "100%",
+                width: "100%",
+                transform: `translateX(-${currentIndex * 100}%)`,
+                transition: noTransition ? "none" : "transform 0.35s ease",
+              }}
+            >
+              {loopedPhotos.map((img, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "100vw",
+                    height: "100vh",
+                    flexShrink: 0,
+                    position: "relative",
+                  }}
+                >
+                  <img
+                    src={img?.url}
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+
+                  <CloseButton onClick={() => setModal(false)}>
+                    <FaTimes />
+                  </CloseButton>
+                </div>
+              ))}
+            </div>
+          </div>
         </ModalOverlay>
       )}
     </Page>
