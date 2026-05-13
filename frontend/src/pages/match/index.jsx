@@ -255,7 +255,7 @@ const ModalImage = styled.img`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 25px;
+  top: 95px;
   right: 25px;
 
   width: 48px;
