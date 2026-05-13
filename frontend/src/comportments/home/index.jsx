@@ -496,7 +496,7 @@ function Home() {
   const [progress, setProgress] = useState(0);
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(1);
   const [noTransition, setNoTransition] = useState(false);
   const navigate = useNavigate();
   const touchStartX = useRef(0);
@@ -506,9 +506,9 @@ function Home() {
 
   const photos = profil?.photos || [];
   const loopedPhotos = [
-    photos[photos.length - 1], // dernière au début
+    photos[photos.length - 1], 
     ...photos,
-    photos[0], // première à la fin
+    photos[0],
   ];
 
   useEffect(() => {
@@ -526,7 +526,7 @@ function Home() {
   }, [token, navigate]);
 
   const ouvririmage = (index) => {
-    setCurrentIndex(index);
+    setCurrentIndex(index + 1);
     setModal(true);
   };
 
