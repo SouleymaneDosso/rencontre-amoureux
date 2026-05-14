@@ -435,16 +435,6 @@ function Decouverte() {
                 )}
               </ImageWrapper>
 
-              {modal && (
-                <ModalOverlay onClick={() => setModal(null)}>
-                  <ModalContent onClick={(e) => e.stopPropagation()}>
-                    <CloseButton onClick={() => setModal(null)}>
-                      <FaTimes />
-                    </CloseButton>
-                    <ModalImage src={modal} />
-                  </ModalContent>
-                </ModalOverlay>
-              )}
 
               <Content>
                 <H2>
@@ -497,6 +487,17 @@ function Decouverte() {
             </Card>
           ))
         )}
+
+            {modal && (
+                <ModalOverlay onClick={() => setModal(null)}>
+                  <ModalContent onClick={(e) => e.stopPropagation()}>
+                    <CloseButton onClick={() => setModal(null)}>
+                      <FaTimes />
+                    </CloseButton>
+                    <ModalImage src={modal} />
+                  </ModalContent>
+                </ModalOverlay>
+              )}
       </Section>
     </Page>
   );
