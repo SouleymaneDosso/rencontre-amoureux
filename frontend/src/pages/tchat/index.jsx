@@ -389,6 +389,7 @@ function Tchat() {
 
   const ouvrirmodal = (msg) => {
     const index = images.findIndex((m) => m._id === msg._id);
+    if (index === -1) return;
     setCurrentIndex(index);
     setImageActive(msg);
     setModal(true);
@@ -607,14 +608,18 @@ function Tchat() {
 
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
-      msg.isMine = msg.expediteur === monProfilId;
-      // 📬 dire "livré"
+      const formattedMsg = {
+        ...msg,
+        isMine: msg.expediteur === monProfilId,
+      };
+
+      setMessages((prev) => [...prev, formattedMsg]);
+
       socket.emit("messageDelivered", {
         messageId: msg._id,
         expediteurId: msg.expediteur,
       });
 
-      // 👁️ dire "LU DIRECT si ouvert"
       socket.emit("messagesRead", {
         expediteurId: msg.expediteur,
         idsMessagesLus: [msg._id],
@@ -633,7 +638,13 @@ function Tchat() {
       console.log("🔄 Reconnexion → sync messages");
 
       const messagesData = await getMessagesConversation(id, token);
-      setMessages(messagesData);
+
+      setMessages(
+        messagesData.map((msg) => ({
+          ...msg,
+          isMine: msg.expediteur === monProfilId,
+        })),
+      );
     };
 
     socket.on("connect", handleReconnect);
@@ -764,7 +775,7 @@ function Tchat() {
 
     // ⚡ affichage instantané
     setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
-shouldAutoScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
     setSelectedFile(null);
@@ -782,7 +793,9 @@ shouldAutoScrollRef.current = true;
 
       // 🔁 remplacement message temporaire
       setMessages((prev) =>
-        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
+        prev.map((msg) =>
+          msg._id === tempId ? { ...data.nouveauMessage, isMine: true } : msg,
+        ),
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
@@ -1005,7 +1018,6 @@ shouldAutoScrollRef.current = true;
             typingTimeoutRef.current = setTimeout(() => {
               typingTimeoutRef.current = null;
 
-              // 🔥 NOUVEAU : stop typing
               socket.emit("stopTyping", { to: id });
             }, 2000);
           }}
