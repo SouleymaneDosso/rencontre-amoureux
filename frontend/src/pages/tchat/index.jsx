@@ -541,7 +541,12 @@ function Tchat() {
       if (moreMessages.length === 0) {
         setHasMore(false);
       } else {
-        setMessages((prev) => [...moreMessages, ...prev]);
+        const formattedMoreMessages = moreMessages.map((msg) => ({
+          ...msg,
+          isMine: msg.expediteur === monProfilId,
+        }));
+
+        setMessages((prev) => [...formattedMoreMessages, ...prev]);
       }
 
       requestAnimationFrame(() => {
@@ -606,21 +611,23 @@ function Tchat() {
   }, [id, token]);
 
   useEffect(() => {
-  const handleReceiveMessage = (msg) => {
-  msg.isMine = msg.expediteur === monProfilId;
+    const handleReceiveMessage = (msg) => {
+      if (msg.expediteur === monProfilId) return;
 
-  setMessages((prev) => [...prev, msg]);
+      msg.isMine = false;
 
-  socket.emit("messageDelivered", {
-    messageId: msg._id,
-    expediteurId: msg.expediteur,
-  });
+      setMessages((prev) => [...prev, msg]);
 
-  socket.emit("messagesRead", {
-    expediteurId: msg.expediteur,
-    idsMessagesLus: [msg._id],
-  });
-};
+      socket.emit("messageDelivered", {
+        messageId: msg._id,
+        expediteurId: msg.expediteur,
+      });
+
+      socket.emit("messagesRead", {
+        expediteurId: msg.expediteur,
+        idsMessagesLus: [msg._id],
+      });
+    };
 
     socket.on("receiveMessage", handleReceiveMessage);
 
