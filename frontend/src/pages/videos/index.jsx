@@ -180,7 +180,7 @@ const Boutonretour = styled.button`
   top: 13px;
   border: none;
   background: none;
-  color: bleu;
+  color: blue;
   font-size: 15px;
 `;
 
@@ -304,7 +304,7 @@ const InputDescription = styled.textarea`
   min-height: 100px;
   max-height: 180px;
 
-  font-size: 16px;
+  font-size: 16px; 
   line-height: 1.5;
 
   background: rgba(255, 255, 255, 0.12);
@@ -317,15 +317,11 @@ const InputDescription = styled.textarea`
     color: rgba(0, 0, 0, 0.6);
   }
 
-  /* 📱 Mobile */
   @media (max-width: 480px) {
     width: 92%;
     margin: 12px auto;
-    font-size: 13px;
+    font-size: 16px;
     padding: 12px;
-  }
-  @media (max-width: 768px) {
-    width: 95%;
   }
 `;
 
