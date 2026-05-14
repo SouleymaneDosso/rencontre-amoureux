@@ -466,10 +466,6 @@ function Videopublic() {
     if (hideTimeout.current) {
       clearTimeout(hideTimeout.current);
     }
-
-    hideTimeout.current = setTimeout(() => {
-      setShowUI(false);
-    }, 2500);
   };
 
   const formatTime = (sec = 0) => {
