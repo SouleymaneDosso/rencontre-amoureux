@@ -95,7 +95,7 @@ const MessagesContainer = styled.div`
 
 const MessageRow = styled.div`
   display: flex;
-  justify-content: ${(props) => (props.mine ? "flex-end" : "flex-start")};
+  justify-content: ${(props) => (props.$mine ? "flex-end" : "flex-start")};
 `;
 
 const MessageBubble = styled.div`
@@ -108,12 +108,12 @@ const MessageBubble = styled.div`
   box-shadow: 0 8px 20px rgba(31, 42, 68, 0.06);
 
   background: ${(props) =>
-    props.mine ? "linear-gradient(135deg, #ff4d8d, #ff6ca7)" : "white"};
+    props.$mine ? "linear-gradient(135deg, #ff4d8d, #ff6ca7)" : "white"};
 
-  color: ${(props) => (props.mine ? "white" : "#1f2a44")};
+  color: ${(props) => (props.$mine ? "white" : "#1f2a44")};
 
-  border-bottom-right-radius: ${(props) => (props.mine ? "6px" : "20px")};
-  border-bottom-left-radius: ${(props) => (props.mine ? "20px" : "6px")};
+  border-bottom-right-radius: ${(props) => (props.$mine ? "6px" : "20px")};
+  border-bottom-left-radius: ${(props) => (props.$mine ? "20px" : "6px")};
 `;
 
 const MessageImage = styled.img`
@@ -312,7 +312,7 @@ const SkeletonBubble = styled.div`
 
 const SkeletonMessage = styled.div`
   display: flex;
-  justify-content: ${(props) => (props.right ? "flex-end" : "flex-start")};
+  justify-content: ${(props) => (props.$right ? "flex-end" : "flex-start")};
 `;
 
 const MessageVideo = styled.video`
@@ -389,7 +389,6 @@ function Tchat() {
 
   const ouvrirmodal = (msg) => {
     const index = images.findIndex((m) => m._id === msg._id);
-    if (index === -1) return;
     setCurrentIndex(index);
     setImageActive(msg);
     setModal(true);
@@ -608,18 +607,14 @@ function Tchat() {
 
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
-      const formattedMsg = {
-        ...msg,
-        isMine: msg.expediteur === monProfilId,
-      };
-
-      setMessages((prev) => [...prev, formattedMsg]);
-
+      msg.isMine = msg.expediteur === monProfilId;
+      // 📬 dire "livré"
       socket.emit("messageDelivered", {
         messageId: msg._id,
         expediteurId: msg.expediteur,
       });
 
+      // 👁️ dire "LU DIRECT si ouvert"
       socket.emit("messagesRead", {
         expediteurId: msg.expediteur,
         idsMessagesLus: [msg._id],
@@ -638,13 +633,7 @@ function Tchat() {
       console.log("🔄 Reconnexion → sync messages");
 
       const messagesData = await getMessagesConversation(id, token);
-
-      setMessages(
-        messagesData.map((msg) => ({
-          ...msg,
-          isMine: msg.expediteur === monProfilId,
-        })),
-      );
+      setMessages(messagesData);
     };
 
     socket.on("connect", handleReconnect);
@@ -775,7 +764,7 @@ function Tchat() {
 
     // ⚡ affichage instantané
     setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
-    shouldAutoScrollRef.current = true;
+shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
     setSelectedFile(null);
@@ -793,9 +782,7 @@ function Tchat() {
 
       // 🔁 remplacement message temporaire
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === tempId ? { ...data.nouveauMessage, isMine: true } : msg,
-        ),
+        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
@@ -916,8 +903,8 @@ function Tchat() {
           messages.map((msg) => {
             const isMine = msg.isMine;
             return (
-              <MessageRow key={msg._id} mine={isMine}>
-                <MessageBubble mine={isMine}>
+              <MessageRow key={msg._id} $mine={isMine}>
+                <MessageBubble $mine={isMine}>
                   {msg.type === "image" && msg.media?.url && (
                     <MessageImage
                       src={msg.media.url}
@@ -1018,6 +1005,7 @@ function Tchat() {
             typingTimeoutRef.current = setTimeout(() => {
               typingTimeoutRef.current = null;
 
+              // 🔥 NOUVEAU : stop typing
               socket.emit("stopTyping", { to: id });
             }, 2000);
           }}
