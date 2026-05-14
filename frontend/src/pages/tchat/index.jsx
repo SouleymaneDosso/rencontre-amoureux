@@ -498,7 +498,7 @@ function Tchat() {
     if (cachedMessages) {
       console.log("⚡ Chargement instantané depuis cache");
       setMessages(JSON.parse(cachedMessages));
-      setLoading(false); // 🔥 IMPORTANT
+      setLoading(false);
     }
   }, [id]);
 
@@ -606,20 +606,21 @@ function Tchat() {
   }, [id, token]);
 
   useEffect(() => {
-    const handleReceiveMessage = (msg) => {
-      msg.isMine = msg.expediteur === monProfilId;
-      // 📬 dire "livré"
-      socket.emit("messageDelivered", {
-        messageId: msg._id,
-        expediteurId: msg.expediteur,
-      });
+  const handleReceiveMessage = (msg) => {
+  msg.isMine = msg.expediteur === monProfilId;
 
-      // 👁️ dire "LU DIRECT si ouvert"
-      socket.emit("messagesRead", {
-        expediteurId: msg.expediteur,
-        idsMessagesLus: [msg._id],
-      });
-    };
+  setMessages((prev) => [...prev, msg]);
+
+  socket.emit("messageDelivered", {
+    messageId: msg._id,
+    expediteurId: msg.expediteur,
+  });
+
+  socket.emit("messagesRead", {
+    expediteurId: msg.expediteur,
+    idsMessagesLus: [msg._id],
+  });
+};
 
     socket.on("receiveMessage", handleReceiveMessage);
 
@@ -633,7 +634,13 @@ function Tchat() {
       console.log("🔄 Reconnexion → sync messages");
 
       const messagesData = await getMessagesConversation(id, token);
-      setMessages(messagesData);
+
+      const formattedMessages = messagesData.map((msg) => ({
+        ...msg,
+        isMine: msg.expediteur === monProfilId,
+      }));
+
+      setMessages(formattedMessages);
     };
 
     socket.on("connect", handleReconnect);
@@ -764,7 +771,7 @@ function Tchat() {
 
     // ⚡ affichage instantané
     setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
-shouldAutoScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
     setSelectedFile(null);
@@ -782,7 +789,14 @@ shouldAutoScrollRef.current = true;
 
       // 🔁 remplacement message temporaire
       setMessages((prev) =>
-        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
+        prev.map((msg) =>
+          msg._id === tempId
+            ? {
+                ...data.nouveauMessage,
+                isMine: true,
+              }
+            : msg,
+        ),
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
