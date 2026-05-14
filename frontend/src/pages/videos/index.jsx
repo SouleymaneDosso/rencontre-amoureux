@@ -300,18 +300,18 @@ const InputDescription = styled.textarea`
   border: none;
   outline: none;
 
-  resize: none; /* 🔥 empêche agrandissement manuel */
+  resize: none; 
   min-height: 100px;
   max-height: 180px;
 
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
 
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
   color: black;
 
-  box-sizing: border-box; /* 🔥 très important */
+  box-sizing: border-box;
 
   &::placeholder {
     color: rgba(0, 0, 0, 0.6);
@@ -324,8 +324,6 @@ const InputDescription = styled.textarea`
     font-size: 13px;
     padding: 12px;
   }
-
-  /* 💻 Tablette */
   @media (max-width: 768px) {
     width: 95%;
   }
