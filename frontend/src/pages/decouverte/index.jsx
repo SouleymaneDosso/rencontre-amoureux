@@ -235,14 +235,56 @@ const Empty = styled.div`
   box-shadow: 0 10px 30px rgba(31, 42, 68, 0.06);
 `;
 
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+`;
+
+const ModalContent = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalImage = styled.img`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+
+  color: white;
+  font-size: 20px;
+  padding: 10px;
+  cursor: pointer;
+`;
+
 function Decouverte() {
   const [profils, setProfils] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
+  const [modal, setModal] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
 
   const handleLike = async (profilId) => {
     try {
@@ -255,7 +297,7 @@ function Decouverte() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await res.json();
@@ -286,7 +328,7 @@ function Decouverte() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await res.json();
@@ -316,7 +358,7 @@ function Decouverte() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         const data = await res.json();
@@ -376,7 +418,11 @@ function Decouverte() {
         ) : (
           profils.map((photo) => (
             <Card key={photo._id}>
-              <ImageWrapper>
+              <ImageWrapper
+                onClick={() =>
+                  setModal(photo.avatar?.url || photo.photos?.[0]?.url)
+                }
+              >
                 {photo.avatar?.url || photo.photos?.[0]?.url ? (
                   <Images
                     src={photo.avatar?.url || photo.photos?.[0]?.url}
@@ -388,6 +434,17 @@ function Decouverte() {
                   </Placeholder>
                 )}
               </ImageWrapper>
+
+              {modal && (
+                <ModalOverlay onClick={() => setModal(null)}>
+                  <ModalContent onClick={(e) => e.stopPropagation()}>
+                    <CloseButton onClick={() => setModal(null)}>
+                      <FaTimes />
+                    </CloseButton>
+                    <ModalImage src={modal} />
+                  </ModalContent>
+                </ModalOverlay>
+              )}
 
               <Content>
                 <H2>
