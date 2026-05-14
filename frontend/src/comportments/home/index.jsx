@@ -709,7 +709,7 @@ function Home() {
     <Page>
       <Main>
         <ProfileHero>
-          <AvatarWrapper>
+          <AvatarWrapper onClick={() => ouvririmage(-1)}>
             {profil.avatar ? (
               <Avatar src={profil.avatar.url} alt="avatar" />
             ) : (
