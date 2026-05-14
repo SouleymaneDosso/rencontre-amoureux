@@ -248,7 +248,7 @@ const MessageAvatar = styled.div`
 `;
 
 const BioBox = styled.section`
-  margin-top: 18px;
+  margin-top: 80px;
   max-width: 620px;
   margin-left: auto;
   margin-right: auto;
