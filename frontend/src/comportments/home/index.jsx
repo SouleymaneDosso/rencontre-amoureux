@@ -485,7 +485,12 @@ function Home() {
 
   const token = localStorage.getItem("token");
 
-  const photos = profil?.photos || [];
+  const photos = [
+  ...(profil?.avatar ? [profil.avatar] : []),
+  ...(profil?.photos || []),
+];
+
+
   const loopedPhotos = [
     photos[photos.length - 1], 
     ...photos,
@@ -709,7 +714,7 @@ function Home() {
     <Page>
       <Main>
         <ProfileHero>
-          <AvatarWrapper onClick={() => ouvririmage(-1)}>
+          <AvatarWrapper onClick={() => ouvririmage(0)}>
             {profil.avatar ? (
               <Avatar src={profil.avatar.url} alt="avatar" />
             ) : (
