@@ -95,7 +95,7 @@ const MessagesContainer = styled.div`
 
 const MessageRow = styled.div`
   display: flex;
-  justify-content: ${(props) => (props.$mine ? "flex-end" : "flex-start")};
+  justify-content: ${(props) => (props.mine ? "flex-end" : "flex-start")};
 `;
 
 const MessageBubble = styled.div`
@@ -108,12 +108,12 @@ const MessageBubble = styled.div`
   box-shadow: 0 8px 20px rgba(31, 42, 68, 0.06);
 
   background: ${(props) =>
-    props.$mine ? "linear-gradient(135deg, #ff4d8d, #ff6ca7)" : "white"};
+    props.mine ? "linear-gradient(135deg, #ff4d8d, #ff6ca7)" : "white"};
 
-  color: ${(props) => (props.$mine ? "white" : "#1f2a44")};
+  color: ${(props) => (props.mine ? "white" : "#1f2a44")};
 
-  border-bottom-right-radius: ${(props) => (props.$mine ? "6px" : "20px")};
-  border-bottom-left-radius: ${(props) => (props.$mine ? "20px" : "6px")};
+  border-bottom-right-radius: ${(props) => (props.mine ? "6px" : "20px")};
+  border-bottom-left-radius: ${(props) => (props.mine ? "20px" : "6px")};
 `;
 
 const MessageImage = styled.img`
@@ -916,8 +916,8 @@ function Tchat() {
           messages.map((msg) => {
             const isMine = msg.isMine;
             return (
-              <MessageRow key={msg._id} $mine={isMine}>
-                <MessageBubble $mine={isMine}>
+              <MessageRow key={msg._id} mine={isMine}>
+                <MessageBubble mine={isMine}>
                   {msg.type === "image" && msg.media?.url && (
                     <MessageImage
                       src={msg.media.url}
