@@ -312,7 +312,7 @@ const SkeletonBubble = styled.div`
 
 const SkeletonMessage = styled.div`
   display: flex;
-  justify-content: ${(props) => (props.$right ? "flex-end" : "flex-start")};
+  justify-content: ${(props) => (props.right ? "flex-end" : "flex-start")};
 `;
 
 const MessageVideo = styled.video`
