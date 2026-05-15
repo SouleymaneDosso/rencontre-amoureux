@@ -541,12 +541,7 @@ function Tchat() {
       if (moreMessages.length === 0) {
         setHasMore(false);
       } else {
-        const formattedMoreMessages = moreMessages.map((msg) => ({
-          ...msg,
-          isMine: msg.expediteur === monProfilId,
-        }));
-
-        setMessages((prev) => [...formattedMoreMessages, ...prev]);
+       setMessages((prev) => [...moreMessages, ...prev]);
       }
 
       requestAnimationFrame(() => {
@@ -583,16 +578,9 @@ function Tchat() {
           getProfilCible(id),
           getMessagesConversation(id, token),
         ]);
-        const myId = monProfilData._id;
-
-        const formattedMessages = messagesData.map((msg) => ({
-          ...msg,
-          isMine: msg.expediteur === myId,
-        }));
-
         setMonProfilId(monProfilData._id);
         setProfilCible(profilData);
-        setMessages(formattedMessages);
+        setMessages(messagesData);
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
         }, 0);
@@ -614,8 +602,7 @@ function Tchat() {
     const handleReceiveMessage = (msg) => {
       if (msg.expediteur === monProfilId) return;
 
-      msg.isMine = false;
-
+     
       setMessages((prev) => [...prev, msg]);
 
       socket.emit("messageDelivered", {
@@ -642,12 +629,7 @@ function Tchat() {
 
       const messagesData = await getMessagesConversation(id, token);
 
-      const formattedMessages = messagesData.map((msg) => ({
-        ...msg,
-        isMine: msg.expediteur === monProfilId,
-      }));
-
-      setMessages(formattedMessages);
+      setMessages(messagesData);
     };
 
     socket.on("connect", handleReconnect);
@@ -777,7 +759,7 @@ function Tchat() {
     };
 
     // ⚡ affichage instantané
-    setMessages((prev) => [...prev, { ...tempMessage, isMine: true }]);
+    setMessages((prev) => [...prev, tempMessage]);
     shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
@@ -798,10 +780,7 @@ function Tchat() {
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === tempId
-            ? {
-                ...data.nouveauMessage,
-                isMine: true,
-              }
+           ? data.nouveauMessage
             : msg,
         ),
       );
@@ -922,7 +901,7 @@ function Tchat() {
           </EmptyState>
         ) : (
           messages.map((msg) => {
-            const isMine = msg.isMine;
+           const isMine = msg.expediteur === monProfilId;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>
