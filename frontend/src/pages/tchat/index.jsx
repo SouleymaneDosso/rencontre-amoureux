@@ -241,12 +241,6 @@ const SendButton = styled.button`
   }
 `;
 
-const Loading = styled.h3`
-  text-align: center;
-  margin-top: 60px;
-  color: #374151;
-`;
-
 const ErrorBox = styled.div`
   margin: 40px auto;
   max-width: 500px;
@@ -382,7 +376,6 @@ function Tchat() {
   const [loadingMore, setLoadingMore] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [modal, setModal] = useState(false);
-  const [imageActive, setImageActive] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // modal zone
@@ -390,12 +383,11 @@ function Tchat() {
   const ouvrirmodal = (msg) => {
     const index = images.findIndex((m) => m._id === msg._id);
     setCurrentIndex(index);
-    setImageActive(msg);
+
     setModal(true);
   };
 
-  const fermermodal = (msg) => {
-    setImageActive(null);
+  const fermermodal = () => {
     setModal(false);
   };
 
@@ -541,7 +533,8 @@ function Tchat() {
       if (moreMessages.length === 0) {
         setHasMore(false);
       } else {
-       setMessages((prev) => [...moreMessages, ...prev]);
+        setMessages((prev) => [...moreMessages, ...prev]);
+        setPage(nextPage);
       }
 
       requestAnimationFrame(() => {
@@ -602,7 +595,6 @@ function Tchat() {
     const handleReceiveMessage = (msg) => {
       if (msg.expediteur === monProfilId) return;
 
-     
       setMessages((prev) => [...prev, msg]);
 
       socket.emit("messageDelivered", {
@@ -733,7 +725,7 @@ function Tchat() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() && !selectedFile) return;
-
+    setSending(true);
     const tempId = "temp-" + Date.now();
 
     const file = selectedFile;
@@ -778,15 +770,11 @@ function Tchat() {
 
       // 🔁 remplacement message temporaire
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === tempId
-           ? data.nouveauMessage
-            : msg,
-        ),
+        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
-    } catch (error) {
+        } catch (error) {
       console.error("Erreur :", error.message);
 
       setMessages((prev) =>
@@ -794,6 +782,8 @@ function Tchat() {
           msg._id === tempId ? { ...msg, statut: "error" } : msg,
         ),
       );
+    } finally {
+      setSending(false);
     }
   };
 
@@ -889,7 +879,7 @@ function Tchat() {
           shouldAutoScrollRef.current = distanceFromBottom < 80;
 
           // 📌 load anciens messages
-          if (el.scrollTop === 0) {
+          if (el.scrollTop <= 10) {
             loadMoreMessages();
           }
         }}
@@ -901,7 +891,7 @@ function Tchat() {
           </EmptyState>
         ) : (
           messages.map((msg) => {
-           const isMine = msg.expediteur === monProfilId;
+            const isMine = msg.expediteur === monProfilId;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <MessageBubble $mine={isMine}>
