@@ -595,8 +595,6 @@ function Tchat() {
     const handleReceiveMessage = (msg) => {
       if (msg.expediteur === monProfilId) return;
 
-     
-
       socket.emit("messageDelivered", {
         messageId: msg._id,
         expediteurId: msg.expediteur,
@@ -694,14 +692,14 @@ function Tchat() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 🎬 si vidéo → PAS de compression
+ 
     if (file.type.startsWith("video")) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       return;
     }
 
-    // 🖼️ sinon image → compression
+
     try {
       const options = {
         maxSizeMB: 0.5,
@@ -976,7 +974,7 @@ function Tchat() {
         <FileInput
           id="file-upload"
           type="file"
-          accept="image/*,video/mp4"
+          accept="image/*,video/*"
           onChange={handleFileChange}
         />
 
