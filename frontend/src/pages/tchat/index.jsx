@@ -473,7 +473,7 @@ function Tchat() {
       socket.emit("registerUser", monProfilId);
     };
 
-    if (socket.connected) {
+    if(socket.connected) {
       registerIfConnected();
     } else {
       socket.on("connect", registerIfConnected);
@@ -595,7 +595,7 @@ function Tchat() {
     const handleReceiveMessage = (msg) => {
       if (msg.expediteur === monProfilId) return;
 
-      setMessages((prev) => [...prev, msg]);
+     
 
       socket.emit("messageDelivered", {
         messageId: msg._id,
