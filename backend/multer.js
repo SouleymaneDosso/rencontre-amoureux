@@ -5,15 +5,15 @@ const storage = multer.memoryStorage();
 
 // 🔒 filtre types autorisés
 const fileFilter = (req, file, cb) => {
- const allowedTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
 
-  "video/mp4",
-  "video/quicktime",
-  "video/webm",
-];
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
+  ];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -27,9 +27,8 @@ const upload = multer({
   storage,
 
   limits: {
-    fileSize: 20 * 1024 * 1024,
+    fileSize: 100 * 1024 * 1024,
   },
-
   fileFilter,
 });
 
