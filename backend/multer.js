@@ -5,12 +5,15 @@ const storage = multer.memoryStorage();
 
 // 🔒 filtre types autorisés
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "video/mp4",
-  ];
+ const allowedTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
