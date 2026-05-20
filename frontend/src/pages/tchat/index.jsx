@@ -10,6 +10,7 @@ import {
   FaCircle,
   FaImage,
   FaTimes,
+  FaPlay,
 } from "react-icons/fa";
 import { FaCheck, FaCheckDouble } from "react-icons/fa";
 
@@ -345,6 +346,32 @@ const Slide = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const VideoWrapper = styled.div`
+  position: relative;
+  width: fit-content;
+`;
+const PlayIcon = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 22px;
+
+  pointer-events: none;
 `;
 
 function Tchat() {
@@ -900,10 +927,20 @@ function Tchat() {
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
-                    <MessageVideo controls preload="metadata" playsInline
-                     poster={msg.media.thumbnail}>
-                      <source src={msg.media.url} type={msg.media.mimetype} />
-                    </MessageVideo>
+                    <VideoWrapper>
+                      <MessageVideo
+                        controls
+                        preload="metadata"
+                        playsInline
+                        poster={msg.media.thumbnail}
+                      >
+                        <source src={msg.media.url} type={msg.media.mimetype} />
+                      </MessageVideo>
+
+                      <PlayIcon>
+                        <FaPlay />
+                      </PlayIcon>
+                    </VideoWrapper>
                   )}
 
                   {msg.contenu && <MessageText>{msg.contenu}</MessageText>}
