@@ -384,6 +384,7 @@ function Tchat() {
   const isDragging = useRef(false);
   const startY = useRef(0);
   const moved = useRef(false);
+  const videoRefs = useRef({});
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -929,10 +930,24 @@ function Tchat() {
                   {msg.type === "video" && msg.media?.url && (
                     <VideoWrapper>
                       <MessageVideo
-                        controls
+                        ref={(el) => {
+                          if (el) {
+                            videoRefs.current[msg._id] = el;
+                          }
+                        }}
                         preload="metadata"
                         playsInline
+                        
                         poster={msg.media.thumbnail}
+                        onPlay={() => {
+                          Object.entries(videoRefs.current).forEach(
+                            ([id, video]) => {
+                              if (id !== msg._id && video && !video.paused) {
+                                video.pause();
+                              }
+                            },
+                          );
+                        }}
                       >
                         <source src={msg.media.url} type={msg.media.mimetype} />
                       </MessageVideo>
