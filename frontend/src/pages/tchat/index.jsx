@@ -473,7 +473,7 @@ function Tchat() {
       socket.emit("registerUser", monProfilId);
     };
 
-    if(socket.connected) {
+    if (socket.connected) {
       registerIfConnected();
     } else {
       socket.on("connect", registerIfConnected);
@@ -692,13 +692,11 @@ function Tchat() {
     const file = e.target.files[0];
     if (!file) return;
 
- 
     if (file.type.startsWith("video")) {
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       return;
     }
-
 
     try {
       const options = {
@@ -772,7 +770,7 @@ function Tchat() {
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
-        } catch (error) {
+    } catch (error) {
       console.error("Erreur :", error.message);
 
       setMessages((prev) =>
@@ -902,7 +900,8 @@ function Tchat() {
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
-                    <MessageVideo controls>
+                    <MessageVideo controls preload="metadata" playsInline
+                     poster={msg.media.thumbnail}>
                       <source src={msg.media.url} type={msg.media.mimetype} />
                     </MessageVideo>
                   )}
