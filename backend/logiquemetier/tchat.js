@@ -117,6 +117,7 @@ mediaData = {
       )
     : "",
 };
+    }
 
     // créer le message
     const nouveauMessage = new Message({
