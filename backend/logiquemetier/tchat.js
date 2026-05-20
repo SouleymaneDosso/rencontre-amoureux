@@ -10,7 +10,7 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
       {
         folder,
         resource_type: resourceType,
-        chunk_size: 6000000, 
+        chunk_size: 9000000, 
       },
       (error, result) => {
         if (error) reject(error);
@@ -21,7 +21,7 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 };
-
+       
 exports.envoyerMessage = async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -82,12 +82,6 @@ exports.envoyerMessage = async (req, res) => {
 
     // Si fichier image envoyé
     if (req.file) {
-      // 🔒 1. vérifier taille fichier
-      if (req.file.size > 10 * 1024 * 1024) {
-        return res
-          .status(400)
-          .json({ message: "Fichier trop lourd (max 10MB)" });
-      }
 
       // 🔒 2. vérifier format autorisé
       const isImage = req.file.mimetype.startsWith("image");
