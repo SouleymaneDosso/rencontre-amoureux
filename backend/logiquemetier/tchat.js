@@ -104,13 +104,19 @@ exports.envoyerMessage = async (req, res) => {
       type = isVideo ? "video" : "image";
 
       // 📦 6. stocker données
-      mediaData = {
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-      };
-    }
+mediaData = {
+  url: uploadResult.secure_url,
+  public_id: uploadResult.public_id,
+  originalname: req.file.originalname,
+  mimetype: req.file.mimetype,
+
+  thumbnail: isVideo
+    ? uploadResult.secure_url.replace(
+        "/upload/",
+        "/upload/so_1/"
+      )
+    : "",
+};
 
     // créer le message
     const nouveauMessage = new Message({
