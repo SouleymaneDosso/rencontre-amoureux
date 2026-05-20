@@ -937,7 +937,7 @@ function Tchat() {
                         }}
                         preload="metadata"
                         playsInline
-                        
+                        controls
                         poster={msg.media.thumbnail}
                         onPlay={() => {
                           Object.entries(videoRefs.current).forEach(
@@ -953,7 +953,7 @@ function Tchat() {
                       </MessageVideo>
 
                       <PlayIcon>
-                        <FaPlay />
+                      
                       </PlayIcon>
                     </VideoWrapper>
                   )}
