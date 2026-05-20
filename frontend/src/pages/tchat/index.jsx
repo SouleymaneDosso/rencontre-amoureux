@@ -370,8 +370,6 @@ const PlayIcon = styled.div`
 
   color: white;
   font-size: 22px;
-
-  pointer-events: none;
 `;
 
 function Tchat() {
@@ -938,7 +936,7 @@ function Tchat() {
                         }}
                         preload="metadata"
                         playsInline
-                        controls
+                        
                         poster={msg.media.thumbnail}
                         onPlay={() => {
                           setPlayingVideoId(msg._id);
