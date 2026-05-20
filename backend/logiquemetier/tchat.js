@@ -9,7 +9,7 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: auto,
+        resource_type: resourceType,
         chunk_size: 9000000,
          timeout: 600000,
       },
