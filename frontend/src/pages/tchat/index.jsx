@@ -941,8 +941,6 @@ function Tchat() {
                         controls
                         poster={msg.media.thumbnail}
                         onPlay={() => {
-                          setPlayingVideoId(msg._id);
-
                           Object.entries(videoRefs.current).forEach(
                             ([id, video]) => {
                               if (id !== msg._id && video && !video.paused) {
@@ -951,21 +949,16 @@ function Tchat() {
                             },
                           );
                         }}
-                        onPause={() => {
-                          setPlayingVideoId((prev) =>
-                            prev === msg._id ? null : prev,
-                          );
-                        }}
-                        onEnded={() => {
-                          setPlayingVideoId(null);
-                        }}
                       >
                         <source src={msg.media.url} type={msg.media.mimetype} />
                       </MessageVideo>
 
-                      
+                      <PlayIcon>
+                        <FaPlay />
+                      </PlayIcon>
                     </VideoWrapper>
                   )}
+
                   {msg.contenu && <MessageText>{msg.contenu}</MessageText>}
 
                   <MessageTime>
