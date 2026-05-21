@@ -407,6 +407,27 @@ function Tchat() {
 
   // modal zone
 
+const toggleVideo = (id) => {
+  const currentVideo = videoRefs.current[id];
+
+  if (!currentVideo) return;
+
+  // pause toutes les autres vidéos
+  Object.entries(videoRefs.current).forEach(([videoId, video]) => {
+    if (videoId !== id && !video.paused) {
+      video.pause();
+    }
+  });
+
+  // toggle play/pause
+  if (currentVideo.paused) {
+    currentVideo.play();
+  } else {
+    currentVideo.pause();
+  }
+};
+
+
   const ouvrirmodal = (msg) => {
     const index = medias.findIndex((m) => m._id === msg._id);
     setCurrentIndex(index);
@@ -929,7 +950,7 @@ function Tchat() {
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
-                    <VideoWrapper onClick={() => ouvrirmodal(msg)}>
+                    <VideoWrapper onClick={() => toggleVideo(msg._id)}>
                       <MessageVideo
                         ref={(el) => {
                           if (el) {
