@@ -430,7 +430,7 @@ function Tchat() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playingVideoId, setPlayingVideoId] = useState(null);
   const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
-
+  const [showControls, setShowControls] = useState({});
   // modal zone
 
   const toggleVideo = (id) => {
@@ -445,13 +445,34 @@ function Tchat() {
       }
     });
 
-    // toggle
     if (currentVideo.paused) {
       currentVideo.play();
+
       setPlayingVideoId(id);
+
+      // affiche pause
+      setShowControls((prev) => ({
+        ...prev,
+        [id]: true,
+      }));
+
+      // cache après 1 seconde
+      setTimeout(() => {
+        setShowControls((prev) => ({
+          ...prev,
+          [id]: false,
+        }));
+      }, 1000);
     } else {
       currentVideo.pause();
+
       setPlayingVideoId(null);
+
+      // affiche play
+      setShowControls((prev) => ({
+        ...prev,
+        [id]: true,
+      }));
     }
   };
 
@@ -1014,9 +1035,16 @@ function Tchat() {
                         <source src={msg.media.url} type={msg.media.mimetype} />
                       </MessageVideo>
 
-                      <PlayIcon onClick={() => toggleVideo(msg._id)}>
-                        {playingVideoId === msg._id ? <FaPause /> : <FaPlay />}
-                      </PlayIcon>
+                      {(showControls[msg._id] ||
+                        playingVideoId !== msg._id) && (
+                        <PlayIcon onClick={() => toggleVideo(msg._id)}>
+                          {playingVideoId === msg._id ? (
+                            <FaPause />
+                          ) : (
+                            <FaPlay />
+                          )}
+                        </PlayIcon>
+                      )}
 
                       <ExpandButton
                         onClick={(e) => {
