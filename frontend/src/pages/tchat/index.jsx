@@ -1051,7 +1051,7 @@ const toggleModalVideo = (id) => {
                             videoRefs.current[msg._id] = el;
                           }
                         }}
-                        preload="metadata"
+                      
                         playsInline
                         poster={msg.media.thumbnail}
                         onClick={() => toggleVideo(msg._id)}
