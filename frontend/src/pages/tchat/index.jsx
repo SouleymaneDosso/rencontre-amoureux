@@ -998,7 +998,11 @@ function Tchat() {
                 {media.type === "image" ? (
                   <ModalImage src={media.media.url} />
                 ) : (
-                  <MessageVideo controls autoPlay>
+                  <MessageVideo
+                    controls
+                    autoPlay
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <source src={media.media.url} type={media.media.mimetype} />
                   </MessageVideo>
                 )}
