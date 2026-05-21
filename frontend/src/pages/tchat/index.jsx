@@ -1078,6 +1078,7 @@ function Tchat() {
                       }}
                       playsInline
                       preload="metadata"
+                      poster={media.media.thumbnail}
                     >
                       <source
                         src={media.media.url}
