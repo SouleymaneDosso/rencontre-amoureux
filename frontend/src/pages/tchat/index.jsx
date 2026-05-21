@@ -370,8 +370,6 @@ const PlayIcon = styled.div`
 
   color: white;
   font-size: 22px;
-
-  pointer-events: none;
 `;
 
 function Tchat() {
@@ -410,7 +408,7 @@ function Tchat() {
   // modal zone
 
   const ouvrirmodal = (msg) => {
-    const index = images.findIndex((m) => m._id === msg._id);
+    const index = medias.findIndex((m) => m._id === msg._id);
     setCurrentIndex(index);
 
     setModal(true);
@@ -420,7 +418,9 @@ function Tchat() {
     setModal(false);
   };
 
-  const images = messages.filter((m) => m.type === "image");
+  const medias = messages.filter(
+    (m) => m.type === "image" || m.type === "video",
+  );
 
   const handleTouchStart = (e) => {
     moved.current = false;
@@ -455,7 +455,7 @@ function Tchat() {
 
     // 👉 swipe horizontal
     if (Math.abs(diffX) > 80) {
-      if (diffX > 0 && currentIndex < images.length - 1) {
+      if (diffX > 0 && currentIndex < medias.length - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else if (diffX < 0 && currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -483,7 +483,7 @@ function Tchat() {
     const diff = startX.current - e.clientX;
 
     if (Math.abs(diff) > 80) {
-      if (diff > 0 && currentIndex < images.length - 1) {
+      if (diff > 0 && currentIndex < medias.length - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else if (diff < 0 && currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -929,7 +929,7 @@ function Tchat() {
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
-                    <VideoWrapper>
+                    <VideoWrapper onClick={() => ouvrirmodal(msg)}>
                       <MessageVideo
                         ref={(el) => {
                           if (el) {
@@ -938,7 +938,6 @@ function Tchat() {
                         }}
                         preload="metadata"
                         playsInline
-                  
                         poster={msg.media.thumbnail}
                         onPlay={() => {
                           Object.entries(videoRefs.current).forEach(
@@ -994,9 +993,15 @@ function Tchat() {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
           >
-            {images.map((img) => (
-              <Slide key={img._id}>
-                <ModalImage src={img.media.url} />
+            {medias.map((media) => (
+              <Slide key={media._id}>
+                {media.type === "image" ? (
+                  <ModalImage src={media.media.url} />
+                ) : (
+                  <MessageVideo controls autoPlay>
+                    <source src={media.media.url} type={media.media.mimetype} />
+                  </MessageVideo>
+                )}
               </Slide>
             ))}
           </Slider>
