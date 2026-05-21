@@ -11,6 +11,7 @@ import {
   FaImage,
   FaTimes,
   FaPlay,
+  FaPause,
 } from "react-icons/fa";
 import { FaCheck, FaCheckDouble } from "react-icons/fa";
 
@@ -434,18 +435,20 @@ function Tchat() {
 
     if (!currentVideo) return;
 
-    // pause toutes les autres vidéos
+    // pause autres vidéos
     Object.entries(videoRefs.current).forEach(([videoId, video]) => {
       if (videoId !== id && !video.paused) {
         video.pause();
       }
     });
 
-    // toggle play/pause
+    // toggle
     if (currentVideo.paused) {
       currentVideo.play();
+      setPlayingVideoId(id);
     } else {
       currentVideo.pause();
+      setPlayingVideoId(null);
     }
   };
 
@@ -987,7 +990,7 @@ function Tchat() {
                       </MessageVideo>
 
                       <PlayIcon onClick={() => toggleVideo(msg._id)}>
-                        <FaPlay />
+                        {playingVideoId === msg._id ? <FaPause /> : <FaPlay />}
                       </PlayIcon>
 
                       <ExpandButton
