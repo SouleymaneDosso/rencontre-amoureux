@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState, useRef, useEffect } from "react";
 import imageCompression from "browser-image-compression";
+
 import {
   FaArrowLeft,
   FaPaperPlane,
@@ -406,6 +407,7 @@ function Tchat() {
   const startY = useRef(0);
   const moved = useRef(false);
   const videoRefs = useRef({});
+  const modalVideoRefs = useRef({});
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -427,6 +429,7 @@ function Tchat() {
   const [modal, setModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playingVideoId, setPlayingVideoId] = useState(null);
+  const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
 
   // modal zone
 
@@ -449,6 +452,28 @@ function Tchat() {
     } else {
       currentVideo.pause();
       setPlayingVideoId(null);
+    }
+  };
+
+  const toggleModalVideo = (id) => {
+    const currentVideo = modalVideoRefs.current[id];
+
+    if (!currentVideo) return;
+
+    // pause toutes les autres vidéos du modal
+    Object.entries(modalVideoRefs.current).forEach(([videoId, video]) => {
+      if (videoId !== id && !video.paused) {
+        video.pause();
+      }
+    });
+
+    // toggle
+    if (currentVideo.paused) {
+      currentVideo.play();
+      setPlayingModalVideoId(id);
+    } else {
+      currentVideo.pause();
+      setPlayingModalVideoId(null);
     }
   };
 
@@ -1044,13 +1069,30 @@ function Tchat() {
                 {media.type === "image" ? (
                   <ModalImage src={media.media.url} />
                 ) : (
-                  <MessageVideo
-                    controls
-                    autoPlay
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <source src={media.media.url} type={media.media.mimetype} />
-                  </MessageVideo>
+                  <VideoWrapper onClick={(e) => e.stopPropagation()}>
+                    <MessageVideo
+                      ref={(el) => {
+                        if (el) {
+                          modalVideoRefs.current[media._id] = el;
+                        }
+                      }}
+                      playsInline
+                      preload="metadata"
+                    >
+                      <source
+                        src={media.media.url}
+                        type={media.media.mimetype}
+                      />
+                    </MessageVideo>
+
+                    <PlayIcon onClick={() => toggleModalVideo(media._id)}>
+                      {playingModalVideoId === media._id ? (
+                        <FaPause />
+                      ) : (
+                        <FaPlay />
+                      )}
+                    </PlayIcon>
+                  </VideoWrapper>
                 )}
               </Slide>
             ))}
