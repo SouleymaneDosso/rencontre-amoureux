@@ -433,59 +433,14 @@ function Tchat() {
   const [showControls, setShowControls] = useState({});
   const [showModalControls, setShowModalControls] = useState({});
 
-
   // modal zone
 
-  const toggleVideo = (id) => {
-    const currentVideo = videoRefs.current[id];
-
-    if (!currentVideo) return;
-
-    // pause autres vidéos
-    Object.entries(videoRefs.current).forEach(([videoId, video]) => {
-      if (videoId !== id && !video.paused) {
-        video.pause();
-      }
-    });
-
-    if (currentVideo.paused) {
-      currentVideo.play();
-
-      setPlayingVideoId(id);
-
-      // affiche pause
-      setShowControls((prev) => ({
-        ...prev,
-        [id]: true,
-      }));
-
-      // cache après 1 seconde
-      setTimeout(() => {
-        setShowControls((prev) => ({
-          ...prev,
-          [id]: false,
-        }));
-      }, 1000);
-    } else {
-      currentVideo.pause();
-
-      setPlayingVideoId(null);
-
-      // affiche play
-      setShowControls((prev) => ({
-        ...prev,
-        [id]: true,
-      }));
-    }
-  };
-
-const toggleModalVideo = (id) => {
-  const currentVideo = modalVideoRefs.current[id];
+const toggleVideo = (id) => {
+  const currentVideo = videoRefs.current[id];
 
   if (!currentVideo) return;
 
-  // pause autres vidéos
-  Object.entries(modalVideoRefs.current).forEach(([videoId, video]) => {
+  Object.entries(videoRefs.current).forEach(([videoId, video]) => {
     if (videoId !== id && !video.paused) {
       video.pause();
     }
@@ -494,17 +449,13 @@ const toggleModalVideo = (id) => {
   if (currentVideo.paused) {
     currentVideo.play();
 
-    setPlayingModalVideoId(id);
-
-    // affiche pause
-    setShowModalControls((prev) => ({
+    setShowControls((prev) => ({
       ...prev,
       [id]: true,
     }));
 
-    // cache après 1 seconde
     setTimeout(() => {
-      setShowModalControls((prev) => ({
+      setShowControls((prev) => ({
         ...prev,
         [id]: false,
       }));
@@ -512,15 +463,55 @@ const toggleModalVideo = (id) => {
   } else {
     currentVideo.pause();
 
-    setPlayingModalVideoId(null);
-
-    // affiche play
-    setShowModalControls((prev) => ({
+    setShowControls((prev) => ({
       ...prev,
       [id]: true,
     }));
   }
 };
+
+  const toggleModalVideo = (id) => {
+    const currentVideo = modalVideoRefs.current[id];
+
+    if (!currentVideo) return;
+
+    // pause autres vidéos
+    Object.entries(modalVideoRefs.current).forEach(([videoId, video]) => {
+      if (videoId !== id && !video.paused) {
+        video.pause();
+      }
+    });
+
+    if (currentVideo.paused) {
+      currentVideo.play();
+
+      setPlayingModalVideoId(id);
+
+      // affiche pause
+      setShowModalControls((prev) => ({
+        ...prev,
+        [id]: true,
+      }));
+
+      // cache après 1 seconde
+      setTimeout(() => {
+        setShowModalControls((prev) => ({
+          ...prev,
+          [id]: false,
+        }));
+      }, 1000);
+    } else {
+      currentVideo.pause();
+
+      setPlayingModalVideoId(null);
+
+      // affiche play
+      setShowModalControls((prev) => ({
+        ...prev,
+        [id]: true,
+      }));
+    }
+  };
 
   const ouvrirmodal = (msg) => {
     const index = medias.findIndex((m) => m._id === msg._id);
@@ -1051,10 +1042,15 @@ const toggleModalVideo = (id) => {
                             videoRefs.current[msg._id] = el;
                           }
                         }}
-                      
+                        preload="metadata"
                         playsInline
+                        autoPlay={false}
+                        controls={false}
                         poster={msg.media.thumbnail}
                         onClick={() => toggleVideo(msg._id)}
+                        onPlay={() => setPlayingVideoId(msg._id)}
+                        onPause={() => setPlayingVideoId(null)}
+                        onEnded={() => setPlayingVideoId(null)}
                       >
                         <source src={msg.media.url} type={msg.media.mimetype} />
                       </MessageVideo>
