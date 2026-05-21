@@ -431,6 +431,9 @@ function Tchat() {
   const [playingVideoId, setPlayingVideoId] = useState(null);
   const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
   const [showControls, setShowControls] = useState({});
+  const [showModalControls, setShowModalControls] = useState({});
+
+
   // modal zone
 
   const toggleVideo = (id) => {
@@ -476,27 +479,48 @@ function Tchat() {
     }
   };
 
-  const toggleModalVideo = (id) => {
-    const currentVideo = modalVideoRefs.current[id];
+const toggleModalVideo = (id) => {
+  const currentVideo = modalVideoRefs.current[id];
 
-    if (!currentVideo) return;
+  if (!currentVideo) return;
 
-    // pause toutes les autres vidéos du modal
-    Object.entries(modalVideoRefs.current).forEach(([videoId, video]) => {
-      if (videoId !== id && !video.paused) {
-        video.pause();
-      }
-    });
-
-    // toggle
-    if (currentVideo.paused) {
-      currentVideo.play();
-      setPlayingModalVideoId(id);
-    } else {
-      currentVideo.pause();
-      setPlayingModalVideoId(null);
+  // pause autres vidéos
+  Object.entries(modalVideoRefs.current).forEach(([videoId, video]) => {
+    if (videoId !== id && !video.paused) {
+      video.pause();
     }
-  };
+  });
+
+  if (currentVideo.paused) {
+    currentVideo.play();
+
+    setPlayingModalVideoId(id);
+
+    // affiche pause
+    setShowModalControls((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+
+    // cache après 1 seconde
+    setTimeout(() => {
+      setShowModalControls((prev) => ({
+        ...prev,
+        [id]: false,
+      }));
+    }, 1000);
+  } else {
+    currentVideo.pause();
+
+    setPlayingModalVideoId(null);
+
+    // affiche play
+    setShowModalControls((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+  }
+};
 
   const ouvrirmodal = (msg) => {
     const index = medias.findIndex((m) => m._id === msg._id);
@@ -1107,6 +1131,7 @@ function Tchat() {
                       playsInline
                       preload="metadata"
                       poster={media.media.thumbnail}
+                      onEnded={() => setPlayingModalVideoId(null)}
                     >
                       <source
                         src={media.media.url}
@@ -1114,13 +1139,16 @@ function Tchat() {
                       />
                     </MessageVideo>
 
-                    <PlayIcon onClick={() => toggleModalVideo(media._id)}>
-                      {playingModalVideoId === media._id ? (
-                        <FaPause />
-                      ) : (
-                        <FaPlay />
-                      )}
-                    </PlayIcon>
+                    {(showModalControls[media._id] ||
+                      playingModalVideoId !== media._id) && (
+                      <PlayIcon onClick={() => toggleModalVideo(media._id)}>
+                        {playingModalVideoId === media._id ? (
+                          <FaPause />
+                        ) : (
+                          <FaPlay />
+                        )}
+                      </PlayIcon>
+                    )}
                   </VideoWrapper>
                 )}
               </Slide>
