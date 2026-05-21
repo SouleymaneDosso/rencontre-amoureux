@@ -27,6 +27,28 @@ import {
 
 import { useLocation } from "react-router-dom";
 
+import { FaExpand } from "react-icons/fa";
+
+const ExpandButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+`;
+
 const Wrapper = styled.div`
   height: 100dvh; /* ✅ meilleur que 100vh */
   display: flex;
@@ -407,26 +429,25 @@ function Tchat() {
 
   // modal zone
 
-const toggleVideo = (id) => {
-  const currentVideo = videoRefs.current[id];
+  const toggleVideo = (id) => {
+    const currentVideo = videoRefs.current[id];
 
-  if (!currentVideo) return;
+    if (!currentVideo) return;
 
-  // pause toutes les autres vidéos
-  Object.entries(videoRefs.current).forEach(([videoId, video]) => {
-    if (videoId !== id && !video.paused) {
-      video.pause();
+    // pause toutes les autres vidéos
+    Object.entries(videoRefs.current).forEach(([videoId, video]) => {
+      if (videoId !== id && !video.paused) {
+        video.pause();
+      }
+    });
+
+    // toggle play/pause
+    if (currentVideo.paused) {
+      currentVideo.play();
+    } else {
+      currentVideo.pause();
     }
-  });
-
-  // toggle play/pause
-  if (currentVideo.paused) {
-    currentVideo.play();
-  } else {
-    currentVideo.pause();
-  }
-};
-
+  };
 
   const ouvrirmodal = (msg) => {
     const index = medias.findIndex((m) => m._id === msg._id);
@@ -950,7 +971,7 @@ const toggleVideo = (id) => {
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
-                    <VideoWrapper onClick={() => toggleVideo(msg._id)}>
+                    <VideoWrapper>
                       <MessageVideo
                         ref={(el) => {
                           if (el) {
@@ -960,22 +981,23 @@ const toggleVideo = (id) => {
                         preload="metadata"
                         playsInline
                         poster={msg.media.thumbnail}
-                        onPlay={() => {
-                          Object.entries(videoRefs.current).forEach(
-                            ([id, video]) => {
-                              if (id !== msg._id && video && !video.paused) {
-                                video.pause();
-                              }
-                            },
-                          );
-                        }}
+                        onClick={() => toggleVideo(msg._id)}
                       >
                         <source src={msg.media.url} type={msg.media.mimetype} />
                       </MessageVideo>
 
-                      <PlayIcon>
+                      <PlayIcon onClick={() => toggleVideo(msg._id)}>
                         <FaPlay />
                       </PlayIcon>
+
+                      <ExpandButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          ouvrirmodal(msg);
+                        }}
+                      >
+                        <FaExpand />
+                      </ExpandButton>
                     </VideoWrapper>
                   )}
 
