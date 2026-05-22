@@ -648,7 +648,7 @@ function Tchat() {
     }
 
     isDragging.current = false;
-  };
+  }
   // fin modal
 
   useEffect(() => {
@@ -678,7 +678,7 @@ function Tchat() {
       setMessages(JSON.parse(cachedMessages));
       setLoading(false);
     }
-  }, [id]);
+  }, [id])
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
