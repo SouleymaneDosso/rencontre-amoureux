@@ -433,7 +433,7 @@ function Tchat() {
   const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
   const [showControls, setShowControls] = useState({});
   const [showModalControls, setShowModalControls] = useState({});
-  const [isMobile, setIsMobile] = useState(false);
+
   // modal zone
 
   const toggleVideo = (id) => {
@@ -489,8 +489,6 @@ function Tchat() {
     if (currentVideo.paused) {
       currentVideo.play();
 
-      setPlayingModalVideoId(id);
-
       // affiche pause
       setShowModalControls((prev) => ({
         ...prev,
@@ -507,7 +505,7 @@ function Tchat() {
     } else {
       currentVideo.pause();
 
-      setPlayingModalVideoId(null);
+    
 
       // affiche play
       setShowModalControls((prev) => ({
@@ -572,7 +570,6 @@ function Tchat() {
       }
     }
   };
-
 
   const handleMouseDown = (e) => {
     isDragging.current = true;
@@ -1145,11 +1142,16 @@ function Tchat() {
 
                     {(showModalControls[media._id] ||
                       playingModalVideoId !== media._id) && (
-                      <PlayIcon onClick={() => toggleModalVideo(media._id)}>
-                        {playingModalVideoId === media._id ? (
-                          <FaPause />
-                        ) : (
+                      <PlayIcon
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleModalVideo(media._id);
+                        }}
+                      >
+                        {modalVideoRefs.current[media._id]?.paused ? (
                           <FaPlay />
+                        ) : (
+                          <FaPause />
                         )}
                       </PlayIcon>
                     )}
