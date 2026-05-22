@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useState, useRef, useEffect } from "react";
 import imageCompression from "browser-image-compression";
+import { FaMicrophone } from "react-icons/fa";
 
 import {
   FaArrowLeft,
@@ -409,6 +410,8 @@ function Tchat() {
   const videoRefs = useRef({});
   const modalVideoRefs = useRef({});
   const controlsTimeoutRef = useRef({});
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -433,6 +436,54 @@ function Tchat() {
   const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
   const [showControls, setShowControls] = useState({});
   const [showModalControls, setShowModalControls] = useState({});
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState("");
+
+  // audio
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      const mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorderRef.current = mediaRecorder;
+
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        setAudioBlob(audioBlob);
+        setAudioUrl(audioUrl);
+      };
+
+      mediaRecorder.start();
+
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Erreur micro :", error);
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+
+    setIsRecording(false);
+  };
+
+  // fin audio
 
   // modal zone
 
@@ -504,8 +555,6 @@ function Tchat() {
       }, 1000);
     } else {
       currentVideo.pause();
-
-    
 
       // affiche play
       setShowModalControls((prev) => ({
@@ -1178,6 +1227,21 @@ function Tchat() {
         </PreviewBox>
       )}
 
+      {audioUrl && (
+        <PreviewBox>
+          <audio controls src={audioUrl} />
+
+          <RemovePreview
+            onClick={() => {
+              setAudioBlob(null);
+              setAudioUrl("");
+            }}
+          >
+            <FaTimes />
+          </RemovePreview>
+        </PreviewBox>
+      )}
+
       <InputContainer>
         <IconButton htmlFor="file-upload">
           <FaImage />
@@ -1212,10 +1276,32 @@ function Tchat() {
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
 
-        <SendButton onClick={sendMessage} disabled={sending}>
-          <FaPaperPlane />
-        </SendButton>
+        {newMessage.trim() || selectedFile || audioBlob ? (
+          <SendButton onClick={sendMessage} disabled={sending}>
+            <FaPaperPlane />
+          </SendButton>
+        ) : (
+          <SendButton
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onTouchStart={startRecording}
+            onTouchEnd={stopRecording}
+          >
+            <FaMicrophone />
+          </SendButton>
+        )}
       </InputContainer>
+      {isRecording && (
+        <div
+          style={{
+            padding: "10px",
+            color: "red",
+            fontWeight: "bold",
+          }}
+        >
+          🎤 Enregistrement...
+        </div>
+      )}
     </Wrapper>
   );
 }
