@@ -408,6 +408,7 @@ function Tchat() {
   const moved = useRef(false);
   const videoRefs = useRef({});
   const modalVideoRefs = useRef({});
+  const controlsTimeoutRef = useRef({});
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -435,40 +436,43 @@ function Tchat() {
 
   // modal zone
 
-const toggleVideo = (id) => {
-  const currentVideo = videoRefs.current[id];
+  const toggleVideo = (id) => {
+    const currentVideo = videoRefs.current[id];
 
-  if (!currentVideo) return;
+    if (!currentVideo) return;
 
-  Object.entries(videoRefs.current).forEach(([videoId, video]) => {
-    if (videoId !== id && !video.paused) {
-      video.pause();
-    }
-  });
+    Object.entries(videoRefs.current).forEach(([videoId, video]) => {
+      if (videoId !== id && !video.paused) {
+        video.pause();
+      }
+    });
 
-  if (currentVideo.paused) {
-    currentVideo.play();
+    if (currentVideo.paused) {
+      currentVideo.play();
 
-    setShowControls((prev) => ({
-      ...prev,
-      [id]: true,
-    }));
-
-    setTimeout(() => {
       setShowControls((prev) => ({
         ...prev,
-        [id]: false,
+        [id]: true,
       }));
-    }, 1000);
-  } else {
-    currentVideo.pause();
 
-    setShowControls((prev) => ({
-      ...prev,
-      [id]: true,
-    }));
-  }
-};
+      // ✅ IMPORTANT
+      clearTimeout(controlsTimeoutRef.current[id]);
+
+      controlsTimeoutRef.current[id] = setTimeout(() => {
+        setShowControls((prev) => ({
+          ...prev,
+          [id]: false,
+        }));
+      }, 1000);
+    } else {
+      currentVideo.pause();
+
+      setShowControls((prev) => ({
+        ...prev,
+        [id]: true,
+      }));
+    }
+  };
 
   const toggleModalVideo = (id) => {
     const currentVideo = modalVideoRefs.current[id];
@@ -1057,11 +1061,16 @@ const toggleVideo = (id) => {
 
                       {(showControls[msg._id] ||
                         playingVideoId !== msg._id) && (
-                        <PlayIcon onClick={() => toggleVideo(msg._id)}>
-                          {playingVideoId === msg._id ? (
-                            <FaPause />
-                          ) : (
+                        <PlayIcon
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleVideo(msg._id);
+                          }}
+                        >
+                          {videoRefs.current[msg._id]?.paused ? (
                             <FaPlay />
+                          ) : (
+                            <FaPause />
                           )}
                         </PlayIcon>
                       )}
