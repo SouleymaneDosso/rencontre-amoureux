@@ -906,7 +906,7 @@ function Tchat() {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() && !selectedFile) return;
+    if (!newMessage.trim() && !selectedFile && !audioBlob) return;
     setSending(true);
     const tempId = "temp-" + Date.now();
 
@@ -919,15 +919,28 @@ function Tchat() {
       expediteur: monProfilId,
       destinataire: id,
       contenu: messageText,
-      type: file ? (file.type.startsWith("video") ? "video" : "image") : "text",
-      media: file
+      type: audioBlob
+        ? "audio"
+        : file
+          ? file.type.startsWith("video")
+            ? "video"
+            : "image"
+          : "text",
+
+      media: audioBlob
         ? {
-            url: previewUrl,
-            originalname: file.name,
-            mimetype: file.type,
-            size: file.size,
+            url: audioUrl,
+            mimetype: "audio/webm",
           }
-        : {},
+        : file
+          ? {
+              url: previewUrl,
+              originalname: file.name,
+              mimetype: file.type,
+              size: file.size,
+            }
+          : {},
+
       statut: "sent",
       createdAt: new Date().toISOString(),
     };
@@ -939,10 +952,15 @@ function Tchat() {
     setNewMessage("");
     setSelectedFile(null);
     setPreviewUrl("");
+    setAudioBlob(null);
+    setAudioUrl("");
 
     try {
       const formData = new FormData();
       formData.append("contenu", messageText);
+      if (audioBlob) {
+        formData.append("audio", audioBlob, "voice.webm");
+      }
 
       if (file) {
         formData.append("media", file);
@@ -1131,6 +1149,11 @@ function Tchat() {
                     </VideoWrapper>
                   )}
 
+                  {msg.type === "audio" && msg.media?.url && (
+                    <audio controls>
+                      <source src={msg.media.url} type={msg.media.mimetype} />
+                    </audio>
+                  )}
                   {msg.contenu && <MessageText>{msg.contenu}</MessageText>}
 
                   <MessageTime>
