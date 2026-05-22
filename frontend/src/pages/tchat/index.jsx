@@ -433,7 +433,7 @@ function Tchat() {
   const [playingModalVideoId, setPlayingModalVideoId] = useState(null);
   const [showControls, setShowControls] = useState({});
   const [showModalControls, setShowModalControls] = useState({});
-
+  const [isMobile, setIsMobile] = useState(false);
   // modal zone
 
   const toggleVideo = (id) => {
