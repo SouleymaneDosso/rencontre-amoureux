@@ -573,6 +573,7 @@ function Tchat() {
     }
   };
 
+
   const handleMouseDown = (e) => {
     isDragging.current = true;
     moved.current = false;
@@ -1048,8 +1049,6 @@ function Tchat() {
                         }}
                         preload="metadata"
                         playsInline
-                        autoPlay={false}
-                        controls={false}
                         poster={msg.media.thumbnail}
                         onClick={() => toggleVideo(msg._id)}
                         onPlay={() => setPlayingVideoId(msg._id)}
