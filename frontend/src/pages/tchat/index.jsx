@@ -448,25 +448,42 @@ function Tchat() {
         audio: true,
       });
 
-      const mediaRecorder = new MediaRecorder(stream);
+      let mimeType = "";
+
+      if (MediaRecorder.isTypeSupported("audio/webm")) {
+        mimeType = "audio/webm";
+      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+        mimeType = "audio/mp4";
+      } else if (MediaRecorder.isTypeSupported("audio/aac")) {
+        mimeType = "audio/aac";
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType,
+      });
 
       mediaRecorderRef.current = mediaRecorder;
 
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: mimeType,
         });
 
         const audioUrl = URL.createObjectURL(audioBlob);
 
         setAudioBlob(audioBlob);
         setAudioUrl(audioUrl);
+
+        // stop micro
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
@@ -478,7 +495,13 @@ function Tchat() {
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current.stop();
+    const recorder = mediaRecorderRef.current;
+
+    if (!recorder) return;
+
+    if (recorder.state !== "inactive") {
+      recorder.stop();
+    }
 
     setIsRecording(false);
   };
@@ -648,7 +671,7 @@ function Tchat() {
     }
 
     isDragging.current = false;
-  }
+  };
   // fin modal
 
   useEffect(() => {
@@ -678,7 +701,7 @@ function Tchat() {
       setMessages(JSON.parse(cachedMessages));
       setLoading(false);
     }
-  }, [id])
+  }, [id]);
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -1305,10 +1328,8 @@ function Tchat() {
           </SendButton>
         ) : (
           <SendButton
-            onMouseDown={startRecording}
-            onMouseUp={stopRecording}
-            onTouchStart={startRecording}
-            onTouchEnd={stopRecording}
+            onPointerDown={startRecording}
+            onPointerUp={stopRecording}
           >
             <FaMicrophone />
           </SendButton>
