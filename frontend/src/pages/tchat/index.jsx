@@ -443,6 +443,7 @@ function Tchat() {
   // audio
 
   const startRecording = async () => {
+     if (isRecording) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -506,6 +507,28 @@ function Tchat() {
     setIsRecording(false);
   };
 
+
+  useEffect(() => {
+  return () => {
+    const recorder = mediaRecorderRef.current;
+
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    }
+  };
+}, []);
+
+useEffect(() => {
+  return () => {
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+  };
+}, [audioUrl, previewUrl]);
   // fin audio
 
   // modal zone
@@ -1330,6 +1353,8 @@ function Tchat() {
           <SendButton
             onPointerDown={startRecording}
             onPointerUp={stopRecording}
+            onPointerLeave={stopRecording}
+            onPointerCancel={stopRecording}
           >
             <FaMicrophone />
           </SendButton>
