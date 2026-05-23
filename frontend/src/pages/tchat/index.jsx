@@ -443,22 +443,21 @@ function Tchat() {
   // audio
 
   const startRecording = async () => {
-     if (isRecording) return;
+    if (isRecording) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
 
-      let mimeType = "";
+      const mimeTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/aac",
+      ];
 
-      if (MediaRecorder.isTypeSupported("audio/webm")) {
-        mimeType = "audio/webm";
-      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
-        mimeType = "audio/mp4";
-      } else if (MediaRecorder.isTypeSupported("audio/aac")) {
-        mimeType = "audio/aac";
-      }
-
+      const mimeType =
+        mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType,
       });
@@ -507,28 +506,27 @@ function Tchat() {
     setIsRecording(false);
   };
 
+  useEffect(() => {
+    return () => {
+      const recorder = mediaRecorderRef.current;
+
+      if (recorder && recorder.state !== "inactive") {
+        recorder.stop();
+      }
+    };
+  }, []);
 
   useEffect(() => {
-  return () => {
-    const recorder = mediaRecorderRef.current;
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
 
-    if (recorder && recorder.state !== "inactive") {
-      recorder.stop();
-    }
-  };
-}, []);
-
-useEffect(() => {
-  return () => {
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-    }
-
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-  };
-}, [audioUrl, previewUrl]);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [audioUrl, previewUrl]);
   // fin audio
 
   // modal zone
@@ -1368,7 +1366,7 @@ useEffect(() => {
             fontWeight: "bold",
           }}
         >
-          🎤 Enregistrement...
+          Enregistrement...
         </div>
       )}
     </Wrapper>
