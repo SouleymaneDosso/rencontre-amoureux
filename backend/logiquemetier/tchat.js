@@ -7,6 +7,7 @@ const streamifier = require("streamifier");
 const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
+
       {
         folder,
         resource_type: resourceType,
@@ -22,7 +23,7 @@ const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 };
-       
+
 exports.envoyerMessage = async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -87,8 +88,9 @@ exports.envoyerMessage = async (req, res) => {
       // 🔒 2. vérifier format autorisé
       const isImage = req.file.mimetype.startsWith("image");
       const isVideo = req.file.mimetype.startsWith("video");
+      const isAudio = req.file.mimetype.startsWith("audio")
 
-      if (!isImage && !isVideo) {
+      if (!isImage && !isVideo && !isAudio) {
         return res.status(400).json({ message: "Format non supporté" });
       }
       // 🔥 3. détecter si vidéo
@@ -97,11 +99,15 @@ exports.envoyerMessage = async (req, res) => {
       const uploadResult = await uploadToCloudinary(
         req.file.buffer,
         `site-de-rencontre/messages/${conversation._id}`,
-        isVideo ? "video" : "image",
+        isVideo || isAudio ? "video" : "image"
       );
 
       // 🧠 5. définir type
-      type = isVideo ? "video" : "image";
+      type = isAudio
+  ? "audio"
+  : isVideo
+    ? "video"
+    : "image";
 
       // 📦 6. stocker données
 mediaData = {
@@ -110,7 +116,7 @@ mediaData = {
   originalname: req.file.originalname,
   mimetype: req.file.mimetype,
 
-  thumbnail: isVideo
+  thumbnail: isVideo || isAudio
     ? uploadResult.secure_url.replace(
         "/upload/",
         "/upload/so_1/"
