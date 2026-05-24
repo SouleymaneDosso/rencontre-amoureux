@@ -455,7 +455,7 @@ function Video() {
     <Pagewrapper>
       <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
       <main>
-        <H1>Moments chill</H1>
+        <H1>Vidéos et reactions</H1>
 
         <section>
           <Labelstyle htmlFor="masque">

@@ -1003,7 +1003,7 @@ function Tchat() {
       const formData = new FormData();
       formData.append("contenu", messageText);
       if (audioBlob) {
-        formData.append("audio", audioBlob, "voice.webm");
+        formData.append("media", audioBlob, "voice.webm");
       }
 
       if (file) {
@@ -1322,7 +1322,9 @@ function Tchat() {
         />
 
         <Input
+        
           placeholder="Écrire un message..."
+          
           value={newMessage}
           onChange={(e) => {
             setNewMessage(e.target.value);
@@ -1341,6 +1343,8 @@ function Tchat() {
             }, 2000);
           }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+
+          
         />
 
         {newMessage.trim() || selectedFile || audioBlob ? (
@@ -1357,8 +1361,9 @@ function Tchat() {
             <FaMicrophone />
           </SendButton>
         )}
+        
       </InputContainer>
-      {isRecording && (
+       {isRecording && (
         <div
           style={{
             padding: "10px",
