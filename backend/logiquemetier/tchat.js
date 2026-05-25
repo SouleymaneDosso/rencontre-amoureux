@@ -147,6 +147,8 @@ mediaData = {
           ? contenu.trim()
             ? `🎥 ${contenu.trim()}`
             : "🎥 Vidéo"
+            :type === "audio"
+            ? `Message vocal ${contenu.trim()}`
           : contenu.trim();
 
     conversation.dernierMessageStatut = "sent";
