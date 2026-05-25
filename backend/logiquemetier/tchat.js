@@ -139,17 +139,19 @@ mediaData = {
 
     // mettre à jour la conversation
     conversation.dernierMessage =
-      type === "image"
-        ? contenu.trim()
-          ? `📷 ${contenu.trim()}`
-          : "📷 Image"
-        : type === "video"
-          ? contenu.trim()
-            ? `🎥 ${contenu.trim()}`
-            : "🎥 Vidéo"
-            :type === "audio"
-            ? `Message vocal ${contenu.trim()}`
-          : contenu.trim();
+  type === "image"
+    ? contenu?.trim()
+      ? `📷 ${contenu.trim()}`
+      : "📷 Image"
+    : type === "video"
+      ? contenu?.trim()
+        ? `🎥 ${contenu.trim()}`
+        : "🎥 Vidéo"
+      : type === "audio"
+        ? contenu?.trim()
+          ? `🎤 ${contenu.trim()}`
+          : "🎤 Message vocal"
+        : contenu?.trim() || "";
 
     conversation.dernierMessageStatut = "sent";
     conversation.dernierMessageDate = new Date();
