@@ -213,10 +213,15 @@ exports.getMessages = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const messages = await Message.find({ conversationId: conversation._id })
+    const messages = await Message.find({ conversationId: conversation._id,
+      supprimePourMoi :{
+      $nin: [monProfil._id],
+      },
+     })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
+
 
     res.json(messages.reverse());
   } catch (error) {
@@ -224,6 +229,53 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+
+exports.supprimerpourMoi = async (req, res) => {
+  try{
+
+const userId = req.auth.userId;
+
+const {messageId} = req.params;
+
+const monprofil = await Profil.findOne({userId})
+
+if(!monprofil){
+  return res.status(400).json({message: "Profil introuvable"})
+}
+
+const message = await Message.findById(messageId);
+  if (!message) {
+      return res.status(404).json({
+        message: "Message introuvable",
+      });
+    }
+
+    const autorisation = message.expediteur.toString() === monprofil._id.toString() || 
+    message.destinataire.toString() ===  monprofil._id.toString()
+
+    if(!autorisation){
+      return res.status(403).json({message: "vous n'avez pas l'authorisation"})
+    }
+
+    const dejasupprimer = message.supprimePourMoi.some((id)=> id.toString() === monprofil._id.toString())
+
+    if(!dejasupprimer){
+      message.supprimePourMoi.push(monprofil._id)
+      await message.save()
+    }
+
+    return res.status(200).json({
+      message: "Message supprimé pour vous"
+    })
+
+  }
+  catch(error){
+    res.status(500).json({ message: error.message}); 
+  }
+}
+
+
 
 exports.mesConversations = async (req, res) => {
   try {
