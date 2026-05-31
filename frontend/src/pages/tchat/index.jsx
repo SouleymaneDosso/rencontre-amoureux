@@ -1031,6 +1031,33 @@ function Tchat() {
     }
   };
 
+// supprimer messages
+  const supprimemoi = async (messageId) =>{
+    try{
+const res = await fetch(`/api/tchat/supprimemoi/${messageId}`,{
+  method: "Put",
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+})
+const data = await res.json()
+
+if(!res.ok){
+  alert(data.message)
+  return;
+}
+ setMessages((prev) =>
+      prev.filter((msg) => msg._id !== messageId)
+    );
+    
+    }
+    catch(error){
+      console.error(error.message)
+    }
+  }
+
+  // fin supprimer messages
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -1198,7 +1225,7 @@ function Tchat() {
                       <source src={msg.media.url} type={msg.media.mimetype} />
                     </audio>
                   )}
-                  {msg.contenu && <MessageText>{msg.contenu}</MessageText>}
+                  {msg.contenu && <button onClick={()=>{supprimemoi(msg._id)}}>{msg.contenu}</button>}
 
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
