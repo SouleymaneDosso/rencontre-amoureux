@@ -396,6 +396,32 @@ const PlayIcon = styled.div`
   font-size: 22px;
 `;
 
+const SwipeContainer = styled.div`
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+`;
+
+const SwipeActions = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  width: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ActionButton = styled.button`
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -412,6 +438,7 @@ function Tchat() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const swiperref = useRef(0);
+  const currentMessageId = useRef(null);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -441,22 +468,54 @@ function Tchat() {
   const [audioUrl, setAudioUrl] = useState("");
 
   const [swiper, setSwiper] = useState(null);
+  const [transition, setTransition] = useState({});
 
   // swiper
 
-  const debutswiper = (e) => {
-    swiperref.current = e.touches[0].clientX;
+  const closeSwiper = () => {
+    setSwiper(null);
+    setTransition({});
   };
 
-  const finswiper = (e, messageId) => {
-    const fin = e.changedTouches[0].clientX;
+  const debutswiper = (e, messageId) => {
+    swiperref.current = e.touches[0].clientX;
+    currentMessageId.current = messageId;
+  };
 
-    const diff = fin - swiperref.current;
+  const pendantswipper = (e) => {
+    const currentX = e.touches[0].clientX;
 
-    if (diff > 80) {
-      setSwiper(messageId);
+    const diff = currentX - swiperref.current;
+
+    if (diff > 0) {
+      setTransition((prev) => ({
+        ...prev,
+        [currentMessageId.current]: Math.min(diff, 120),
+      }));
     }
   };
+
+  const finswiper = () => {
+    const messageId = currentMessageId.current;
+
+    if (!messageId) return;
+
+    const distance = transition[messageId] || 0;
+
+    if (distance > 70) {
+      setSwiper(messageId);
+
+      setTransition({
+        [messageId]: 90,
+      });
+    } else {
+      setSwiper(null);
+      setTransition({});
+    }
+
+    currentMessageId.current = null;
+  };
+
   // fin swiper
 
   // audio
@@ -1054,7 +1113,7 @@ function Tchat() {
   const supprimemoi = async (messageId) => {
     try {
       const res = await fetch(`${API_URL}/api/tchat/supprimemoi/${messageId}`, {
-        method: "Put",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -1065,9 +1124,7 @@ function Tchat() {
         alert(data.message);
         return;
       }
-      setMessages((prev) => {
-        prev.filter((msg) => msg._id !== messageId);
-      });
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
     } catch (error) {
       console.error(error.message);
     }
@@ -1157,6 +1214,11 @@ function Tchat() {
 
       <MessagesContainer
         ref={containerRef}
+        onClick={() => {
+          if (swiper) {
+            closeSwiper();
+          }
+        }}
         onScroll={(e) => {
           const el = e.target;
 
@@ -1181,101 +1243,101 @@ function Tchat() {
           messages.map((msg) => {
             const isMine = msg.expediteur === monProfilId;
             return (
-              <MessageRow
-                key={msg._id}
-                $mine={isMine}
-                onTouchStart={debutswiper}
-                onTouchEnd={(e) => finswiper(e, msg._id)}
-              >
-                <MessageBubble $mine={isMine}>
-                  {msg.type === "image" && msg.media?.url && (
-                    <MessageImage
-                      src={msg.media.url}
-                      alt="message"
-                      onClick={() => ouvrirmodal(msg)}
-                    />
-                  )}
+              <MessageRow key={msg._id} $mine={isMine}>
+                <SwipeContainer
+                  onTouchStart={(e) => debutswiper(e, msg._id)}
+                  onTouchMove={pendantswipper}
+                  onTouchEnd={finswiper}
+                >
+                  <SwipeActions>
+                    <ActionButton onClick={() => supprimemoi(msg._id)}>
+                      🗑️
+                    </ActionButton>
+                  </SwipeActions>
 
-                  {swiper === msg._id && (
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginTop: "6px",
-                      }}
-                    >
-                      <button onClick={() => supprimemoi(msg._id)}>
-                        Supprimer pour moi
-                      </button>
+                  <MessageBubble
+                    $mine={isMine}
+                    style={{
+                      transform: `translateX(${transition[msg._id] || 0}px)`,
+                      transition: "transform .2s ease",
+                    }}
+                  >
+                    {msg.type === "image" && msg.media?.url && (
+                      <MessageImage
+                        src={msg.media.url}
+                        alt="message"
+                        onClick={() => ouvrirmodal(msg)}
+                      />
+                    )}
 
-                      <button onClick={() => setSwiper(null)}>
-                        Annuler
-                      </button>
-                    </div>
-                  )}
+                    {msg.type === "video" && msg.media?.url && (
+                      <VideoWrapper>
+                        <MessageVideo
+                          ref={(el) => {
+                            if (el) {
+                              videoRefs.current[msg._id] = el;
+                            }
+                          }}
+                          preload="metadata"
+                          playsInline
+                          poster={msg.media.thumbnail}
+                          onClick={() => toggleVideo(msg._id)}
+                          onPlay={() => setPlayingVideoId(msg._id)}
+                          onPause={() => setPlayingVideoId(null)}
+                          onEnded={() => setPlayingVideoId(null)}
+                        >
+                          <source
+                            src={msg.media.url}
+                            type={msg.media.mimetype}
+                          />
+                        </MessageVideo>
 
-                  {msg.type === "video" && msg.media?.url && (
-                    <VideoWrapper>
-                      <MessageVideo
-                        ref={(el) => {
-                          if (el) {
-                            videoRefs.current[msg._id] = el;
-                          }
-                        }}
-                        preload="metadata"
-                        playsInline
-                        poster={msg.media.thumbnail}
-                        onClick={() => toggleVideo(msg._id)}
-                        onPlay={() => setPlayingVideoId(msg._id)}
-                        onPause={() => setPlayingVideoId(null)}
-                        onEnded={() => setPlayingVideoId(null)}
-                      >
-                        <source src={msg.media.url} type={msg.media.mimetype} />
-                      </MessageVideo>
+                        {(showControls[msg._id] ||
+                          playingVideoId !== msg._id) && (
+                          <PlayIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleVideo(msg._id);
+                            }}
+                          >
+                            {videoRefs.current[msg._id]?.paused ? (
+                              <FaPlay />
+                            ) : (
+                              <FaPause />
+                            )}
+                          </PlayIcon>
+                        )}
 
-                      {(showControls[msg._id] ||
-                        playingVideoId !== msg._id) && (
-                        <PlayIcon
+                        <ExpandButton
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleVideo(msg._id);
+                            ouvrirmodal(msg);
                           }}
                         >
-                          {videoRefs.current[msg._id]?.paused ? (
-                            <FaPlay />
-                          ) : (
-                            <FaPause />
-                          )}
-                        </PlayIcon>
-                      )}
-
-                      <ExpandButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          ouvrirmodal(msg);
-                        }}
-                      >
-                        <FaExpand />
-                      </ExpandButton>
-                    </VideoWrapper>
-                  )}
-
-                  {msg.type === "audio" && msg.media?.url && (
-                    <audio controls>
-                      <source src={msg.media.url} type={msg.media.mimetype} />
-                    </audio>
-                  )}
-                  {msg.contenu && (
-                    <MessageText $supprime>{msg.contenu}</MessageText>
-                  )}
-                  
-                  <MessageTime>
-                    {msg.createdAt ? formatTime(msg.createdAt) : ""}
-                    {isMine && (
-                      <StatusWrapper>{getStatutIcon(msg.statut)}</StatusWrapper>
+                          <FaExpand />
+                        </ExpandButton>
+                      </VideoWrapper>
                     )}
-                  </MessageTime>
-                </MessageBubble>
+
+                    {msg.type === "audio" && msg.media?.url && (
+                      <audio controls>
+                        <source src={msg.media.url} type={msg.media.mimetype} />
+                      </audio>
+                    )}
+                    {msg.contenu && (
+                      <MessageText $supprime>{msg.contenu}</MessageText>
+                    )}
+
+                    <MessageTime>
+                      {msg.createdAt ? formatTime(msg.createdAt) : ""}
+                      {isMine && (
+                        <StatusWrapper>
+                          {getStatutIcon(msg.statut)}
+                        </StatusWrapper>
+                      )}
+                    </MessageTime>
+                  </MessageBubble>
+                </SwipeContainer>
               </MessageRow>
             );
           })
