@@ -1253,7 +1253,7 @@ function Tchat() {
                     </ActionButton>
 
                     <ActionButton onClick={() => supprimetous(msg._id)}>
-                      Supprimer pour tous
+                      Supprimer
                     </ActionButton>
                   </SwipeActions>
 
