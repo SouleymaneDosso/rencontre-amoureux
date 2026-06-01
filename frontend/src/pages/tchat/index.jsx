@@ -500,11 +500,11 @@ function Tchat() {
 
     const distance = transition[messageId] || 0;
 
-    if (distance > 70) {
+    if (distance > 80) {
       setSwiper(messageId);
 
       setTransition({
-        [messageId]: 90,
+        [messageId]: 100,
       });
     } else {
       setSwiper(null);
