@@ -1251,11 +1251,11 @@ function Tchat() {
                     <ActionButton onClick={() => supprimemoi(msg._id)}>
                       Supprimer pour moi
                     </ActionButton>
-                  </SwipeActions>
 
                     <ActionButton onClick={() => supprimetous(msg._id)}>
                       Supprimer pour tous
                     </ActionButton>
+                  </SwipeActions>
 
                   <MessageBubble
                     $mine={isMine}
