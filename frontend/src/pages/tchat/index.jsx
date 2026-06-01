@@ -407,9 +407,7 @@ const SwipeActions = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-
   width: 90px;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1251,9 +1249,13 @@ function Tchat() {
                 >
                   <SwipeActions>
                     <ActionButton onClick={() => supprimemoi(msg._id)}>
-                      🗑️
+                      Supprimer pour moi
                     </ActionButton>
                   </SwipeActions>
+
+                    <ActionButton onClick={() => supprimetous(msg._id)}>
+                      Supprimer pour tous
+                    </ActionButton>
 
                   <MessageBubble
                     $mine={isMine}
