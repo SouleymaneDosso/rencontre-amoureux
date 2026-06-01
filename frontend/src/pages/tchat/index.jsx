@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useState, useRef, useEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
-
+const API_URL = import.meta.env.VITE_API_URL;
 import {
   FaArrowLeft,
   FaPaperPlane,
@@ -158,7 +158,6 @@ const MessageTime = styled.span`
   display: block;
   font-size: 11px;
   margin-top: 6px;
-  opacity: 0.75;
 `;
 
 const PreviewBox = styled.div`
@@ -412,6 +411,7 @@ function Tchat() {
   const controlsTimeoutRef = useRef({});
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const swiperref = useRef(0);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -439,6 +439,25 @@ function Tchat() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
+
+  const [swiper, setSwiper] = useState(null);
+
+  // swiper
+
+  const debutswiper = (e) => {
+    swiperref.current = e.touches[0].clientX;
+  };
+
+  const finswiper = (e, messageId) => {
+    const fin = e.changedTouches[0].clientX;
+
+    const diff = fin - swiperref.current;
+
+    if (diff > 80) {
+      setSwiper(messageId);
+    }
+  };
+  // fin swiper
 
   // audio
 
@@ -1031,30 +1050,28 @@ function Tchat() {
     }
   };
 
-// supprimer messages
-  const supprimemoi = async (messageId) =>{
-    try{
-const res = await fetch(`/api/tchat/supprimemoi/${messageId}`,{
-  method: "Put",
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-})
-const data = await res.json()
+  // supprimer messages
+  const supprimemoi = async (messageId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/tchat/supprimemoi/${messageId}`, {
+        method: "Put",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
 
-if(!res.ok){
-  alert(data.message)
-  return;
-}
- setMessages((prev) =>
-      prev.filter((msg) => msg._id !== messageId)
-    );
-    
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+      setMessages((prev) => {
+        prev.filter((msg) => msg._id !== messageId);
+      });
+    } catch (error) {
+      console.error(error.message);
     }
-    catch(error){
-      console.error(error.message)
-    }
-  }
+  };
 
   // fin supprimer messages
 
@@ -1164,7 +1181,12 @@ if(!res.ok){
           messages.map((msg) => {
             const isMine = msg.expediteur === monProfilId;
             return (
-              <MessageRow key={msg._id} $mine={isMine}>
+              <MessageRow
+                key={msg._id}
+                $mine={isMine}
+                onTouchStart={debutswiper}
+                onTouchEnd={(e) => finswiper(e, msg._id)}
+              >
                 <MessageBubble $mine={isMine}>
                   {msg.type === "image" && msg.media?.url && (
                     <MessageImage
@@ -1172,6 +1194,24 @@ if(!res.ok){
                       alt="message"
                       onClick={() => ouvrirmodal(msg)}
                     />
+                  )}
+
+                  {swiper === msg._id && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "6px",
+                      }}
+                    >
+                      <button onClick={() => supprimemoi(msg._id)}>
+                        Supprimer pour moi
+                      </button>
+
+                      <button onClick={() => setSwiper(null)}>
+                        Annuler
+                      </button>
+                    </div>
                   )}
 
                   {msg.type === "video" && msg.media?.url && (
@@ -1225,8 +1265,10 @@ if(!res.ok){
                       <source src={msg.media.url} type={msg.media.mimetype} />
                     </audio>
                   )}
-                  {msg.contenu && <button onClick={()=>{supprimemoi(msg._id)}}>{msg.contenu}</button>}
-
+                  {msg.contenu && (
+                    <MessageText $supprime>{msg.contenu}</MessageText>
+                  )}
+                  
                   <MessageTime>
                     {msg.createdAt ? formatTime(msg.createdAt) : ""}
                     {isMine && (
@@ -1349,9 +1391,7 @@ if(!res.ok){
         />
 
         <Input
-        
           placeholder="Écrire un message..."
-          
           value={newMessage}
           onChange={(e) => {
             setNewMessage(e.target.value);
@@ -1370,8 +1410,6 @@ if(!res.ok){
             }, 2000);
           }}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-
-          
         />
 
         {newMessage.trim() || selectedFile || audioBlob ? (
@@ -1388,9 +1426,8 @@ if(!res.ok){
             <FaMicrophone />
           </SendButton>
         )}
-        
       </InputContainer>
-       {isRecording && (
+      {isRecording && (
         <div
           style={{
             padding: "10px",
