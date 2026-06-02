@@ -275,12 +275,11 @@ const message = await Message.findById(messageId);
   }
 }
 
-const supprimertous = async (req, res)=>{
+exports.supprimertous = async (req, res)=>{
 
 const {messageId} = req.params;
 
 const message = await Message.findById(messageId);
-
 
 if(!message){
   return res.status(400).json({message: "Ce message existe pas"})
