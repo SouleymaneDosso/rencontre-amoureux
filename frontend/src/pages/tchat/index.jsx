@@ -500,11 +500,11 @@ function Tchat() {
 
     const distance = transition[messageId] || 0;
 
-    if (distance > 80) {
+    if (distance > 70) {
       setSwiper(messageId);
 
       setTransition({
-        [messageId]: 100,
+        [messageId]: 90,
       });
     } else {
       setSwiper(null);
@@ -513,11 +513,11 @@ function Tchat() {
 
     currentMessageId.current = null;
   };
-
   // fin swiper
 
-  // audio
 
+
+  // audio
   const startRecording = async () => {
     if (isRecording) return;
     try {
@@ -1250,10 +1250,6 @@ function Tchat() {
                   <SwipeActions>
                     <ActionButton onClick={() => supprimemoi(msg._id)}>
                       Supprimer pour moi
-                    </ActionButton>
-
-                    <ActionButton onClick={() => supprimetous(msg._id)}>
-                      Supprimer
                     </ActionButton>
                   </SwipeActions>
 
