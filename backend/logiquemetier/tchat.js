@@ -275,6 +275,25 @@ const message = await Message.findById(messageId);
   }
 }
 
+const supprimertous = async (req, res)=>{
+
+const {messageId} = req.params;
+
+const message = await Message.findById(messageId);
+
+
+if(!message){
+  return res.status(400).json({message: "Ce message existe pas"})
+}
+message.supprimePourTous = true;
+message.contenu = "";
+message.media = {};
+
+await message.save()
+res.status(200).json({message: "Message supprimé avec succes"})
+
+}
+
 
 
 exports.mesConversations = async (req, res) => {
@@ -315,6 +334,8 @@ exports.mesConversations = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+
 exports.marquerMessagesCommeLus = async (req, res) => {
   try {
     // =======================
