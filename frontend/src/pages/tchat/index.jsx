@@ -1128,6 +1128,29 @@ function Tchat() {
     }
   };
 
+
+  const supprimetous = async (messageId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/tchat/supprimetous/${messageId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+
+
   // fin supprimer messages
 
   useEffect(() => {
@@ -1250,6 +1273,10 @@ function Tchat() {
                   <SwipeActions>
                     <ActionButton onClick={() => supprimemoi(msg._id)}>
                       Supprimer pour moi
+                    </ActionButton>
+
+                  <ActionButton onClick={() => supprimetous(msg._id)}>
+                      Supprimer pour tous
                     </ActionButton>
                   </SwipeActions>
 
