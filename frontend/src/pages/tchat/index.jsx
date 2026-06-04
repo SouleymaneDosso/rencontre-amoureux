@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
+import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import {
   FaArrowLeft,
   FaPaperPlane,
@@ -1272,11 +1273,11 @@ function Tchat() {
                 >
                   <SwipeActions>
                     <ActionButton onClick={() => supprimemoi(msg._id)}>
-                      Supprimer pour moi
+                      <FaTrash /> moi
                     </ActionButton>
 
                   <ActionButton onClick={() => supprimetous(msg._id)}>
-                      Supprimer pour tous
+                       <FaTrashAlt /> tous
                     </ActionButton>
                   </SwipeActions>
 
