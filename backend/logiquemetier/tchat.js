@@ -7,12 +7,11 @@ const streamifier = require("streamifier");
 const uploadToCloudinary = (fileBuffer, folder, resourceType = "image") => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-
       {
         folder,
         resource_type: resourceType,
         chunk_size: 9000000,
-         timeout: 600000,
+        timeout: 600000,
       },
       (error, result) => {
         if (error) reject(error);
@@ -28,7 +27,7 @@ exports.envoyerMessage = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { profilId } = req.params;
-    const { contenu = "" } = req.body;
+    const { contenu = "", duration = 0 } = req.body;
 
     // retrouver mon profil
     const monProfil = await Profil.findOne({ userId });
@@ -84,11 +83,10 @@ exports.envoyerMessage = async (req, res) => {
 
     // Si fichier image envoyé
     if (req.file) {
-
       // 🔒 2. vérifier format autorisé
       const isImage = req.file.mimetype.startsWith("image");
       const isVideo = req.file.mimetype.startsWith("video");
-      const isAudio = req.file.mimetype.startsWith("audio")
+      const isAudio = req.file.mimetype.startsWith("audio");
 
       if (!isImage && !isVideo && !isAudio) {
         return res.status(400).json({ message: "Format non supporté" });
@@ -99,24 +97,22 @@ exports.envoyerMessage = async (req, res) => {
       const uploadResult = await uploadToCloudinary(
         req.file.buffer,
         `site-de-rencontre/messages/${conversation._id}`,
-        isVideo || isAudio ? "video" : "image"
+        isVideo || isAudio ? "video" : "image",
       );
 
       // 🧠 5. définir type
-      type = isAudio
-  ? "audio"
-  : isVideo
-    ? "video"
-    : "image";
+      type = isAudio ? "audio" : isVideo ? "video" : "image";
 
       // 📦 6. stocker données
-mediaData = {
+     mediaData = {
   url: uploadResult.secure_url,
   public_id: uploadResult.public_id,
   originalname: req.file.originalname,
   mimetype: req.file.mimetype,
 
-  thumbnail: isVideo || isAudio
+  duration: isAudio ? Number(duration) : 0,
+
+  thumbnail: isVideo
     ? uploadResult.secure_url.replace(
         "/upload/",
         "/upload/so_1/"
@@ -139,19 +135,19 @@ mediaData = {
 
     // mettre à jour la conversation
     conversation.dernierMessage =
-  type === "image"
-    ? contenu?.trim()
-      ? `📷 ${contenu.trim()}`
-      : "📷 Image"
-    : type === "video"
-      ? contenu?.trim()
-        ? `🎥 ${contenu.trim()}`
-        : "🎥 Vidéo"
-      : type === "audio"
+      type === "image"
         ? contenu?.trim()
-          ? `🎤 ${contenu.trim()}`
-          : "🎤 Message vocal"
-        : contenu?.trim() || "";
+          ? `📷 ${contenu.trim()}`
+          : "📷 Image"
+        : type === "video"
+          ? contenu?.trim()
+            ? `🎥 ${contenu.trim()}`
+            : "🎥 Vidéo"
+          : type === "audio"
+            ? contenu?.trim()
+              ? `🎤 ${contenu.trim()}`
+              : "🎤 Message vocal"
+            : contenu?.trim() || "";
 
     conversation.dernierMessageStatut = "sent";
     conversation.dernierMessageDate = new Date();
@@ -213,15 +209,15 @@ exports.getMessages = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
 
-    const messages = await Message.find({ conversationId: conversation._id,
-      supprimePourMoi :{
-      $nin: [monProfil._id],
+    const messages = await Message.find({
+      conversationId: conversation._id,
+      supprimePourMoi: {
+        $nin: [monProfil._id],
       },
-     })
+    })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
-
 
     res.json(messages.reverse());
   } catch (error) {
@@ -230,70 +226,67 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-
 exports.supprimerpourMoi = async (req, res) => {
-  try{
+  try {
+    const userId = req.auth.userId;
 
-const userId = req.auth.userId;
+    const { messageId } = req.params;
 
-const {messageId} = req.params;
+    const monprofil = await Profil.findOne({ userId });
 
-const monprofil = await Profil.findOne({userId})
+    if (!monprofil) {
+      return res.status(400).json({ message: "Profil introuvable" });
+    }
 
-if(!monprofil){
-  return res.status(400).json({message: "Profil introuvable"})
-}
-
-const message = await Message.findById(messageId);
-  if (!message) {
+    const message = await Message.findById(messageId);
+    if (!message) {
       return res.status(404).json({
         message: "Message introuvable",
       });
     }
 
-    const autorisation = message.expediteur.toString() === monprofil._id.toString() || 
-    message.destinataire.toString() ===  monprofil._id.toString()
+    const autorisation =
+      message.expediteur.toString() === monprofil._id.toString() ||
+      message.destinataire.toString() === monprofil._id.toString();
 
-    if(!autorisation){
-      return res.status(403).json({message: "vous n'avez pas l'authorisation"})
+    if (!autorisation) {
+      return res
+        .status(403)
+        .json({ message: "vous n'avez pas l'authorisation" });
     }
 
-    const dejasupprimer = message.supprimePourMoi.some((id)=> id.toString() === monprofil._id.toString())
+    const dejasupprimer = message.supprimePourMoi.some(
+      (id) => id.toString() === monprofil._id.toString(),
+    );
 
-    if(!dejasupprimer){
-      message.supprimePourMoi.push(monprofil._id)
-      await message.save()
+    if (!dejasupprimer) {
+      message.supprimePourMoi.push(monprofil._id);
+      await message.save();
     }
 
     return res.status(200).json({
-      message: "Message supprimé pour vous"
-    })
-
+      message: "Message supprimé pour vous",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-  catch(error){
-    res.status(500).json({ message: error.message}); 
+};
+
+exports.supprimertous = async (req, res) => {
+  const { messageId } = req.params;
+
+  const message = await Message.findById(messageId);
+
+  if (!message) {
+    return res.status(400).json({ message: "Ce message existe pas" });
   }
-}
+  message.supprimePourTous = true;
+  message.contenu = "";
+  message.media = {};
 
-exports.supprimertous = async (req, res)=>{
-
-const {messageId} = req.params;
-
-const message = await Message.findById(messageId);
-
-if(!message){
-  return res.status(400).json({message: "Ce message existe pas"})
-}
-message.supprimePourTous = true;
-message.contenu = "";
-message.media = {};
-
-await message.save()
-res.status(200).json({message: "Message supprimé avec succes"})
-
-}
-
-
+  await message.save();
+  res.status(200).json({ message: "Message supprimé avec succes" });
+};
 
 exports.mesConversations = async (req, res) => {
   try {
@@ -333,7 +326,6 @@ exports.mesConversations = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
-
 
 exports.marquerMessagesCommeLus = async (req, res) => {
   try {
