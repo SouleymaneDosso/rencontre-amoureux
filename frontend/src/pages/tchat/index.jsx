@@ -465,6 +465,7 @@ function Tchat() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
+  const [audioDuration, setAudioDuration] = useState(0);
 
   const [swiper, setSwiper] = useState(null);
   const [transition, setTransition] = useState({});
@@ -516,8 +517,6 @@ function Tchat() {
   };
   // fin swiper
 
-
-
   // audio
   const startRecording = async () => {
     if (isRecording) return;
@@ -558,6 +557,12 @@ function Tchat() {
 
         setAudioBlob(audioBlob);
         setAudioUrl(audioUrl);
+
+        const audioElement = new Audio(audioUrl);
+
+        audioElement.onloadedmetadata = () => {
+          setAudioDuration(Math.round(audioElement.duration));
+        };
 
         // stop micro
         stream.getTracks().forEach((track) => track.stop());
@@ -1081,8 +1086,8 @@ function Tchat() {
       formData.append("contenu", messageText);
       if (audioBlob) {
         formData.append("media", audioBlob, "voice.webm");
+        formData.append("duration", audioDuration);
       }
-
       if (file) {
         formData.append("media", file);
       }
@@ -1129,15 +1134,17 @@ function Tchat() {
     }
   };
 
-
   const supprimetous = async (messageId) => {
     try {
-      const res = await fetch(`${API_URL}/api/tchat/supprimetous/${messageId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${API_URL}/api/tchat/supprimetous/${messageId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -1149,8 +1156,6 @@ function Tchat() {
       console.error(error.message);
     }
   };
-
-
 
   // fin supprimer messages
 
@@ -1276,8 +1281,8 @@ function Tchat() {
                       <FaTrash /> moi
                     </ActionButton>
 
-                  <ActionButton onClick={() => supprimetous(msg._id)}>
-                       <FaTrashAlt /> tous
+                    <ActionButton onClick={() => supprimetous(msg._id)}>
+                      <FaTrashAlt /> tous
                     </ActionButton>
                   </SwipeActions>
 
