@@ -814,6 +814,13 @@ function Tchat() {
     });
   };
 
+  const formatAudioDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const getStatutIcon = (statut) => {
     switch (statut) {
       case "sent":
@@ -1351,9 +1358,24 @@ function Tchat() {
                     )}
 
                     {msg.type === "audio" && msg.media?.url && (
-                      <audio controls>
-                        <source src={msg.media.url} type={msg.media.mimetype} />
-                      </audio>
+                      <>
+                        <audio controls>
+                          <source
+                            src={msg.media.url}
+                            type={msg.media.mimetype}
+                          />
+                        </audio>
+
+                        <div
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "12px",
+                            opacity: 0.8,
+                          }}
+                        >
+                          🎤 {formatAudioDuration(msg.media.duration || 0)}
+                        </div>
+                      </>
                     )}
                     {msg.contenu && (
                       <MessageText $supprime>{msg.contenu}</MessageText>
