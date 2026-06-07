@@ -428,11 +428,10 @@ const ProgressBar = styled.div`
   height: 4px;
   background: rgba(128, 10, 132, 0.08);
   border-radius: 999px;
-  
 `;
 
 const ProgressFill = styled.div`
-position: relative;
+  position: relative;
   height: 100%;
   width: ${(props) => props.$progress}%;
   background: #007bff;
@@ -508,7 +507,7 @@ function Tchat() {
   const [transition, setTransition] = useState({});
   const [audioProgress, setAudioProgress] = useState({});
   const [audioCurrentTime, setAudioCurrentTime] = useState({});
-
+  const [draggingAudioId, setDraggingAudioId] = useState(null);
   // swiper
 
   const closeSwiper = () => {
@@ -558,21 +557,39 @@ function Tchat() {
 
   // audio
 
-const seekAudio = (e, messageId) => {
-  const audio = audioRefs.current[messageId];
+useEffect(() => {
+  const handleMouseMove = (e) => {
+    if (!draggingAudioId) return;
 
-  if (!audio) return;
+    console.log("je bouge");
+  };
 
-  const rect = e.currentTarget.getBoundingClientRect();
+  const handleMouseUp = () => {
+    setDraggingAudioId(null);
+  };
 
-  const clickX = e.clientX - rect.left;
+  window.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", handleMouseUp);
 
-  const percentage = clickX / rect.width;
+  return () => {
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+  };
+}, [draggingAudioId]);
 
-  audio.currentTime = percentage * audio.duration;
-};
+  const seekAudio = (e, messageId) => {
+    const audio = audioRefs.current[messageId];
 
+    if (!audio) return;
 
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    const clickX = e.clientX - rect.left;
+
+    const percentage = clickX / rect.width;
+
+    audio.currentTime = percentage * audio.duration;
+  };
 
   const startRecording = async () => {
     if (isRecording) return;
@@ -1524,14 +1541,15 @@ const seekAudio = (e, messageId) => {
                               seekAudio(e, msg._id);
                             }}
                           >
-                            
                             <ProgressFill
                               $progress={audioProgress[msg._id] || 0}
                             >
-                            <ProgressThumb />
-
+                              <ProgressThumb
+                                onMouseDown={() => {
+                                  setDraggingAudioId(msg._id);
+                                }}
+                              />
                             </ProgressFill>
-                            
                           </ProgressBar>
 
                           <span
