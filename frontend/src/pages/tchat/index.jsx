@@ -423,7 +423,7 @@ const ActionButton = styled.button`
 
 const ProgressBar = styled.div`
   flex: 1;
-  min-width: 80px;
+  width: 100px;
 
   height: 4px;
   background: rgba(128, 10, 132, 0.08);
