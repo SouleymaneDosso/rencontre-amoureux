@@ -422,17 +422,18 @@ const ActionButton = styled.button`
 `;
 
 const ProgressBar = styled.div`
-  width: 180px;
+  flex: 1;
+  min-width: 80px;
+
   height: 4px;
   background: rgba(128, 10, 132, 0.08);
   border-radius: 999px;
   overflow: hidden;
 `;
-
 const ProgressFill = styled.div`
   height: 100%;
   width: ${(props) => props.$progress}%;
-  background: #007BFF;
+  background: #007bff;
   transition: width 0.1s linear;
 `;
 
@@ -1413,11 +1414,12 @@ function Tchat() {
                             const progress =
                               (audio.currentTime / audio.duration) * 100;
 
-                              const progressTime = Math.floor(audio.currentTime);
+                            const progressTime = Math.floor(audio.currentTime);
 
-                               setAudioCurrentTime((prev)=>({
-                                ...prev, [msg._id] : progressTime,
-                               }));
+                            setAudioCurrentTime((prev) => ({
+                              ...prev,
+                              [msg._id]: progressTime,
+                            }));
 
                             setAudioProgress((prev) => ({
                               ...prev,
@@ -1431,41 +1433,61 @@ function Tchat() {
                             type={msg.media.mimetype}
                           />
                         </audio>
-
-                        <button
-                          onClick={() => toggleAudio(msg._id)}
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            cursor: "pointer",
-                            fontSize: "20px",
-                          }}
-                        >
-                          {playingAudioId === msg._id ? "⏸️" : "▶️"}
-                        </button>
-
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
+                            gap: "10px",
+                            width: "100%",
                           }}
                         >
+                          <button
+                            onClick={() => toggleAudio(msg._id)}
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "50%",
+                              border: "none",
+                              cursor: "pointer",
+
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+
+                              background: "#007BFF",
+                              color: "white",
+
+                              flexShrink: 0,
+                            }}
+                          >
+                            {playingAudioId === msg._id ? (
+                              <FaPause />
+                            ) : (
+                              <FaPlay />
+                            )}
+                          </button>
+
                           <ProgressBar>
                             <ProgressFill
-                              $progress = {audioProgress[msg._id] || 0}
+                              $progress={audioProgress[msg._id] || 0}
                             />
                           </ProgressBar>
+
+                          <span
+                            style={{
+                              fontSize: "15px",
+                              whiteSpace: "nowrap",
+                      
+                              flexShrink: 0,
+                            }}
+                          >
+                            {formatAudioDuration(
+                              audioCurrentTime[msg._id] || 0,
+                            )}
+                            {" / "}
+                            {formatAudioDuration(msg.media.duration || 0)}
+                          </span>
                         </div>
-
-                        <span
-                          style={{
-                            marginLeft: "8px",
-                          }}
-                        >
-
-                       {formatAudioDuration(audioCurrentTime[msg._id] || 0)} / {formatAudioDuration(msg.media.duration || 0)}
-                        </span>
                       </>
                     )}
 
