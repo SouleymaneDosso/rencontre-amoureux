@@ -428,13 +428,32 @@ const ProgressBar = styled.div`
   height: 4px;
   background: rgba(128, 10, 132, 0.08);
   border-radius: 999px;
-  overflow: hidden;
+  
 `;
+
 const ProgressFill = styled.div`
+position: relative;
   height: 100%;
   width: ${(props) => props.$progress}%;
   background: #007bff;
   transition: width 0.1s linear;
+`;
+
+const ProgressThumb = styled.div`
+  position: absolute;
+
+  right: -6px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  background: white;
+  border: 2px solid #007bff;
 `;
 
 function Tchat() {
@@ -1505,9 +1524,14 @@ const seekAudio = (e, messageId) => {
                               seekAudio(e, msg._id);
                             }}
                           >
+                            
                             <ProgressFill
                               $progress={audioProgress[msg._id] || 0}
-                            />
+                            >
+                            <ProgressThumb />
+
+                            </ProgressFill>
+                            
                           </ProgressBar>
 
                           <span
