@@ -538,6 +538,23 @@ function Tchat() {
   // fin swiper
 
   // audio
+
+const seekAudio = (e, messageId) => {
+  const audio = audioRefs.current[messageId];
+
+  if (!audio) return;
+
+  const rect = e.currentTarget.getBoundingClientRect();
+
+  const clickX = e.clientX - rect.left;
+
+  const percentage = clickX / rect.width;
+
+  audio.currentTime = percentage * audio.duration;
+};
+
+
+
   const startRecording = async () => {
     if (isRecording) return;
     try {
@@ -1407,6 +1424,22 @@ function Tchat() {
                           }}
                           onEnded={() => {
                             setPlayingAudioId(null);
+
+                            setAudioProgress((prev) => ({
+                              ...prev,
+                              [msg._id]: 0,
+                            }));
+
+                            setAudioCurrentTime((prev) => ({
+                              ...prev,
+                              [msg._id]: 0,
+                            }));
+
+                            const audio = audioRefs.current[msg._id];
+
+                            if (audio) {
+                              audio.currentTime = 0;
+                            }
                           }}
                           onTimeUpdate={(e) => {
                             const audio = e.target;
@@ -1467,7 +1500,11 @@ function Tchat() {
                             )}
                           </button>
 
-                          <ProgressBar>
+                          <ProgressBar
+                            onClick={(e) => {
+                              seekAudio(e, msg._id);
+                            }}
+                          >
                             <ProgressFill
                               $progress={audioProgress[msg._id] || 0}
                             />
@@ -1477,7 +1514,7 @@ function Tchat() {
                             style={{
                               fontSize: "15px",
                               whiteSpace: "nowrap",
-                      
+
                               flexShrink: 0,
                             }}
                           >
