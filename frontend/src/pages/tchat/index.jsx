@@ -424,7 +424,7 @@ const ActionButton = styled.button`
 const ProgressBar = styled.div`
   width: 180px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(128, 10, 132, 0.08);
   border-radius: 999px;
   overflow: hidden;
 `;
@@ -432,7 +432,7 @@ const ProgressBar = styled.div`
 const ProgressFill = styled.div`
   height: 100%;
   width: ${(props) => props.$progress}%;
-  background: white;
+  background: #007BFF;
   transition: width 0.1s linear;
 `;
 
@@ -487,6 +487,7 @@ function Tchat() {
   const [swiper, setSwiper] = useState(null);
   const [transition, setTransition] = useState({});
   const [audioProgress, setAudioProgress] = useState({});
+  const [audioCurrentTime, setAudioCurrentTime] = useState({});
 
   // swiper
 
@@ -1412,6 +1413,12 @@ function Tchat() {
                             const progress =
                               (audio.currentTime / audio.duration) * 100;
 
+                              const progressTime = Math.floor(audio.currentTime);
+
+                               setAudioCurrentTime((prev)=>({
+                                ...prev, [msg._id] : progressTime,
+                               }));
+
                             setAudioProgress((prev) => ({
                               ...prev,
                               [msg._id]: progress,
@@ -1446,13 +1453,9 @@ function Tchat() {
                         >
                           <ProgressBar>
                             <ProgressFill
-                              $progress={audioProgress[msg._id] || 0}
+                              $progress = {audioProgress[msg._id] || 0}
                             />
                           </ProgressBar>
-
-                          <span>
-                            {formatAudioDuration(msg.media.duration || 0)}
-                          </span>
                         </div>
 
                         <span
@@ -1460,7 +1463,8 @@ function Tchat() {
                             marginLeft: "8px",
                           }}
                         >
-                          🎤 {formatAudioDuration(msg.media.duration || 0)}
+
+                       {formatAudioDuration(audioCurrentTime[msg._id] || 0)} / {formatAudioDuration(msg.media.duration || 0)}
                         </span>
                       </>
                     )}
