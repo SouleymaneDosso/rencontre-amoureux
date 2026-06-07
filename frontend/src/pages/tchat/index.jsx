@@ -421,6 +421,21 @@ const ActionButton = styled.button`
   cursor: pointer;
 `;
 
+const ProgressBar = styled.div`
+  width: 180px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+  height: 100%;
+  width: ${(props) => props.$progress}%;
+  background: white;
+  transition: width 0.1s linear;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -437,6 +452,7 @@ function Tchat() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const swiperref = useRef(0);
+  const audioRefs = useRef({});
   const currentMessageId = useRef(null);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
@@ -466,9 +482,11 @@ function Tchat() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
   const [audioDuration, setAudioDuration] = useState(0);
+  const [playingAudioId, setPlayingAudioId] = useState(null);
 
   const [swiper, setSwiper] = useState(null);
   const [transition, setTransition] = useState({});
+  const [audioProgress, setAudioProgress] = useState({});
 
   // swiper
 
@@ -648,6 +666,26 @@ function Tchat() {
         ...prev,
         [id]: true,
       }));
+    }
+  };
+
+  const toggleAudio = (id) => {
+    const currentAudio = audioRefs.current[id];
+
+    if (!currentAudio) return;
+
+    Object.entries(audioRefs.current).forEach(([audioId, audio]) => {
+      if (audioId !== id && !audio.paused) {
+        audio.pause();
+      }
+    });
+
+    if (currentAudio.paused) {
+      currentAudio.play();
+      setPlayingAudioId(id);
+    } else {
+      currentAudio.pause();
+      setPlayingAudioId(null);
     }
   };
 
@@ -1359,24 +1397,74 @@ function Tchat() {
 
                     {msg.type === "audio" && msg.media?.url && (
                       <>
-                        <audio controls>
+                        <audio
+                          ref={(el) => {
+                            if (el) {
+                              audioRefs.current[msg._id] = el;
+                            }
+                          }}
+                          onEnded={() => {
+                            setPlayingAudioId(null);
+                          }}
+                          onTimeUpdate={(e) => {
+                            const audio = e.target;
+
+                            const progress =
+                              (audio.currentTime / audio.duration) * 100;
+
+                            setAudioProgress((prev) => ({
+                              ...prev,
+                              [msg._id]: progress,
+                            }));
+                          }}
+                          style={{ display: "none" }}
+                        >
                           <source
                             src={msg.media.url}
                             type={msg.media.mimetype}
                           />
                         </audio>
 
+                        <button
+                          onClick={() => toggleAudio(msg._id)}
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            fontSize: "20px",
+                          }}
+                        >
+                          {playingAudioId === msg._id ? "⏸️" : "▶️"}
+                        </button>
+
                         <div
                           style={{
-                            marginTop: "6px",
-                            fontSize: "12px",
-                            opacity: 0.8,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <ProgressBar>
+                            <ProgressFill
+                              $progress={audioProgress[msg._id] || 0}
+                            />
+                          </ProgressBar>
+
+                          <span>
+                            {formatAudioDuration(msg.media.duration || 0)}
+                          </span>
+                        </div>
+
+                        <span
+                          style={{
+                            marginLeft: "8px",
                           }}
                         >
                           🎤 {formatAudioDuration(msg.media.duration || 0)}
-                        </div>
+                        </span>
                       </>
                     )}
+
                     {msg.contenu && (
                       <MessageText $supprime>{msg.contenu}</MessageText>
                     )}
