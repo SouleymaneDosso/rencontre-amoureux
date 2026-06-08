@@ -473,6 +473,7 @@ function Tchat() {
   const swiperref = useRef(0);
   const audioRefs = useRef({});
   const currentMessageId = useRef(null);
+  const progressRefs = useRef({});
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -557,25 +558,39 @@ function Tchat() {
 
   // audio
 
-useEffect(() => {
-  const handleMouseMove = (e) => {
-    if (!draggingAudioId) return;
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!draggingAudioId) return;
 
-    console.log("je bouge");
-  };
+      const progressBar = progressRefs.current[draggingAudioId];
 
-  const handleMouseUp = () => {
-    setDraggingAudioId(null);
-  };
+      if (!progressBar) return;
 
-  window.addEventListener("mousemove", handleMouseMove);
-  window.addEventListener("mouseup", handleMouseUp);
+      const rect = progressBar.getBoundingClientRect();
 
-  return () => {
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("mouseup", handleMouseUp);
-  };
-}, [draggingAudioId]);
+      const x = e.clientX - rect.left;
+
+      const percentage = Math.min(Math.max(x / rect.width, 0), 1);
+
+      const audio = audioRefs.current[draggingAudioId];
+
+      if (!audio) return;
+
+      audio.currentTime = percentage * audio.duration;
+    };
+
+    const handleMouseUp = () => {
+      setDraggingAudioId(null);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [draggingAudioId]);
 
   const seekAudio = (e, messageId) => {
     const audio = audioRefs.current[messageId];
@@ -1537,6 +1552,11 @@ useEffect(() => {
                           </button>
 
                           <ProgressBar
+                            ref={(el) => {
+                              if (el) {
+                                progressRefs.current[msg._id] = el;
+                              }
+                            }}
                             onClick={(e) => {
                               seekAudio(e, msg._id);
                             }}
