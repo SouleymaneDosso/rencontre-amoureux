@@ -945,52 +945,43 @@ function Tchat() {
     }
   };
 
-const loadMoreMessages = async () => {
-  if (!hasMore || loadingMore) return;
+  const loadMoreMessages = async () => {
+    if (!hasMore || loadingMore) return;
 
-  setLoadingMore(true);
+    setLoadingMore(true);
 
-  const nextPage = page + 1;
+    const nextPage = page + 1;
 
-  try {
-    const container = containerRef.current;
-    const prevHeight = container.scrollHeight;
+    try {
+      const container = containerRef.current;
+      const prevHeight = container.scrollHeight;
+      const moreMessages = await getMessagesConversation(id, token, nextPage);
 
-    const moreMessages = await getMessagesConversation(
-      id,
-      token,
-      nextPage
-    );
+      if (moreMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((msg) => msg._id));
 
-    if (moreMessages.length === 0) {
-      setHasMore(false);
-    } else {
-      setMessages((prev) => {
-        const existingIds = new Set(
-          prev.map((msg) => msg._id)
-        );
+          const nouveauxMessages = moreMessages.filter(
+            (msg) => !existingIds.has(msg._id),
+          );
 
-        const nouveauxMessages = moreMessages.filter(
-          (msg) => !existingIds.has(msg._id)
-        );
+          return [...nouveauxMessages, ...prev];
+        });
+        setPage(nextPage);
+      }
 
-        return [...nouveauxMessages, ...prev];
+      requestAnimationFrame(() => {
+        const newHeight = container.scrollHeight;
+        container.scrollTop = newHeight - prevHeight;
       });
-
-      setPage(nextPage);
+    } catch (error) {
+      console.error("Erreur load more :", error);
+    } finally {
+      setLoadingMore(false);
     }
-
-    requestAnimationFrame(() => {
-      const newHeight = container.scrollHeight;
-      container.scrollTop = newHeight - prevHeight;
-    });
-  } catch (error) {
-    console.error("Erreur load more :", error);
-  } finally {
-    setLoadingMore(false);
-  }
-};
-
+  };
 
   // localStorage pour les messages
 
