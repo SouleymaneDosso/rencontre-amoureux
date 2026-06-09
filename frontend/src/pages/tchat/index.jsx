@@ -1321,6 +1321,7 @@ function Tchat() {
     );
   }
 
+
   return (
     <Wrapper>
       <Header>
@@ -1355,26 +1356,7 @@ function Tchat() {
       </Header>
 
       <MessagesContainer
-        ref={containerRef}
-        onClick={() => {
-          if (swiper) {
-            closeSwiper();
-          }
-        }}
-        onScroll={(e) => {
-          const el = e.target;
-
-          // 📌 détecte si on est en bas
-          const distanceFromBottom =
-            el.scrollHeight - el.scrollTop - el.clientHeight;
-
-          shouldAutoScrollRef.current = distanceFromBottom < 80;
-
-          // 📌 load anciens messages
-          if (el.scrollTop <= 10) {
-            loadMoreMessages();
-          }
-        }}
+    
       >
         {messages.length === 0 ? (
           <EmptyState>
