@@ -474,6 +474,7 @@ function Tchat() {
   const audioRefs = useRef({});
   const currentMessageId = useRef(null);
   const progressRefs = useRef({});
+  const recordingStartRef = useRef(null);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -635,16 +636,22 @@ function Tchat() {
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: mimeType,
-        });
+      mediaRecorder.onstop = async () => {
+  const audioBlob = new Blob(audioChunksRef.current, {
+    type: mimeType,
+  });
 
-        setAudioBlob(audioBlob);
+  const duration = Math.max(
+    1,
+    Math.round(
+      (Date.now() - recordingStartRef.current) / 1000
+    )
+  );
 
-        // stop micro
-        stream.getTracks().forEach((track) => track.stop());
-      };
+  stream.getTracks().forEach((track) => track.stop());
+
+  await sendAudioMessage(audioBlob, duration);
+};
 
       mediaRecorder.start();
 
@@ -675,6 +682,70 @@ function Tchat() {
       }
     };
   }, []);
+
+
+
+
+const sendAudioMessage = async (audioBlob, duration) => {
+  setSending(true);
+
+  const tempId = "temp-" + Date.now();
+
+  const tempMessage = {
+    _id: tempId,
+    conversationId: id,
+    expediteur: monProfilId,
+    destinataire: id,
+
+    contenu: "",
+    type: "audio",
+
+    media: {
+      url: URL.createObjectURL(audioBlob),
+      mimetype: audioBlob.type,
+      duration,
+    },
+
+    statut: "sent",
+    createdAt: new Date().toISOString(),
+  };
+
+  setMessages((prev) => [...prev, tempMessage]);
+
+  try {
+    const formData = new FormData();
+
+    formData.append("media", audioBlob, "voice.webm");
+    formData.append("duration", duration);
+
+    const data = await envoyerMessageApi(id, token, formData);
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === tempId ? data.nouveauMessage : msg
+      )
+    );
+
+    socket.emit("sendMessage", data.nouveauMessage);
+  } catch (error) {
+    console.error(error);
+
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === tempId
+          ? { ...msg, statut: "error" }
+          : msg
+      )
+    );
+  } finally {
+    setSending(false);
+  }
+};
+
+
+
+
+
   // fin audio
 
   // modal zone
@@ -1156,13 +1227,12 @@ function Tchat() {
             : "image"
           : "text",
 
-      media: audioBlob ? {
-        url: audioUrl,
-        originalname: "voice.webm",
-        mimetype: audioBlob.type,
-        size: audioBlob.size,
-      } :
-        file 
+      media: audioBlob
+        ? {
+            url: audioUrl,
+            mimetype: "audio/webm",
+          }
+        : file
           ? {
               url: previewUrl,
               originalname: file.name,
@@ -1180,8 +1250,7 @@ function Tchat() {
     shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
-    setSelectedFile(null);
-    setPreviewUrl("");
+    setSelectedFile(null);    
     setAudioBlob(null);
     setAudioUrl("");
 
@@ -1190,7 +1259,7 @@ function Tchat() {
       formData.append("contenu", messageText);
       if (audioBlob) {
         formData.append("media", audioBlob, "voice.webm");
-        // formData.append("duration", audioDuration);
+
       }
       if (file) {
         formData.append("media", file);
