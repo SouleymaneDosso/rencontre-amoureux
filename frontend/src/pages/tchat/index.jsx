@@ -501,7 +501,6 @@ function Tchat() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
-  const [audioDuration, setAudioDuration] = useState(0);
   const [playingAudioId, setPlayingAudioId] = useState(null);
 
   const [swiper, setSwiper] = useState(null);
@@ -641,16 +640,7 @@ function Tchat() {
           type: mimeType,
         });
 
-        const audioUrl = URL.createObjectURL(audioBlob);
-
         setAudioBlob(audioBlob);
-        setAudioUrl(audioUrl);
-
-        const audioElement = new Audio(audioUrl);
-
-        audioElement.onloadedmetadata = () => {
-          setAudioDuration(Math.round(audioElement.duration));
-        };
 
         // stop micro
         stream.getTracks().forEach((track) => track.stop());
@@ -685,18 +675,6 @@ function Tchat() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [audioUrl, previewUrl]);
   // fin audio
 
   // modal zone
@@ -1178,12 +1156,13 @@ function Tchat() {
             : "image"
           : "text",
 
-      media: audioBlob
-        ? {
-            url: audioUrl,
-            mimetype: "audio/webm",
-          }
-        : file
+      media: audioBlob ? {
+        url: audioUrl,
+        originalname: "voice.webm",
+        mimetype: audioBlob.type,
+        size: audioBlob.size,
+      } :
+        file 
           ? {
               url: previewUrl,
               originalname: file.name,
@@ -1211,7 +1190,7 @@ function Tchat() {
       formData.append("contenu", messageText);
       if (audioBlob) {
         formData.append("media", audioBlob, "voice.webm");
-        formData.append("duration", audioDuration);
+        // formData.append("duration", audioDuration);
       }
       if (file) {
         formData.append("media", file);
@@ -1520,7 +1499,13 @@ function Tchat() {
                               [msg._id]: progress,
                             }));
                           }}
-                          style={{ display: "none" }}
+                          style={{
+                            position: "absolute",
+                            opacity: 0,
+                            pointerEvents: "none",
+                            width: 1,
+                            height: 1,
+                          }}
                         >
                           <source
                             src={msg.media.url}
@@ -1698,21 +1683,6 @@ function Tchat() {
               <FaTimes />
             </RemovePreview>
           </PreviewImageWrapper>
-        </PreviewBox>
-      )}
-
-      {audioUrl && (
-        <PreviewBox>
-          <audio controls src={audioUrl} />
-
-          <RemovePreview
-            onClick={() => {
-              setAudioBlob(null);
-              setAudioUrl("");
-            }}
-          >
-            <FaTimes />
-          </RemovePreview>
         </PreviewBox>
       )}
 
