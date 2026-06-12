@@ -637,22 +637,20 @@ function Tchat() {
       };
 
       mediaRecorder.onstop = async () => {
-  const audioBlob = new Blob(audioChunksRef.current, {
-    type: mimeType,
-  });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: mimeType,
+        });
+        const duration = Math.max(
+          1,
+          Math.round((Date.now() - recordingStartRef.current) / 1000),
+        );
 
-  const duration = Math.max(
-    1,
-    Math.round(
-      (Date.now() - recordingStartRef.current) / 1000
-    )
-  );
+        stream.getTracks().forEach((track) => track.stop());
 
-  stream.getTracks().forEach((track) => track.stop());
+        await sendAudioMessage(audioBlob, duration);
+      };
 
-  await sendAudioMessage(audioBlob, duration);
-};
-
+       recordingStartRef.current = Date.now();
       mediaRecorder.start();
 
       setIsRecording(true);
@@ -683,68 +681,57 @@ function Tchat() {
     };
   }, []);
 
+  const sendAudioMessage = async (audioBlob, duration) => {
+    setSending(true);
 
+    const tempId = "temp-" + Date.now();
 
+    const tempMessage = {
+      _id: tempId,
+      conversationId: id,
+      expediteur: monProfilId,
+      destinataire: id,
 
-const sendAudioMessage = async (audioBlob, duration) => {
-  setSending(true);
+      contenu: "",
+      type: "audio",
 
-  const tempId = "temp-" + Date.now();
+      media: {
+        url: URL.createObjectURL(audioBlob),
+        mimetype: audioBlob.type,
+        duration,
+      },
 
-  const tempMessage = {
-    _id: tempId,
-    conversationId: id,
-    expediteur: monProfilId,
-    destinataire: id,
+      statut: "sent",
+      createdAt: new Date().toISOString(),
+    };
 
-    contenu: "",
-    type: "audio",
+    setMessages((prev) => [...prev, tempMessage]);
 
-    media: {
-      url: URL.createObjectURL(audioBlob),
-      mimetype: audioBlob.type,
-      duration,
-    },
+    try {
+      const formData = new FormData();
 
-    statut: "sent",
-    createdAt: new Date().toISOString(),
+      formData.append("media", audioBlob, "voice.webm");
+      formData.append("duration", duration);
+
+      const data = await envoyerMessageApi(id, token, formData);
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
+      );
+
+      socket.emit("sendMessage", data.nouveauMessage);
+    } catch (error) {
+      console.error(error);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId ? { ...msg, statut: "error" } : msg,
+        ),
+      );
+    } finally {
+      setSending(false);
+    }
   };
-
-  setMessages((prev) => [...prev, tempMessage]);
-
-  try {
-    const formData = new FormData();
-
-    formData.append("media", audioBlob, "voice.webm");
-    formData.append("duration", duration);
-
-    const data = await envoyerMessageApi(id, token, formData);
-
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === tempId ? data.nouveauMessage : msg
-      )
-    );
-
-    socket.emit("sendMessage", data.nouveauMessage);
-  } catch (error) {
-    console.error(error);
-
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === tempId
-          ? { ...msg, statut: "error" }
-          : msg
-      )
-    );
-  } finally {
-    setSending(false);
-  }
-};
-
-
-
-
 
   // fin audio
 
@@ -972,6 +959,8 @@ const sendAudioMessage = async (audioBlob, duration) => {
   };
 
   const formatAudioDuration = (seconds) => {
+    seconds = Math.floor(Number(seconds) || 0);
+
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
@@ -1250,7 +1239,7 @@ const sendAudioMessage = async (audioBlob, duration) => {
     shouldAutoScrollRef.current = true;
     // ⚡ reset UI
     setNewMessage("");
-    setSelectedFile(null);    
+    setSelectedFile(null);
     setAudioBlob(null);
     setAudioUrl("");
 
@@ -1259,7 +1248,6 @@ const sendAudioMessage = async (audioBlob, duration) => {
       formData.append("contenu", messageText);
       if (audioBlob) {
         formData.append("media", audioBlob, "voice.webm");
-
       }
       if (file) {
         formData.append("media", file);
@@ -1648,7 +1636,9 @@ const sendAudioMessage = async (audioBlob, duration) => {
                               audioCurrentTime[msg._id] || 0,
                             )}
                             {" / "}
-                            {formatAudioDuration(msg.media.duration || 0)}
+                            {formatAudioDuration(
+                              Math.floor(msg.media.duration || 0),
+                            )}
                           </span>
                         </div>
                       </>
