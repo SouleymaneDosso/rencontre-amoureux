@@ -174,19 +174,23 @@ exports.getMessages = async (req, res) => {
     const monProfil = await Profil.findOne({ userId });
 
     if (!monProfil) {
-      return res.status(404).json({ message: "Mon profil est introuvable" });
+      return res.status(404).json({
+        message: "Mon profil est introuvable",
+      });
     }
 
     // retrouver le profil cible
     const profilCible = await Profil.findById(profilId);
 
     if (!profilCible) {
-      return res.status(404).json({ message: "Profil cible introuvable" });
+      return res.status(404).json({
+        message: "Profil cible introuvable",
+      });
     }
 
-    // sécurité : il faut un match
+    // vérifier le match
     const estMatch = monProfil.matchs.some(
-      (matchId) => matchId.toString() === profilId,
+      (matchId) => matchId.toString() === profilId
     );
 
     if (!estMatch) {
@@ -197,32 +201,52 @@ exports.getMessages = async (req, res) => {
 
     // retrouver la conversation
     const conversation = await Conversation.findOne({
-      participants: { $all: [monProfil._id, profilCible._id] },
+      participants: {
+        $all: [monProfil._id, profilCible._id],
+      },
     });
 
     if (!conversation) {
       return res.status(200).json([]);
     }
 
-    // récupérer les messages
+    // pagination
+    const page = Math.max(
+      parseInt(req.query.page, 10) || 1,
+      1
+    );
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.max(
+      parseInt(req.query.limit, 10) || 20,
+      1
+    );
 
-    const messages = await Message.find({
+    const filtre = {
       conversationId: conversation._id,
       supprimePourMoi: {
         $nin: [monProfil._id],
       },
-    })
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    };
 
-    res.json(messages.reverse());
+    const messages = await Message.find(filtre)
+      .sort({
+        createdAt: -1,
+        _id: -1, // ordre stable
+      })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    // ancien -> récent
+    messages.reverse();
+
+    return res.status(200).json(messages);
   } catch (error) {
     console.error("Erreur getMessages :", error);
-    res.status(500).json({ message: "Erreur serveur" });
+
+    return res.status(500).json({
+      message: "Erreur serveur",
+    });
   }
 };
 
