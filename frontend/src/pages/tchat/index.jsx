@@ -944,7 +944,6 @@ function Tchat() {
     const cachedMessages = localStorage.getItem(`messages-${id}`);
 
     if (cachedMessages) {
-      console.log("⚡ Chargement instantané depuis cache");
       setMessages(JSON.parse(cachedMessages));
       setLoading(false);
     }
@@ -983,45 +982,57 @@ function Tchat() {
     }
   };
 
-  const loadMoreMessages = async () => {
-    if (!hasMore || loadingMore) return;
+ const loadMoreMessages = async () => {
+  if (loadingMore || !hasMore) return;
 
-    setLoadingMore(true);
+  setLoadingMore(true);
+
+  try {
+    const container = containerRef.current;
+
+    if (!container) return;
+
+    const prevHeight = container.scrollHeight;
 
     const nextPage = page + 1;
 
-    try {
-      const container = containerRef.current;
-      const prevHeight = container.scrollHeight;
+    const moreMessages = await getMessagesConversation(
+      id,
+      token,
+      nextPage
+    );
 
-      const moreMessages = await getMessagesConversation(id, token, nextPage);
-
-      if (moreMessages.length === 0) {
-        setHasMore(false);
-      } else {
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((msg) => msg._id));
-
-          const nouveauxMessages = moreMessages.filter(
-            (msg) => !existingIds.has(msg._id),
-          );
-
-          return [...nouveauxMessages, ...prev];
-        });
-
-        setPage(nextPage);
-      }
-
-      requestAnimationFrame(() => {
-        const newHeight = container.scrollHeight;
-        container.scrollTop = newHeight - prevHeight;
-      });
-    } catch (error) {
-      console.error("Erreur load more :", error);
-    } finally {
-      setLoadingMore(false);
+    if (!Array.isArray(moreMessages) || moreMessages.length === 0) {
+      setHasMore(false);
+      return;
     }
-  };
+
+    setMessages((prev) => {
+      const ids = new Set(prev.map((m) => m._id));
+
+      const uniques = moreMessages.filter(
+        (m) => !ids.has(m._id)
+      );
+
+      return [...uniques, ...prev];
+    });
+
+    setPage(nextPage);
+
+    requestAnimationFrame(() => {
+      const container = containerRef.current;
+
+      if (!container) return;
+
+      const newHeight = container.scrollHeight;
+      container.scrollTop = newHeight - prevHeight;
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoadingMore(false);
+  }
+};
 
   // localStorage pour les messages
 
@@ -1325,7 +1336,7 @@ function Tchat() {
 
     if (shouldAutoScrollRef.current) {
       requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
       });
     }
   }, [messages]);
