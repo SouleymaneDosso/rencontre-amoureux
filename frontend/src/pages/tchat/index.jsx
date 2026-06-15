@@ -940,15 +940,16 @@ function Tchat() {
     };
   }, [monProfilId]);
 
-  useEffect(() => {
-    const cachedMessages = localStorage.getItem(`messages-${id}`);
+  // useEffect(() => {
+  //   const cachedMessages = localStorage.getItem(`messages-${id}`);
 
-    if (cachedMessages) {
-      setMessages(JSON.parse(cachedMessages));
-      setLoading(false);
-    }
-  }, [id]);
+  //   if (cachedMessages) {
+  //     setMessages(JSON.parse(cachedMessages));
+  //     setLoading(false);
+  //   }
+  // }, [id]);
 
+  
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], {
@@ -1330,6 +1331,20 @@ function Tchat() {
   };
 
   // fin supprimer messages
+
+//   useEffect(() => {
+//   if (!containerRef.current) return;
+
+//   if (shouldAutoScrollRef.current) {
+//     requestAnimationFrame(() => {
+//       const container = containerRef.current;
+
+//       if (container) {
+//         container.scrollTop = container.scrollHeight;
+//       }
+//     });
+//   }
+// }, [messages]);
 
 
   const isProfilCibleOnline = onlineUsers.includes(id);
