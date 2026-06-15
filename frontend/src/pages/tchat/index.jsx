@@ -1428,9 +1428,7 @@ function Tchat() {
           shouldAutoScrollRef.current = distanceFromBottom < 80;
 
           // 📌 load anciens messages
-          if (el.scrollTop <= 10) {
-            loadMoreMessages();
-          }
+        
         }}
       >
         {messages.length === 0 ? (
