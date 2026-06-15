@@ -1331,15 +1331,6 @@ function Tchat() {
 
   // fin supprimer messages
 
-  // useEffect(() => {
-  //   if (!containerRef.current) return;
-
-  //   if (shouldAutoScrollRef.current) {
-  //     requestAnimationFrame(() => {
-  //       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-  //     });
-  //   }
-  // }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
