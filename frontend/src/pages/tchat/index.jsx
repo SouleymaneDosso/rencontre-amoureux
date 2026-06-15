@@ -1331,15 +1331,15 @@ function Tchat() {
 
   // fin supprimer messages
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+  // useEffect(() => {
+  //   if (!containerRef.current) return;
 
-    if (shouldAutoScrollRef.current) {
-      requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-      });
-    }
-  }, [messages]);
+  //   if (shouldAutoScrollRef.current) {
+  //     requestAnimationFrame(() => {
+  //       messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  //     });
+  //   }
+  // }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1428,7 +1428,9 @@ function Tchat() {
           shouldAutoScrollRef.current = distanceFromBottom < 80;
 
           // 📌 load anciens messages
-        
+          if (el.scrollTop <= 10) {
+            loadMoreMessages();
+          }
         }}
       >
         {messages.length === 0 ? (
