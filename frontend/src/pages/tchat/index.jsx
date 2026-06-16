@@ -650,7 +650,7 @@ function Tchat() {
         await sendAudioMessage(audioBlob, duration);
       };
 
-       recordingStartRef.current = Date.now();
+      recordingStartRef.current = Date.now();
       mediaRecorder.start();
 
       setIsRecording(true);
@@ -949,7 +949,6 @@ function Tchat() {
     }
   }, [id]);
 
-
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], {
@@ -983,57 +982,51 @@ function Tchat() {
     }
   };
 
- const loadMoreMessages = async () => {
-  if (loadingMore || !hasMore) return;
+  const loadMoreMessages = async () => {
+    if (loadingMore || !hasMore) return;
 
-  setLoadingMore(true);
+    setLoadingMore(true);
 
-  try {
-    const container = containerRef.current;
-
-    if (!container) return;
-
-    const prevHeight = container.scrollHeight;
-
-    const nextPage = page + 1;
-
-    const moreMessages = await getMessagesConversation(
-      id,
-      token,
-      nextPage
-    );
-
-    if (!Array.isArray(moreMessages) || moreMessages.length === 0) {
-      setHasMore(false);
-      return;
-    }
-
-    setMessages((prev) => {
-      const ids = new Set(prev.map((m) => m._id));
-
-      const uniques = moreMessages.filter(
-        (m) => !ids.has(m._id)
-      );
-
-      return [...uniques, ...prev];
-    });
-
-    setPage(nextPage);
-
-    requestAnimationFrame(() => {
+    try {
       const container = containerRef.current;
 
       if (!container) return;
 
-      const newHeight = container.scrollHeight;
-      container.scrollTop = newHeight - prevHeight;
-    });
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setLoadingMore(false);
-  }
-};
+      const prevHeight = container.scrollHeight;
+
+      const nextPage = page + 1;
+
+      const moreMessages = await getMessagesConversation(id, token, nextPage);
+
+      if (!Array.isArray(moreMessages) || moreMessages.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setMessages((prev) => {
+        const ids = new Set(prev.map((m) => m._id));
+
+        const uniques = moreMessages.filter((m) => !ids.has(m._id));
+
+        return [...uniques, ...prev];
+      });
+
+      setPage(nextPage);
+
+      requestAnimationFrame(() => {
+        const container = containerRef.current;
+
+        if (!container) return;
+
+        const newHeight = container.scrollHeight;
+        container.scrollTop = newHeight - prevHeight;
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // localStorage pour les messages
 
@@ -1332,20 +1325,19 @@ function Tchat() {
 
   // fin supprimer messages
 
-//   useEffect(() => {
-//   if (!containerRef.current) return;
+  //   useEffect(() => {
+  //   if (!containerRef.current) return;
 
-//   if (shouldAutoScrollRef.current) {
-//     requestAnimationFrame(() => {
-//       const container = containerRef.current;
+  //   if (shouldAutoScrollRef.current) {
+  //     requestAnimationFrame(() => {
+  //       const container = containerRef.current;
 
-//       if (container) {
-//         container.scrollTop = container.scrollHeight;
-//       }
-//     });
-//   }
-// }, [messages]);
-
+  //       if (container) {
+  //         container.scrollTop = container.scrollHeight;
+  //       }
+  //     });
+  //   }
+  // }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1418,26 +1410,27 @@ function Tchat() {
       </Header>
 
       <MessagesContainer
-        // ref={containerRef}
-        // onClick={() => {
-        //   if (swiper) {
-        //     closeSwiper();
-        //   }
-        // }}
-        // onScroll={(e) => {
-        //   const el = e.target;
+        ref={containerRef}
+        onClick={() => {
+          if (swiper) {
+            closeSwiper();
+          }
+        }}
+        onScroll={() => {
+          const el = containerRef.current;
 
-        //   // 📌 détecte si on est en bas
-        //   const distanceFromBottom =
-        //     el.scrollHeight - el.scrollTop - el.clientHeight ;
+          if (!el) return;
 
-        //   shouldAutoScrollRef.current = distanceFromBottom < 80;
+          const distanceFromBottom =
+            el.scrollHeight - el.scrollTop - el.clientHeight;
 
-        //   // 📌 load anciens messages
-        //   if (el.scrollTop <= 10) {
-        //     loadMoreMessages();
-        //   }
-        // }}
+          shouldAutoScrollRef.current = distanceFromBottom < 80;
+
+          
+          if (el.scrollTop <= 10) {
+            loadMoreMessages();
+          }
+        }}
       >
         {messages.length === 0 ? (
           <EmptyState>
