@@ -5,7 +5,6 @@ export function useTchatSocket(monProfilId, setMessages) {
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-    console.log("🧪 Tchat monté - test socket");
 
     socket.connect();
 
@@ -22,12 +21,11 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleOnlineUsers = (users) => {
-      console.log("🟢 Utilisateurs en ligne :", users);
       setOnlineUsers(users);
     };
 
     const handleReceiveMessage = (messageData) => {
-      console.log("📩 Nouveau message reçu en temps réel :", messageData);
+      
 
       setMessages((prev) => {
         const existeDeja = prev.some((msg) => msg._id === messageData._id);
@@ -38,7 +36,7 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessagesRead = ({ idsMessagesLus }) => {
-      console.log("👁️ Messages lus :", idsMessagesLus);
+      
 
       setMessages((prev) =>
         prev.map((msg) =>
@@ -48,7 +46,7 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessageDelivered = ({ messageId }) => {
-      console.log("📬 Message livré :", messageId);
+      
 
       setMessages((prev) =>
         prev.map((msg) =>

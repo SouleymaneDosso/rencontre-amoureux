@@ -1335,6 +1335,21 @@ function Tchat() {
   });
 }, [messages]);
 
+useEffect(() => {
+  const dernierMessage = messages[messages.length - 1];
+
+  if (!dernierMessage) return;
+
+  const isMessageRecu = dernierMessage.expediteur !== monProfilId;
+
+  if (isMessageRecu) {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }
+}, [messages, monProfilId]);
+
   const isProfilCibleOnline = onlineUsers.includes(id);
 
   if (loading && messages.length === 0) {
