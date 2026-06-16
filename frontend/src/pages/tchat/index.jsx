@@ -1326,14 +1326,7 @@ function Tchat() {
 
   // fin supprimer messages
 
-  useLayoutEffect(() => {
-  if (!shouldAutoScrollRef.current) return;
-
-  messagesEndRef.current?.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-  });
-}, [messages]);
+ 
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
