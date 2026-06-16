@@ -1247,6 +1247,7 @@ function Tchat() {
     setSelectedFile(null);
     setAudioBlob(null);
     setAudioUrl("");
+    setPreviewUrl("");
 
     try {
       const formData = new FormData();
@@ -1326,15 +1327,16 @@ function Tchat() {
   // fin supprimer messages
 
   useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  const container = containerRef.current;
+  if (!container) return;
 
-    if (!shouldAutoScrollRef.current) return;
+  if (!shouldAutoScrollRef.current) return;
 
-    requestAnimationFrame(() => {
-      container.scrollTop = container.scrollHeight - container.clientHeight;
-    });
-  }, [messages]);
+  requestAnimationFrame(() => {
+    container.scrollTop =
+      container.scrollHeight - container.clientHeight;
+  });
+}, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
