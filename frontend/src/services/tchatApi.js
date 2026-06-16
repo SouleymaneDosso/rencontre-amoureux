@@ -56,8 +56,8 @@ export const getProfilCible = async (profilId) => {
   return data;
 };
 
-export const getMessagesConversation = async (profilId, token) => {
-  const res = await fetch(`${API_URL}/api/tchat/messages/${profilId}`, {
+export const getMessagesConversation = async (id, token, nextPage) => {
+  const res = await fetch(`${API_URL}/api/tchat/messages/${id}?page=${nextPage}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

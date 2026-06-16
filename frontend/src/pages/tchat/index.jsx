@@ -995,6 +995,7 @@ function Tchat() {
       const prevHeight = container.scrollHeight;
 
       const nextPage = page + 1;
+      
 
       const moreMessages = await getMessagesConversation(id, token, nextPage);
 
@@ -1010,7 +1011,6 @@ function Tchat() {
 
         return [...uniques, ...prev];
       });
-
       setPage(nextPage);
 
       requestAnimationFrame(() => {
@@ -1325,17 +1325,16 @@ function Tchat() {
 
   // fin supprimer messages
 
-    useLayoutEffect(() => {
-  const container = containerRef.current;
-  if (!container) return;
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-  if (!shouldAutoScrollRef.current) return;
+    if (!shouldAutoScrollRef.current) return;
 
-  requestAnimationFrame(() => {
-    container.scrollTop =
-      container.scrollHeight - container.clientHeight;
-  });
-}, [messages]);
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight - container.clientHeight;
+    });
+  }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
