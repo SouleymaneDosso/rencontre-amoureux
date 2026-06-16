@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -1325,19 +1325,17 @@ function Tchat() {
 
   // fin supprimer messages
 
-  //   useEffect(() => {
-  //   if (!containerRef.current) return;
+    useLayoutEffect(() => {
+  const container = containerRef.current;
+  if (!container) return;
 
-  //   if (shouldAutoScrollRef.current) {
-  //     requestAnimationFrame(() => {
-  //       const container = containerRef.current;
+  if (!shouldAutoScrollRef.current) return;
 
-  //       if (container) {
-  //         container.scrollTop = container.scrollHeight;
-  //       }
-  //     });
-  //   }
-  // }, [messages]);
+  requestAnimationFrame(() => {
+    container.scrollTop =
+      container.scrollHeight - container.clientHeight;
+  });
+}, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1426,8 +1424,7 @@ function Tchat() {
 
           shouldAutoScrollRef.current = distanceFromBottom < 80;
 
-          
-          if (el.scrollTop <= 10) {
+          if (el.scrollTop <= 10 && !loadingMore && hasMore) {
             loadMoreMessages();
           }
         }}
