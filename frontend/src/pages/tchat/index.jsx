@@ -1332,19 +1332,19 @@ function Tchat() {
 
   // fin supprimer messages
 
-  useEffect(() => {
-  if (!containerRef.current) return;
+//   useEffect(() => {
+//   if (!containerRef.current) return;
 
-  if (shouldAutoScrollRef.current) {
-    requestAnimationFrame(() => {
-      const container = containerRef.current;
+//   if (shouldAutoScrollRef.current) {
+//     requestAnimationFrame(() => {
+//       const container = containerRef.current;
 
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    });
-  }
-}, [messages]);
+//       if (container) {
+//         container.scrollTop = container.scrollHeight;
+//       }
+//     });
+//   }
+// }, [messages]);
 
 
   const isProfilCibleOnline = onlineUsers.includes(id);
@@ -1418,26 +1418,26 @@ function Tchat() {
       </Header>
 
       <MessagesContainer
-        ref={containerRef}
-        onClick={() => {
-          if (swiper) {
-            closeSwiper();
-          }
-        }}
-        onScroll={(e) => {
-          const el = e.target;
+        // ref={containerRef}
+        // onClick={() => {
+        //   if (swiper) {
+        //     closeSwiper();
+        //   }
+        // }}
+        // onScroll={(e) => {
+        //   const el = e.target;
 
-          // 📌 détecte si on est en bas
-          const distanceFromBottom =
-            el.scrollHeight - el.scrollTop <= el.clientHeight + 1;
+        //   // 📌 détecte si on est en bas
+        //   const distanceFromBottom =
+        //     el.scrollHeight - el.scrollTop - el.clientHeight ;
 
-          shouldAutoScrollRef.current = distanceFromBottom < 80;
+        //   shouldAutoScrollRef.current = distanceFromBottom < 80;
 
-          // 📌 load anciens messages
-          if (el.scrollTop <= 10) {
-            loadMoreMessages();
-          }
-        }}
+        //   // 📌 load anciens messages
+        //   if (el.scrollTop <= 10) {
+        //     loadMoreMessages();
+        //   }
+        // }}
       >
         {messages.length === 0 ? (
           <EmptyState>
