@@ -455,6 +455,48 @@ const ProgressThumb = styled.div`
   border: 2px solid #007bff;
 `;
 
+// modal message
+
+const ModalOverlay = styled.div`
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,.5);
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+z-index:10000;
+`;
+
+const ModalBox = styled.div`
+background:white;
+border-radius:16px;
+padding:20px;
+width:300px;
+
+display:flex;
+flex-direction:column;
+gap:10px;
+`;
+
+const ModalTitle = styled.h3`
+margin:0;
+text-align:center;
+`;
+
+
+const ModalAction = styled.button`
+padding:12px;
+border:none;
+cursor:pointer;
+border-radius:10px;
+`;
+
+const ModalCancel = styled(ModalAction)`
+font-weight:bold;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -542,52 +584,6 @@ function Tchat() {
   };
   // fin modal message
 
-  // swiper
-
-  const closeSwiper = () => {
-    setSwiper(null);
-    setTransition({});
-  };
-
-  const debutswiper = (e, messageId) => {
-    swiperref.current = e.touches[0].clientX;
-    currentMessageId.current = messageId;
-  };
-
-  const pendantswipper = (e) => {
-    const currentX = e.touches[0].clientX;
-
-    const diff = currentX - swiperref.current;
-
-    if (diff > 0) {
-      setTransition((prev) => ({
-        ...prev,
-        [currentMessageId.current]: Math.min(diff, 120),
-      }));
-    }
-  };
-
-  const finswiper = () => {
-    const messageId = currentMessageId.current;
-
-    if (!messageId) return;
-
-    const distance = transition[messageId] || 0;
-
-    if (distance > 70) {
-      setSwiper(messageId);
-
-      setTransition({
-        [messageId]: 90,
-      });
-    } else {
-      setSwiper(null);
-      setTransition({});
-    }
-
-    currentMessageId.current = null;
-  };
-  // fin swiper
 
   // audio
 
@@ -1462,20 +1458,7 @@ function Tchat() {
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <SwipeContainer
-                  onTouchStart={(e) => debutswiper(e, msg._id)}
-                  onTouchMove={pendantswipper}
-                  onTouchEnd={finswiper}
                 >
-                  <SwipeActions>
-                    <ActionButton onClick={() => supprimemoi(msg._id)}>
-                      <FaTrash /> moi
-                    </ActionButton>
-
-                    <ActionButton onClick={() => supprimetous(msg._id)}>
-                      <FaTrashAlt /> tous
-                    </ActionButton>
-                  </SwipeActions>
-
                   <MessageBubble
                     $mine={isMine}
                     style={{
