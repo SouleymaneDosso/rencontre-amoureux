@@ -475,6 +475,7 @@ function Tchat() {
   const currentMessageId = useRef(null);
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
+  const longPressTimer = useRef(null);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -503,12 +504,44 @@ function Tchat() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState("");
   const [playingAudioId, setPlayingAudioId] = useState(null);
+  const [modalMessage, setModalMessage] = useState(null);
 
   const [swiper, setSwiper] = useState(null);
   const [transition, setTransition] = useState({});
   const [audioProgress, setAudioProgress] = useState({});
   const [audioCurrentTime, setAudioCurrentTime] = useState({});
   const [draggingAudioId, setDraggingAudioId] = useState(null);
+
+  // modal message
+
+  const ouvrirModalMessage = (msg) => {
+    const index = messages.findIndex((m) => m._id === msg._id);
+    if (index === -1) return;
+    setModalMessage(messages[index]);
+  };
+
+  const fermerModalMessage = () => {
+    setModalMessage(null);
+  };
+
+  const debutAppuiLong = (msg) => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+
+    longPressTimer.current = setTimeout(() => {
+      ouvrirModalMessage(msg);
+    }, 400);
+  };
+
+  const annulerAppuiLong = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+  // fin modal message
+
   // swiper
 
   const closeSwiper = () => {
@@ -995,7 +1028,6 @@ function Tchat() {
       const prevHeight = container.scrollHeight;
 
       const nextPage = page + 1;
-      
 
       const moreMessages = await getMessagesConversation(id, token, nextPage);
 
@@ -1327,28 +1359,26 @@ function Tchat() {
   // fin supprimer messages
 
   useLayoutEffect(() => {
-  if (!shouldAutoScrollRef.current) return;
+    if (!shouldAutoScrollRef.current) return;
 
-  messagesEndRef.current?.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-  });
-}, [messages]);
-
-useEffect(() => {
-  const dernierMessage = messages[messages.length - 1];
-
-  if (!dernierMessage) return;
-
-  const isMessageRecu = dernierMessage.expediteur !== monProfilId;
-
-  if (isMessageRecu) {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "end",
     });
-  }
-}, [messages, monProfilId]);
+  }, [messages]);
+
+  useEffect(() => {
+    const dernierMessage = messages[messages.length - 1];
+    if (!dernierMessage) return;
+    const messageRecu = dernierMessage.expediteur !== monProfilId;
+
+    if (messageRecu) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        blockk: "end",
+      });
+    }
+  }, [messages, monProfilId]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1420,28 +1450,7 @@ useEffect(() => {
         </HeaderInfo>
       </Header>
 
-      <MessagesContainer
-        ref={containerRef}
-        onClick={() => {
-          if (swiper) {
-            closeSwiper();
-          }
-        }}
-        onScroll={() => {
-          const el = containerRef.current;
-
-          if (!el) return;
-
-          const distanceFromBottom =
-            el.scrollHeight - el.scrollTop - el.clientHeight;
-
-          shouldAutoScrollRef.current = distanceFromBottom < 80;
-
-          if (el.scrollTop <= 10 && !loadingMore && hasMore) {
-            loadMoreMessages();
-          }
-        }}
-      >
+      <MessagesContainer>
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
@@ -1473,6 +1482,10 @@ useEffect(() => {
                       transform: `translateX(${transition[msg._id] || 0}px)`,
                       transition: "transform .2s ease",
                     }}
+                    onTouchStart={() => debutAppuiLong(msg)}
+                    onTouchEnd={annulerAppuiLong}
+                    onMouseDown={() => debutAppuiLong(msg)}
+                    onMouseUp={annulerAppuiLong}
                   >
                     {msg.type === "image" && msg.media?.url && (
                       <MessageImage
@@ -1763,6 +1776,55 @@ useEffect(() => {
             </RemovePreview>
           </PreviewImageWrapper>
         </PreviewBox>
+      )}
+
+      {modalMessage && (
+        <ModalOverlay onClick={fermerModalMessage}>
+          <ModalBox onClick={(e) => e.stopPropagation()}>
+            <ModalTitle>Actions du message</ModalTitle>
+
+            <ModalAction
+              onClick={() => {
+                // réponse plus tard
+                fermerModalMessage();
+              }}
+            >
+              Répondre
+            </ModalAction>
+
+            <ModalAction
+              onClick={() => {
+                navigator.clipboard.writeText(modalMessage.contenu || "");
+
+                fermerModalMessage();
+              }}
+            >
+              Copier
+            </ModalAction>
+
+            <ModalAction
+              onClick={() => {
+                supprimemoi(modalMessage._id);
+                fermerModalMessage();
+              }}
+            >
+              Supprimer pour moi
+            </ModalAction>
+
+            {modalMessage.expediteur === monProfilId && (
+              <ModalAction
+                onClick={() => {
+                  supprimetous(modalMessage._id);
+                  fermerModalMessage();
+                }}
+              >
+                Supprimer pour tout le monde
+              </ModalAction>
+            )}
+
+            <ModalCancel onClick={fermerModalMessage}>Annuler</ModalCancel>
+          </ModalBox>
+        </ModalOverlay>
       )}
 
       <InputContainer>
