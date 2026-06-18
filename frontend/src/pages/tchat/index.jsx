@@ -403,10 +403,6 @@ const SwipeContainer = styled.div`
   display: inline-block;
 `;
 
-
-
-
-
 const ProgressBar = styled.div`
   flex: 1;
   width: 100px;
@@ -591,12 +587,12 @@ function Tchat() {
   // notification
 
   const afficherNotification = (message) => {
-  setNotification(message);
+    setNotification(message);
 
-  setTimeout(() => {
-    setNotification("");
-  }, 2000);
-};
+    setTimeout(() => {
+      setNotification("");
+    }, 2000);
+  };
 
   // modal message
 
@@ -1489,7 +1485,14 @@ function Tchat() {
         </HeaderInfo>
       </Header>
 
-      <MessagesContainer>
+      <MessagesContainer
+        ref={containerRef}
+        onScroll={() => {
+          if (containerRef.current.scrollTop < 100) {
+            loadMoreMessages();
+          }
+        }}
+      >
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
