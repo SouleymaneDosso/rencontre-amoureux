@@ -79,7 +79,7 @@ exports.envoyerMessage = async (req, res) => {
       public_id: "",
       originalname: "",
       mimetype: "",
-    };
+    };  
 
     // Si fichier image envoyé
     if (req.file) {
@@ -121,6 +121,9 @@ exports.envoyerMessage = async (req, res) => {
 };
     }
 
+const reponseA = req.body.reponseA || null;
+
+
     // créer le message
     const nouveauMessage = new Message({
       conversationId: conversation._id,
@@ -129,6 +132,7 @@ exports.envoyerMessage = async (req, res) => {
       contenu: contenu.trim(),
       type,
       media: mediaData,
+      reponseA: reponseA,
     });
 
     await nouveauMessage.save();
@@ -229,13 +233,17 @@ exports.getMessages = async (req, res) => {
     };
 
     const messages = await Message.find(filtre)
-      .sort({
-        createdAt: -1,
-        _id: -1, // ordre stable
-      })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+  .populate({
+    path: "reponseA",
+    select: "contenu type media expediteur",
+  })
+  .sort({
+    createdAt: -1,
+    _id: -1,
+  })
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .lean();
 
     // ancien -> récent
     messages.reverse();
