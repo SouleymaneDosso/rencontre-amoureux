@@ -403,23 +403,9 @@ const SwipeContainer = styled.div`
   display: inline-block;
 `;
 
-const SwipeActions = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
 
-const ActionButton = styled.button`
-  border: none;
-  border-radius: 12px;
-  padding: 8px 12px;
-  cursor: pointer;
-`;
+
+
 
 const ProgressBar = styled.div`
   flex: 1;
@@ -458,43 +444,90 @@ const ProgressThumb = styled.div`
 // modal message
 
 const ModalOverlay = styled.div`
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,.5);
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
 
-display:flex;
-justify-content:center;
-align-items:center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-z-index:10000;
+  z-index: 10000;
 `;
 
 const ModalBox = styled.div`
-background:white;
-border-radius:16px;
-padding:20px;
-width:300px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  width: 300px;
 
-display:flex;
-flex-direction:column;
-gap:10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 const ModalTitle = styled.h3`
-margin:0;
-text-align:center;
+  margin: 0;
+  text-align: center;
 `;
 
-
 const ModalAction = styled.button`
-padding:12px;
-border:none;
-cursor:pointer;
-border-radius:10px;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
 `;
 
 const ModalCancel = styled(ModalAction)`
-font-weight:bold;
+  font-weight: bold;
+`;
+
+const SelectedMessagePreview = styled.div`
+  width: 100%;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background: #f5f5f5;
+
+  color: #333;
+
+  font-size: 14px;
+
+  line-height: 1.4;
+
+  word-break: break-word;
+
+  max-height: 100px;
+
+  overflow-y: auto;
+
+  border-left: 4px solid #25d366;
+`;
+
+const NotificationToast = styled.div`
+  position: fixed;
+
+  bottom: 100px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(0, 0, 0, 0.85);
+
+  color: white;
+
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  z-index: 10001;
+
+  pointer-events: none;
 `;
 
 function Tchat() {
@@ -512,9 +545,9 @@ function Tchat() {
   const controlsTimeoutRef = useRef({});
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-  const swiperref = useRef(0);
+
   const audioRefs = useRef({});
-  const currentMessageId = useRef(null);
+
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
   const longPressTimer = useRef(null);
@@ -548,11 +581,22 @@ function Tchat() {
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const [modalMessage, setModalMessage] = useState(null);
 
-  const [swiper, setSwiper] = useState(null);
   const [transition, setTransition] = useState({});
   const [audioProgress, setAudioProgress] = useState({});
   const [audioCurrentTime, setAudioCurrentTime] = useState({});
   const [draggingAudioId, setDraggingAudioId] = useState(null);
+
+  const [notification, setNotification] = useState("");
+
+  // notification
+
+  const afficherNotification = (message) => {
+  setNotification(message);
+
+  setTimeout(() => {
+    setNotification("");
+  }, 2000);
+};
 
   // modal message
 
@@ -583,7 +627,6 @@ function Tchat() {
     }
   };
   // fin modal message
-
 
   // audio
 
@@ -1457,8 +1500,7 @@ function Tchat() {
             const isMine = msg.expediteur === monProfilId;
             return (
               <MessageRow key={msg._id} $mine={isMine}>
-                <SwipeContainer
-                >
+                <SwipeContainer>
                   <MessageBubble
                     $mine={isMine}
                     style={{
@@ -1766,6 +1808,18 @@ function Tchat() {
           <ModalBox onClick={(e) => e.stopPropagation()}>
             <ModalTitle>Actions du message</ModalTitle>
 
+            <SelectedMessagePreview>
+              {modalMessage.type === "text" || modalMessage.contenu
+                ? modalMessage.contenu
+                : modalMessage.type === "image"
+                  ? "📷 Image"
+                  : modalMessage.type === "video"
+                    ? "🎥 Vidéo"
+                    : modalMessage.type === "audio"
+                      ? "🎤 Message vocal"
+                      : "Message"}
+            </SelectedMessagePreview>
+
             <ModalAction
               onClick={() => {
                 // réponse plus tard
@@ -1778,6 +1832,8 @@ function Tchat() {
             <ModalAction
               onClick={() => {
                 navigator.clipboard.writeText(modalMessage.contenu || "");
+
+                afficherNotification("Message copié");
 
                 fermerModalMessage();
               }}
@@ -1809,6 +1865,8 @@ function Tchat() {
           </ModalBox>
         </ModalOverlay>
       )}
+
+      {notification && <NotificationToast>{notification}</NotificationToast>}
 
       <InputContainer>
         <IconButton htmlFor="file-upload">
