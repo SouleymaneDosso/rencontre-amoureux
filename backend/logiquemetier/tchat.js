@@ -235,7 +235,7 @@ exports.getMessages = async (req, res) => {
     const messages = await Message.find(filtre)
   .populate({
     path: "reponseA",
-    select: "contenu type media expediteur",
+    select: "contenu type media expediteur supprimePourTous",
   })
   .sort({
     createdAt: -1,
@@ -244,6 +244,22 @@ exports.getMessages = async (req, res) => {
   .skip((page - 1) * limit)
   .limit(limit)
   .lean();
+
+  messages.forEach((message) => {
+  if (
+    message.reponseA &&
+    message.reponseA.supprimePourTous
+  ) {
+    message.reponseA.contenu = "↩ Message supprimé";
+    message.reponseA.type = "system";
+  }
+
+
+  if(message.supprimePourTous){
+    message.contenu = "↩ Message supprimé";
+    message.type = "system";
+  } 
+});
 
     // ancien -> récent
     messages.reverse();
@@ -314,7 +330,15 @@ exports.supprimertous = async (req, res) => {
   }
   message.supprimePourTous = true;
   message.contenu = "";
-  message.media = {};
+  message.media = {
+  url: "",
+  public_id: "",
+  originalname: "",
+  mimetype: "",
+  size: 0,
+  duration: 0,
+  thumbnail: "",
+};
 
   await message.save();
   res.status(200).json({ message: "Message supprimé avec succes" });
