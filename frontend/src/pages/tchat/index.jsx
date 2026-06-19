@@ -598,6 +598,7 @@ function Tchat() {
   const controlsTimeoutRef = useRef({});
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const touchStartX = useRef(0);
 
   const audioRefs = useRef({});
 
@@ -641,6 +642,23 @@ function Tchat() {
 
   const [notification, setNotification] = useState("");
   const [messageRepondu, setMessageRepondu] = useState(null);
+
+
+
+  // swipe pour messages
+
+  const debutSwipeReponse = (e)=>{
+    touchStartX.current = e.touches[0].clientX;
+
+  }
+
+  const finSwipeReponse = (e, msg) =>{
+   const distance =  e.changedTouches[0].clientX - touchStartX.current;
+if(distance > 80){
+  setMessageRepondu(msg)
+}
+
+  }
 
   // notification
 
@@ -1573,8 +1591,17 @@ function Tchat() {
                       transform: `translateX(${transition[msg._id] || 0}px)`,
                       transition: "transform .2s ease",
                     }}
-                    onTouchStart={() => debutAppuiLong(msg)}
-                    onTouchEnd={annulerAppuiLong}
+                    onTouchStart={(e) =>{
+                      debutAppuiLong(msg)
+                      debutSwipeReponse(e)
+                    }}
+
+
+                    onTouchEnd={(e) =>{
+                      annulerAppuiLong()
+                      finSwipeReponse(e, msg)
+                    }}
+                    
                     onMouseDown={() => debutAppuiLong(msg)}
                     onMouseUp={annulerAppuiLong}
                   >
@@ -1900,14 +1927,7 @@ function Tchat() {
                       : "Message"}
             </SelectedMessagePreview>
 
-            <ModalAction
-              onClick={() => {
-                setMessageRepondu(modalMessage);
-                fermerModalMessage();
-              }}
-            >
-              Répondre
-            </ModalAction>
+
             <ModalAction
               onClick={() => {
                 navigator.clipboard.writeText(modalMessage.contenu || "");
