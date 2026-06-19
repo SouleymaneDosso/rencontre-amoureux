@@ -526,6 +526,45 @@ const NotificationToast = styled.div`
   pointer-events: none;
 `;
 
+const ReplyPreview = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 15px;
+
+  border-left: 4px solid #00a884;
+
+  background: #f5f5f5;
+`;
+const ReplyContent = styled.div`
+  flex: 1;
+`;
+const ReplyLabel = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #00a884;
+`;
+
+const ReplyText = styled.div`
+  margin-top: 4px;
+
+  font-size: 14px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ReplyClose = styled.button`
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  font-size: 18px;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -583,7 +622,8 @@ function Tchat() {
   const [draggingAudioId, setDraggingAudioId] = useState(null);
 
   const [notification, setNotification] = useState("");
-
+  const [messageRepondu, setMessageRepondu] = useState(null);
+  
   // notification
 
   const afficherNotification = (message) => {
@@ -1279,6 +1319,7 @@ function Tchat() {
       conversationId: id,
       expediteur: monProfilId,
       destinataire: id,
+      reponseA: messageRepondu,
       contenu: messageText,
       type: audioBlob
         ? "audio"
@@ -1319,6 +1360,9 @@ function Tchat() {
     try {
       const formData = new FormData();
       formData.append("contenu", messageText);
+      if (messageRepondu) {
+        formData.append("reponseA", messageRepondu._id);
+      }
       if (audioBlob) {
         formData.append("media", audioBlob, "voice.webm");
       }
@@ -1334,6 +1378,8 @@ function Tchat() {
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
+
+      setMessageRepondu(null);
     } catch (error) {
       console.error("Erreur :", error.message);
 
@@ -1825,13 +1871,12 @@ function Tchat() {
 
             <ModalAction
               onClick={() => {
-                // réponse plus tard
+                setMessageRepondu(modalMessage);
                 fermerModalMessage();
               }}
             >
               Répondre
             </ModalAction>
-
             <ModalAction
               onClick={() => {
                 navigator.clipboard.writeText(modalMessage.contenu || "");
@@ -1867,6 +1912,34 @@ function Tchat() {
             <ModalCancel onClick={fermerModalMessage}>Annuler</ModalCancel>
           </ModalBox>
         </ModalOverlay>
+      )}
+
+      {messageRepondu && (
+        <ReplyPreview>
+          <ReplyContent>
+            <ReplyLabel>
+              Réponse à{" "}
+              {messageRepondu.expediteur === monProfilId
+                ? "vous"
+                : profilCible?.pseudo || "lui/elle"}
+            </ReplyLabel>
+
+            <ReplyText>
+              {messageRepondu.contenu ||
+                (messageRepondu.type === "image"
+                  ? "📷 Image"
+                  : messageRepondu.type === "video"
+                    ? "🎥 Vidéo"
+                    : messageRepondu.type === "audio"
+                      ? "🎤 Message vocal"
+                      : "")}
+            </ReplyText>
+          </ReplyContent>
+
+          <ReplyClose onClick={() => setMessageRepondu(null)}>
+            <FaTimes />
+          </ReplyClose>
+        </ReplyPreview>
       )}
 
       {notification && <NotificationToast>{notification}</NotificationToast>}
