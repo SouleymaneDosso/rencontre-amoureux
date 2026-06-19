@@ -1534,19 +1534,6 @@ function Tchat() {
 
 
 
-  useEffect(() => {
-    const dernierMessage = messages[messages.length - 1];
-    if (!dernierMessage) return;
-    const messageRecu = dernierMessage.expediteur !== monProfilId;
-
-    if (messageRecu) {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    }
-  }, [messages, monProfilId]);
-
   const isProfilCibleOnline = onlineUsers.includes(id);
 
   if (loading && messages.length === 0) {
