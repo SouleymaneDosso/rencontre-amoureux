@@ -49,7 +49,6 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessageDeleted = ({ messageId }) => {
-      console.log("🗑️ messageDeleted reçu :", messageId);
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === messageId

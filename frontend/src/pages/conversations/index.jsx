@@ -411,7 +411,7 @@ function Conversations() {
         }
 
         setMonProfilId(monProfilData._id);
-
+        localStorage.setItem("monProfilId", monProfilData._id);
         // 2) récupérer les conversations
         const conversationsRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,

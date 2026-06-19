@@ -586,7 +586,7 @@ const ReplyMessageText = styled.div`
 const ReplyIconVisible = styled.div`
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
 
-  transition: opacity .2s ease;
+  transition: opacity 0.2s ease;
 
   position: absolute;
   left: 10px;
@@ -620,7 +620,9 @@ function Tchat() {
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
-  const [monProfilId, setMonProfilId] = useState(null);
+ const [monProfilId, setMonProfilId] = useState(
+  () => localStorage.getItem("monProfilId")
+);
   const [profilCible, setProfilCible] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -647,7 +649,6 @@ function Tchat() {
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const [modalMessage, setModalMessage] = useState(null);
 
-  const [transition, setTransition] = useState({});
   const [audioProgress, setAudioProgress] = useState({});
   const [audioCurrentTime, setAudioCurrentTime] = useState({});
   const [draggingAudioId, setDraggingAudioId] = useState(null);
@@ -1509,21 +1510,21 @@ function Tchat() {
         return;
       }
       setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === messageId
-          ? {
-              ...msg,
-              contenu: "↩ Message supprimé",
-              type: "system",
-              media: {},
-            }
-          : msg
-      )
-    );
+        prev.map((msg) =>
+          msg._id === messageId
+            ? {
+                ...msg,
+                contenu: "↩ Message supprimé",
+                type: "system",
+                media: {},
+              }
+            : msg,
+        ),
+      );
 
-    socket.emit("messageDeleted", {
-      messageId,
-    })
+      socket.emit("messageDeleted", {
+        messageId,
+      });
     } catch (error) {
       console.error(error.message);
     }
@@ -1590,6 +1591,8 @@ function Tchat() {
     );
   }
 
+ 
+
   return (
     <Wrapper>
       <Header>
@@ -1631,14 +1634,18 @@ function Tchat() {
           }
         }}
       >
+        
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
             <p>Commence la conversation</p>
           </EmptyState>
         ) : (
+          
+          
           messages.map((msg) => {
             const isMine = msg.expediteur === monProfilId;
+            
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <SwipeContainer>
