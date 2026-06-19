@@ -49,6 +49,7 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessageDeleted = ({ messageId }) => {
+      console.log("🗑️ messageDeleted reçu :", messageId);
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === messageId
@@ -63,8 +64,7 @@ export function useTchatSocket(monProfilId, setMessages) {
       );
     };
 
-
-    socket.on("messageDeleted",handleMessageDeleted)
+    socket.on("messageDeleted", handleMessageDeleted);
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
