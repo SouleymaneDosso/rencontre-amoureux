@@ -1232,12 +1232,12 @@ function Tchat() {
         }
         setMessageErreur("");
 
-        const [monProfilData, profilData, messagesData] = await Promise.all([
-          getMonProfil(token),
+        const [ profilData, messagesData] = await Promise.all([
+         
           getProfilCible(id),
           getMessagesConversation(id, token),
         ]);
-        setMonProfilId(monProfilData._id);
+  
         setProfilCible(profilData);
         setMessages(messagesData);
         setTimeout(() => {
@@ -1249,7 +1249,7 @@ function Tchat() {
         setMessageErreur(error.message);
       } finally {
         setLoading(false);
-      }
+      }  
     };
 
     if (token && id) {
@@ -1532,14 +1532,7 @@ function Tchat() {
 
   // fin supprimer messages
 
-  useLayoutEffect(() => {
-    if (!shouldAutoScrollRef.current) return;
 
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }, [messages]);
 
   useEffect(() => {
     const dernierMessage = messages[messages.length - 1];
