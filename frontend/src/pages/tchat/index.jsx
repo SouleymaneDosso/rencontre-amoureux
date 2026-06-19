@@ -1508,7 +1508,22 @@ function Tchat() {
         alert(data.message);
         return;
       }
-      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+      setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId
+          ? {
+              ...msg,
+              contenu: "↩ Message supprimé",
+              type: "system",
+              media: {},
+            }
+          : msg
+      )
+    );
+
+    socket.emit("messageDeleted", {
+      messageId,
+    })
     } catch (error) {
       console.error(error.message);
     }
