@@ -5,7 +5,6 @@ export function useTchatSocket(monProfilId, setMessages) {
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-
     socket.connect();
 
     const handleConnect = () => {
@@ -25,8 +24,6 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleReceiveMessage = (messageData) => {
-      
-
       setMessages((prev) => {
         const existeDeja = prev.some((msg) => msg._id === messageData._id);
         if (existeDeja) return prev;
@@ -36,8 +33,6 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessagesRead = ({ idsMessagesLus }) => {
-      
-
       setMessages((prev) =>
         prev.map((msg) =>
           idsMessagesLus.includes(msg._id) ? { ...msg, statut: "seen" } : msg,
@@ -46,14 +41,30 @@ export function useTchatSocket(monProfilId, setMessages) {
     };
 
     const handleMessageDelivered = ({ messageId }) => {
-      
-
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === messageId ? { ...msg, statut: "delivered" } : msg,
         ),
       );
     };
+
+    const handleMessageDeleted = ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? {
+                ...msg,
+                contenu: "↩ Message supprimé",
+                type: "system",
+                media: {},
+              }
+            : msg,
+        ),
+      );
+    };
+
+
+    socket.on("messageDeleted",handleMessageDeleted)
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
@@ -70,6 +81,7 @@ export function useTchatSocket(monProfilId, setMessages) {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("messageDelivered", handleMessageDelivered);
       socket.off("messagesRead", handleMessagesRead);
+      socket.off("messageDeleted", handleMessageDeleted);
     };
   }, [setMessages]);
 
