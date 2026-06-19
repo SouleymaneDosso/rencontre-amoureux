@@ -583,6 +583,17 @@ const ReplyMessageText = styled.div`
   white-space: nowrap;
 `;
 
+const ReplyIconVisible = styled.div`
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+
+  transition: opacity .2s ease;
+
+  position: absolute;
+  left: 10px;
+
+  font-size: 20px;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -599,6 +610,7 @@ function Tchat() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const touchStartX = useRef(0);
+  const mouseStartX = useRef(0);
 
   const audioRefs = useRef({});
 
@@ -642,23 +654,53 @@ function Tchat() {
 
   const [notification, setNotification] = useState("");
   const [messageRepondu, setMessageRepondu] = useState(null);
-
-
+  const [swipeOffsets, setSwipeOffsets] = useState({});
 
   // swipe pour messages
 
-  const debutSwipeReponse = (e)=>{
+  const finSwipeReponse = (e, msg) => {
+    const distance = e.changedTouches[0].clientX - touchStartX.current;
+
+    if (distance > 80) {
+      setMessageRepondu(msg);
+
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+
+    setSwipeOffsets((prev) => ({
+      ...prev,
+      [msg._id]: 0,
+    }));
+  };
+
+  const moveSwipeReponse = (e, msgId) => {
+    const distance = e.touches[0].clientX - touchStartX.current;
+
+    if (distance > 0) {
+      setSwipeOffsets((prev) => ({
+        ...prev,
+        [msgId]: Math.min(distance, 120),
+      }));
+    }
+  };
+
+  const debutSwipeMouse = (e) => {
+    mouseStartX.current = e.clientX;
+  };
+
+  const finSwipeMouse = (e, msg) => {
+    const distance = e.clientX - mouseStartX.current;
+
+    if (distance > 80) {
+      setMessageRepondu(msg);
+    }
+  };
+
+  const debutSwipeReponse = (e) => {
     touchStartX.current = e.touches[0].clientX;
-
-  }
-
-  const finSwipeReponse = (e, msg) =>{
-   const distance =  e.changedTouches[0].clientX - touchStartX.current;
-if(distance > 80){
-  setMessageRepondu(msg)
-}
-
-  }
+  };
 
   // notification
 
@@ -1491,7 +1533,7 @@ if(distance > 80){
     if (messageRecu) {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
-        blockk: "end",
+        block: "end",
       });
     }
   }, [messages, monProfilId]);
@@ -1585,25 +1627,34 @@ if(distance > 80){
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <SwipeContainer>
+                  <ReplyIconVisible
+                    $visible={(swipeOffsets[msg._id] || 0) > 40}
+                  >
+                    ↩
+                  </ReplyIconVisible>
                   <MessageBubble
                     $mine={isMine}
                     style={{
-                      transform: `translateX(${transition[msg._id] || 0}px)`,
-                      transition: "transform .2s ease",
+                      transform: `translateX(${swipeOffsets[msg._id] || 0}px)`,
+                      transition: "transform .15s ease",
                     }}
-                    onTouchStart={(e) =>{
-                      debutAppuiLong(msg)
-                      debutSwipeReponse(e)
+                    onTouchStart={(e) => {
+                      debutAppuiLong(msg);
+                      debutSwipeReponse(e);
                     }}
-
-
-                    onTouchEnd={(e) =>{
-                      annulerAppuiLong()
-                      finSwipeReponse(e, msg)
+                    onTouchEnd={(e) => {
+                      annulerAppuiLong();
+                      finSwipeReponse(e, msg);
                     }}
-                    
-                    onMouseDown={() => debutAppuiLong(msg)}
-                    onMouseUp={annulerAppuiLong}
+                    onMouseDown={(e) => {
+                      debutSwipeMouse(e);
+                      debutAppuiLong(msg);
+                    }}
+                    onMouseUp={(e) => {
+                      annulerAppuiLong();
+                      finSwipeMouse(e, msg);
+                    }}
+                    onTouchMove={(e) => moveSwipeReponse(e, msg._id)}
                   >
                     {msg.type === "image" && msg.media?.url && (
                       <MessageImage
@@ -1926,7 +1977,6 @@ if(distance > 80){
                       ? "🎤 Message vocal"
                       : "Message"}
             </SelectedMessagePreview>
-
 
             <ModalAction
               onClick={() => {
