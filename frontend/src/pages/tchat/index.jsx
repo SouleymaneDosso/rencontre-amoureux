@@ -565,6 +565,24 @@ const ReplyClose = styled.button`
   font-size: 18px;
 `;
 
+const ReplyMessageContainer = styled.div`
+  margin-bottom: 6px;
+  padding: 8px;
+
+  border-left: 3px solid #00a884;
+
+  background: rgba(0, 0, 0, 0.08);
+
+  border-radius: 6px;
+
+  font-size: 13px;
+`;
+const ReplyMessageText = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -623,7 +641,7 @@ function Tchat() {
 
   const [notification, setNotification] = useState("");
   const [messageRepondu, setMessageRepondu] = useState(null);
-  
+
   // notification
 
   const afficherNotification = (message) => {
@@ -1356,6 +1374,7 @@ function Tchat() {
     setAudioBlob(null);
     setAudioUrl("");
     setPreviewUrl("");
+    setMessageRepondu(null);
 
     try {
       const formData = new FormData();
@@ -1378,8 +1397,6 @@ function Tchat() {
       );
 
       socket.emit("sendMessage", data.nouveauMessage);
-
-      setMessageRepondu(null);
     } catch (error) {
       console.error("Erreur :", error.message);
 
@@ -1751,8 +1768,22 @@ function Tchat() {
                       </>
                     )}
 
+                    {msg.reponseA && (
+                      <ReplyMessageContainer>
+                        <ReplyMessageText>
+                          {msg.reponseA.contenu ||
+                            (msg.reponseA.type === "image"
+                              ? "📷 Image"
+                              : msg.reponseA.type === "video"
+                                ? "🎥 Vidéo"
+                                : msg.reponseA.type === "audio"
+                                  ? "🎤 Message vocal"
+                                  : "Message")}
+                        </ReplyMessageText>
+                      </ReplyMessageContainer>
+                    )}
                     {msg.contenu && (
-                      <MessageText $supprime>{msg.contenu}</MessageText>
+                      <MessageText $supprime>{msg.contenu} </MessageText>
                     )}
 
                     <MessageTime>
