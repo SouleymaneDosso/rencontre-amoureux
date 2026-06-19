@@ -107,6 +107,8 @@ socket.on("registerUser", async (userId) => {
 
     console.log("📨 Message temps réel reçu :", messageData);
 
+    
+
     // 🔥 envoyer au destinataire
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("receiveMessage", messageData);
@@ -126,6 +128,30 @@ socket.on("registerUser", async (userId) => {
     }
   });
 
+
+
+  // messages supprimés en temps réel 
+
+socket.on("messageDeleted", async({messageId}) => {
+  const message = await Message.findById(messageId);
+if(!message) return;
+
+const receiverSocketId  = onlineUsers.get(
+message.destinataire.toString()
+)
+if(receiverSocketId ){
+  io.to(receiverSocketId ).emit("messageDeleted",{
+    messageId
+  })
+}
+
+});
+
+  // fin suppression temps reel
+
+
+
+  
   // =======================
   // Messages lus
   // =======================
