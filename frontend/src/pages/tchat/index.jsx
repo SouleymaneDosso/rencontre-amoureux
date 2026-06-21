@@ -624,7 +624,9 @@ function Tchat() {
   const [monProfilId, setMonProfilId] = useState(() =>
     localStorage.getItem("monProfilId"),
   );
-  const [profilCible, setProfilCible] = useState(null);
+const [profilCible, setProfilCible] = useState(
+  location.state?.profilCible || null,
+);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messageErreur, setMessageErreur] = useState("");
@@ -1547,18 +1549,6 @@ useLayoutEffect(() => {
   });
 }, [messages]);
 
-  // useEffect(() => {
-  //   const dernierMessage = messages[messages.length - 1];
-  //   if (!dernierMessage) return;
-  //   const messageRecu = dernierMessage.expediteur !== monProfilId;
-
-  //   if (messageRecu) {
-  //     messagesEndRef.current?.scrollIntoView({
-  //       behavior: "smooth",
-  //       block: "end",
-  //     });
-  //   }
-  // }, [messages, monProfilId]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 

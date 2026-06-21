@@ -509,7 +509,10 @@ function Conversations() {
                 key={conversation._id}
                 onClick={() =>
                   navigate(`/tchat/${autre._id}`, {
-                    state: { messages: [] },
+                    state: {
+                      messages: [],
+                      profilCible: autre,
+                    },
                   })
                 }
               >
