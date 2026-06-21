@@ -1240,9 +1240,6 @@ function Tchat() {
   
         setProfilCible(profilData);
         setMessages(messagesData);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-        }, 0);
         setPage(1);
         setHasMore(messagesData.length === 20);
       } catch (error) {
@@ -1532,7 +1529,27 @@ function Tchat() {
 
   // fin supprimer messages
 
+  // useLayoutEffect(() => {
+  //   if (!shouldAutoScrollRef.current) return;
 
+  //   messagesEndRef.current?.scrollIntoView({
+  //     behavior: "smooth",
+  //     block: "end",
+  //   });
+  // }, [messages]);
+
+  useEffect(() => {
+    const dernierMessage = messages[messages.length - 1];
+    if (!dernierMessage) return;
+    const messageRecu = dernierMessage.expediteur !== monProfilId;
+
+    if (messageRecu) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [messages, monProfilId]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
