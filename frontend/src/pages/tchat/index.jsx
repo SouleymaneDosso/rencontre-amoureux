@@ -611,6 +611,7 @@ function Tchat() {
   const audioChunksRef = useRef([]);
   const touchStartX = useRef(0);
   const mouseStartX = useRef(0);
+  const firstLoadRef = useRef(true);
 
   const audioRefs = useRef({});
 
@@ -620,9 +621,9 @@ function Tchat() {
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
- const [monProfilId, setMonProfilId] = useState(
-  () => localStorage.getItem("monProfilId")
-);
+  const [monProfilId, setMonProfilId] = useState(() =>
+    localStorage.getItem("monProfilId"),
+  );
   const [profilCible, setProfilCible] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -1232,21 +1233,28 @@ function Tchat() {
         }
         setMessageErreur("");
 
-        const [ profilData, messagesData] = await Promise.all([
-         
+        const [profilData, messagesData] = await Promise.all([
           getProfilCible(id),
           getMessagesConversation(id, token),
         ]);
-  
+
         setProfilCible(profilData);
         setMessages(messagesData);
+        requestAnimationFrame(() => {
+          messagesEndRef.current?.scrollIntoView({
+            behavior: "auto",
+            block: "end",
+          });
+
+          firstLoadRef.current = false;
+        });
         setPage(1);
         setHasMore(messagesData.length === 20);
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
         setLoading(false);
-      }  
+      }
     };
 
     if (token && id) {
@@ -1528,15 +1536,16 @@ function Tchat() {
   };
 
   // fin supprimer messages
+useLayoutEffect(() => {
+  if (firstLoadRef.current) return;
 
-  // useLayoutEffect(() => {
-  //   if (!shouldAutoScrollRef.current) return;
+  if (!shouldAutoScrollRef.current) return;
 
-  //   messagesEndRef.current?.scrollIntoView({
-  //     behavior: "smooth",
-  //     block: "end",
-  //   });
-  // }, [messages]);
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "smooth",
+    block: "end",
+  });
+}, [messages]);
 
   // useEffect(() => {
   //   const dernierMessage = messages[messages.length - 1];
@@ -1588,8 +1597,6 @@ function Tchat() {
     );
   }
 
- 
-
   return (
     <Wrapper>
       <Header>
@@ -1631,18 +1638,15 @@ function Tchat() {
           }
         }}
       >
-        
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
             <p>Commence la conversation</p>
           </EmptyState>
         ) : (
-          
-          
           messages.map((msg) => {
             const isMine = msg.expediteur === monProfilId;
-            
+
             return (
               <MessageRow key={msg._id} $mine={isMine}>
                 <SwipeContainer>
