@@ -28,10 +28,9 @@ const ProfileHero = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  
+  border: 2px solid black;
 
   text-align: center;
-  z-index: 2;
 `;
 
 const Name = styled.h1`
@@ -255,7 +254,7 @@ const MessageAvatar = styled.div`
 
 const BioBox = styled.section`
   margin-top: 80px;
-  max-width: 620px;
+  max-width: 720px;
   margin-left: auto;
   margin-right: auto;
   color: #5f6b85;
@@ -349,11 +348,9 @@ const Main = styled.main`
 const Conteneur = styled.section`
   margin-top: 30px;
   width: 100%;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: 0;
+  margin-right: 0;
   background: #f8faff;
-  border: 1px solid #edf1ff;
   border-radius: 22px;
   padding: 24px;
   font-family: Arial, sans-serif;
