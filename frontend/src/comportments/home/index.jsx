@@ -21,15 +21,14 @@ const Page = styled.div`
 `;
 
 const ProfileHero = styled.div`
-  position: absolute;
+  position: relative;
   inset: 0;
-  margin-top: 200px;
-
-
+  margin-top: -150px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  
 
   text-align: center;
   z-index: 2;
@@ -727,6 +726,7 @@ function Home() {
        
           <HeroContainer>
             <Cover src={profil.avatar?.url} alt="cover" />
+            </HeroContainer>
           
           <ProfileHero>
             <AvatarWrapper onClick={() => ouvririmage(0)}>
@@ -785,7 +785,7 @@ function Home() {
               {profil.prenom} {profil.nom}
             </Name>
           </ProfileHero>
-          </HeroContainer>
+          
 
         <Card>
           <SectionTitle>Informations personnelles</SectionTitle>
