@@ -24,7 +24,8 @@ const ProfileHero = styled.div`
   position: relative;
   inset: 0;
 
-  margin-top: -50px;
+ margin-top: -300px;
+ 
   
   display: flex;
   flex-direction: column;
@@ -49,6 +50,7 @@ const AvatarWrapper = styled.div`
   width: 160px;
   height: 160px;
   display: inline-block;
+  position: relative;
  ;
 
 
@@ -470,7 +472,7 @@ const CloseOnImage = styled.button`
 
 const Cover = styled.img`
   width: 100%;
-  height: 100%;
+  height: 60%;
   object-fit: cover;
   border-radius: 24px;
 `;
