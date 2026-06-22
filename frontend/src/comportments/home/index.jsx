@@ -23,12 +23,12 @@ const Page = styled.div`
 const ProfileHero = styled.div`
   position: relative;
   inset: 0;
-  margin-top: -150px;
+  margin-top: -200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid black;
+  
 
   text-align: center;
 `;
@@ -253,7 +253,7 @@ const MessageAvatar = styled.div`
 `;
 
 const BioBox = styled.section`
-  margin-top: 80px;
+  margin-top: 110px;
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
@@ -346,13 +346,13 @@ const Main = styled.main`
 `;
 
 const Conteneur = styled.section`
-  margin-top: 30px;
+  margin-top: 90px;
   width: 100%;
   margin-left: 0;
   margin-right: 0;
   background: #f8faff;
   border-radius: 22px;
-  padding: 24px;
+ 
   font-family: Arial, sans-serif;
 `;
 const Topbarre = styled.div`
