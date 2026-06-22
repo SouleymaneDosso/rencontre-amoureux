@@ -32,6 +32,7 @@ import {
 import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
+import Profilpublic from './../profilpublic/index';
 
 const ExpandButton = styled.button`
   position: absolute;
@@ -1278,6 +1279,7 @@ const [profilCible, setProfilCible] = useState(
         idsMessagesLus: [msg._id],
       });
     };
+    
 
     socket.on("receiveMessage", handleReceiveMessage);
 
@@ -1596,7 +1598,7 @@ useLayoutEffect(() => {
 
         <Avatarplaceholder>
           {profilCible?.avatar ? (
-            <Avatar src={profilCible.avatar?.url} alt="Profil" />
+            <Avatar src={profilCible.avatar?.url} alt="Profil"   onClick={() => navigate(`/Profilpublic/${profilCible._id}`)} />
           ) : (
             <FaUserCircle size={42} color="#4f6cff" />
           )}

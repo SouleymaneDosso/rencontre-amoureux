@@ -503,6 +503,7 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
+            
 
             return (
               <Card

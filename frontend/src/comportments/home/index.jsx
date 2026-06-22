@@ -14,7 +14,6 @@ import {
 
 const Page = styled.div`
   width: 100%;
-  min-height: 100vh;
   background: linear-gradient(135deg, #f8f9ff, #e6ecff);
   display: flex;
   justify-content: center;
@@ -22,16 +21,18 @@ const Page = styled.div`
 `;
 
 const ProfileHero = styled.div`
+  position: absolute;
+  inset: 0;
+  margin-top: 200px;
+
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   text-align: center;
-  background: white;
-  padding: 24px 16px;
-  border-radius: 28px;
-  box-shadow: 0 10px 35px rgba(79, 108, 255, 0.08);
-  position: relative;
-  overflow: hidden;
-  @media (max-width: 480px) {
-    padding: 20px 12px;
-  }
+  z-index: 2;
 `;
 
 const Name = styled.h1`
@@ -41,24 +42,30 @@ const Name = styled.h1`
   color: #1f2a44;
   font-weight: 800;
 `;
+
+
 const AvatarWrapper = styled.div`
-  width: 500px;
-  height: 500px;
+  width: 160px;
+  height: 160px;
   display: inline-block;
   position: relative;
+  
 
   @media (max-width: 480px) {
-    width: 300px;
-    height: 300px;
+    width: 120px;
+    height: 120px;
   }
 `;
+
 
 const Avatar = styled.img`
   width: 100%;
   height: 100%;
-  border-radius: 10%;
+  border-radius: 50%;
   object-fit: cover;
 `;
+
+
 const CameraButton = styled.label`
   position: absolute;
   bottom: 8px;
@@ -340,9 +347,6 @@ const Main = styled.main`
   }
 `;
 
-
-
-
 const Conteneur = styled.section`
   margin-top: 30px;
   width: 100%;
@@ -470,6 +474,18 @@ const CloseOnImage = styled.button`
   }
 `;
 
+const Cover = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px;
+`;
+
+const HeroContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
 function Home() {
   const [profil, setProfil] = useState(null);
   const [interet, setInteret] = useState([]);
@@ -486,16 +502,11 @@ function Home() {
   const token = localStorage.getItem("token");
 
   const photos = [
-  ...(profil?.avatar ? [profil.avatar] : []),
-  ...(profil?.photos || []),
-];
-
-
-  const loopedPhotos = [
-    photos[photos.length - 1], 
-    ...photos,
-    photos[0],
+    ...(profil?.avatar ? [profil.avatar] : []),
+    ...(profil?.photos || []),
   ];
+
+  const loopedPhotos = [photos[photos.length - 1], ...photos, photos[0]];
 
   useEffect(() => {
     if (modal) {
@@ -713,61 +724,69 @@ function Home() {
   return (
     <Page>
       <Main>
-        <ProfileHero>
-          <AvatarWrapper onClick={() => ouvririmage(0)}>
-            {profil.avatar ? (
-              <Avatar src={profil.avatar.url} alt="avatar" />
-            ) : (
-              <MessageAvatar>Ajouter une photo</MessageAvatar>
+       
+          <HeroContainer>
+            <Cover src={profil.avatar?.url} alt="cover" />
+          
+          <ProfileHero>
+            <AvatarWrapper onClick={() => ouvririmage(0)}>
+              {profil.avatar?.url ? (
+                <Avatar src={profil.avatar.url} alt="avatar" />
+              ) : (
+                <MessageAvatar>Ajouter une photo</MessageAvatar>
+              )}
+              <CameraButton htmlFor="avatarInput">
+                <FaCamera />
+              </CameraButton>
+              <input
+                type="file"
+                id="avatarInput"
+                style={{ display: "none" }}
+                onChange={fetchAvatar}
+              />
+            </AvatarWrapper>
+
+            <BioBox>
+              <span>{profil.bio || "Pas encore de bio"}</span>
+            </BioBox>
+
+            {progress < 100 && (
+              <Conteneur>
+                <ProgressTitle>
+                  Complétude du profil : {progress}%
+                </ProgressTitle>
+                <ProgressText>{messageProgress}</ProgressText>
+
+                <Topbarre>
+                  <Interrieur progress={progress} />
+                </Topbarre>
+              </Conteneur>
             )}
-            <CameraButton htmlFor="avatarInput">
-              <FaCamera />
-            </CameraButton>
-            <input
-              type="file"
-              id="avatarInput"
-              style={{ display: "none" }}
-              onChange={fetchAvatar}
-            />
-          </AvatarWrapper>
 
-          <BioBox>
-            <span>{profil.bio || "Pas encore de bio"}</span>
-          </BioBox>
+            {afficher && (
+              <Conteneur>
+                <SuccessTitle>🎉 Profil complété à 100%</SuccessTitle>
+                <SuccessText>Ton profil est prêt et bien optimisé.</SuccessText>
+              </Conteneur>
+            )}
 
-          {progress < 100 && (
-            <Conteneur>
-              <ProgressTitle>Complétude du profil : {progress}%</ProgressTitle>
-              <ProgressText>{messageProgress}</ProgressText>
+            <section>
+              <Modification>
+                <Boutonmodifier
+                  onClick={() => navigate(`/modifier/${profil._id}`)}
+                >
+                  Compléter mon profil
+                  <Span></Span>
+                </Boutonmodifier>
+              </Modification>
+            </section>
 
-              <Topbarre>
-                <Interrieur progress={progress} />
-              </Topbarre>
-            </Conteneur>
-          )}
+            <Name>
+              {profil.prenom} {profil.nom}
+            </Name>
+          </ProfileHero>
+          </HeroContainer>
 
-          {afficher && (
-            <Conteneur>
-              <SuccessTitle>🎉 Profil complété à 100%</SuccessTitle>
-              <SuccessText>Ton profil est prêt et bien optimisé.</SuccessText>
-            </Conteneur>
-          )}
-
-          <section>
-            <Modification>
-              <Boutonmodifier
-                onClick={() => navigate(`/modifier/${profil._id}`)}
-              >
-                Compléter mon profil
-                <Span></Span>
-              </Boutonmodifier>
-            </Modification>
-          </section>
-
-          <Name>
-            {profil.prenom} {profil.nom}
-          </Name>
-        </ProfileHero>
         <Card>
           <SectionTitle>Informations personnelles</SectionTitle>
           <InfoGrid>
