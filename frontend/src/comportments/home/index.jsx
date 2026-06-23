@@ -264,8 +264,15 @@ const BioBox = styled.section`
   font-size: 15px;
   line-height: 1.7;
   color: #4f6cff;
-  background: white;
-  padding: 2px;
+
+  padding: 3px;
+  border: 2px solid #4f6cff;
+
+  border-radius: 8px;
+    transition: border-width 0.3s ease;
+  &:hover{
+  border-width:4px;
+  }
 `;
 const InterestsWrapper = styled.div`
   margin-top: 25px;
