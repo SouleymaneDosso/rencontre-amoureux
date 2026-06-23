@@ -24,16 +24,12 @@ const ProfileHero = styled.div`
   position: relative;
   inset: 0;
 
- margin-top: -300px;
+ margin-top: -280px;
  
-  
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  
-
   text-align: center;
 `;
 
@@ -50,7 +46,9 @@ const AvatarWrapper = styled.div`
   width: 160px;
   height: 160px;
   display: inline-block;
-  position: relative;
+  position: absolute;
+  margin-bottom: 320px;
+  left: 30px;
  ;
 
 
@@ -262,7 +260,7 @@ const BioBox = styled.section`
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
-  color: #5f6b85;
+  color: black;
   font-size: 15px;
   line-height: 1.7;
 `;
