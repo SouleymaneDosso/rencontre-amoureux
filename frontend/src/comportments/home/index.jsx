@@ -47,7 +47,7 @@ const AvatarWrapper = styled.div`
   height: 160px;
   display: inline-block;
   position: absolute;
-  margin-bottom: 320px;
+  margin-bottom: 190px;
   left: 30px;
  ;
 
@@ -256,13 +256,16 @@ const MessageAvatar = styled.div`
 `;
 
 const BioBox = styled.section`
-  margin-top: 100px;
+  margin-top: 270px;
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
   color: black;
   font-size: 15px;
   line-height: 1.7;
+  color: #4f6cff;
+  background: white;
+  padding: 2px;
 `;
 const InterestsWrapper = styled.div`
   margin-top: 25px;
@@ -470,7 +473,7 @@ const CloseOnImage = styled.button`
 
 const Cover = styled.img`
   width: 100%;
-  height: 60%;
+  height: 85%;
   object-fit: cover;
   border-radius: 24px;
 `;
