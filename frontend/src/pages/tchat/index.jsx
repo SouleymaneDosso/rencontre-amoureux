@@ -212,9 +212,9 @@ const FileInput = styled.input`
 const IconButton = styled.label`
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  
   border: none;
-  background: #eef2ff;
+ 
   color: #4f6cff;
   display: flex;
   align-items: center;
@@ -246,12 +246,9 @@ const Input = styled.input`
 
 const SendButton = styled.button`
   width: 52px;
-  height: 52px;
-  border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #4f6cff, #6f88ff);
-  color: white;
-  font-size: 18px;
+  color:  #6f88ff;
+  font-size: 20px;
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
   transition: 0.2s ease;
@@ -266,7 +263,7 @@ const SendButton = styled.button`
     cursor: not-allowed;
     transform: none;
   }
-`;
+`; 
 
 const ErrorBox = styled.div`
   margin: 40px auto;
@@ -547,6 +544,35 @@ const ReplyLabel = styled.div`
 
   color: #00a884;
 `;
+const LoadingMoreContainer = styled.div`
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 28px;
+  height: 28px;
+
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #4f6cff;
+  border-radius: 50%;
+
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
 
 const ReplyText = styled.div`
   margin-top: 4px;
@@ -593,6 +619,49 @@ const ReplyIconVisible = styled.div`
   left: 10px;
 
   font-size: 20px;
+`;
+
+const RecordingModal = styled.div`
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 85px;
+
+  padding: 18px;
+
+  border-radius: 18px;
+
+  background: rgba(25, 25, 25, 0.95);
+  backdrop-filter: blur(12px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  z-index: 500;
+`;
+const RecordingDot = styled.div`
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  background: red;
+
+  animation: pulse 0.9s infinite alternate;
+
+  @keyframes pulse {
+    from {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+
+    to {
+      transform: scale(1.4);
+      opacity: 1;
+    }
+  }
 `;
 
 function Tchat() {
@@ -1546,18 +1615,18 @@ function Tchat() {
 
   // fin supprimer messages
   useLayoutEffect(() => {
-  if (firstLoadRef.current) return;
+    if (firstLoadRef.current) return;
 
-  if (loadingOlderMessagesRef.current) {
-    loadingOlderMessagesRef.current = false;
-    return;
-  }
+    if (loadingOlderMessagesRef.current) {
+      loadingOlderMessagesRef.current = false;
+      return;
+    }
 
-  messagesEndRef.current?.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-  });
-}, [messages]);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1641,6 +1710,12 @@ function Tchat() {
           }
         }}
       >
+        {loadingMore && (
+          <LoadingMoreContainer>
+            <LoadingSpinner />
+          </LoadingMoreContainer>
+        )}
+
         {messages.length === 0 ? (
           <EmptyState>
             <h3>Aucun message pour le moment</h3>
@@ -2070,7 +2145,15 @@ function Tchat() {
       )}
 
       {notification && <NotificationToast>{notification}</NotificationToast>}
+      {isRecording && (
+        <RecordingModal>
+          <RecordingDot />
 
+          <strong>Enregistrement...</strong>
+
+          <span>Relâchez pour envoyer</span>
+        </RecordingModal>
+      )}
       <InputContainer>
         <IconButton htmlFor="file-upload">
           <FaImage />
