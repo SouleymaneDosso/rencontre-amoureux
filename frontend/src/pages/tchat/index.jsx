@@ -32,7 +32,7 @@ import {
 import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
-import Profilpublic from './../profilpublic/index';
+import Profilpublic from "./../profilpublic/index";
 
 const ExpandButton = styled.button`
   position: absolute;
@@ -625,9 +625,9 @@ function Tchat() {
   const [monProfilId, setMonProfilId] = useState(() =>
     localStorage.getItem("monProfilId"),
   );
-const [profilCible, setProfilCible] = useState(
-  location.state?.profilCible || null,
-);
+  const [profilCible, setProfilCible] = useState(
+    location.state?.profilCible || null,
+  );
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messageErreur, setMessageErreur] = useState("");
@@ -1175,6 +1175,7 @@ const [profilCible, setProfilCible] = useState(
 
   const loadMoreMessages = async () => {
     if (loadingMore || !hasMore) return;
+    shouldAutoScrollRef.current = false;
 
     setLoadingMore(true);
 
@@ -1242,6 +1243,7 @@ const [profilCible, setProfilCible] = useState(
         ]);
 
         setProfilCible(profilData);
+        console.log("API messages :", messagesData.length);
         setMessages(messagesData);
         requestAnimationFrame(() => {
           messagesEndRef.current?.scrollIntoView({
@@ -1279,7 +1281,6 @@ const [profilCible, setProfilCible] = useState(
         idsMessagesLus: [msg._id],
       });
     };
-    
 
     socket.on("receiveMessage", handleReceiveMessage);
 
@@ -1396,6 +1397,7 @@ const [profilCible, setProfilCible] = useState(
 
   const sendMessage = async () => {
     if (!newMessage.trim() && !selectedFile && !audioBlob) return;
+    shouldAutoScrollRef.current = true;
     setSending(true);
     const tempId = "temp-" + Date.now();
 
@@ -1540,17 +1542,7 @@ const [profilCible, setProfilCible] = useState(
   };
 
   // fin supprimer messages
-useLayoutEffect(() => {
-  if (firstLoadRef.current) return;
-
-  if (!shouldAutoScrollRef.current) return;
-
-  messagesEndRef.current?.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-  });
-}, [messages]);
-
+  
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1598,7 +1590,11 @@ useLayoutEffect(() => {
 
         <Avatarplaceholder>
           {profilCible?.avatar ? (
-            <Avatar src={profilCible.avatar?.url} alt="Profil"   onClick={() => navigate(`/Profilpublic/${profilCible._id}`)} />
+            <Avatar
+              src={profilCible.avatar?.url}
+              alt="Profil"
+              onClick={() => navigate(`/Profilpublic/${profilCible._id}`)}
+            />
           ) : (
             <FaUserCircle size={42} color="#4f6cff" />
           )}
@@ -1625,7 +1621,7 @@ useLayoutEffect(() => {
       <MessagesContainer
         ref={containerRef}
         onScroll={() => {
-          if (containerRef.current.scrollTop < 100) {
+          if (containerRef.current.scrollTop < 50 && !loadingMore && hasMore) {
             loadMoreMessages();
           }
         }}
