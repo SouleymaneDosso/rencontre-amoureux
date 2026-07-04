@@ -626,6 +626,7 @@ const RecordingModal = styled.div`
   left: 16px;
   right: 16px;
   bottom: 85px;
+  color: white;
 
   padding: 18px;
 
@@ -2203,19 +2204,7 @@ function Tchat() {
           </SendButton>
         )}
       </InputContainer>
-      {isRecording && (
-        <div
-          style={{
-            padding: "10px",
-            color: "red",
-            fontWeight: "bold",
-          }}
-        >
-          Enregistrement...
-        </div>
-      )}
     </Wrapper>
   );
 }
-
 export default Tchat;
