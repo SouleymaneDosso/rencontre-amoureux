@@ -619,6 +619,7 @@ function Tchat() {
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
   const longPressTimer = useRef(null);
+  const loadingOlderMessagesRef = useRef(false);
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
@@ -1195,6 +1196,8 @@ function Tchat() {
         return;
       }
 
+      loadingOlderMessagesRef.current = true;
+
       setMessages((prev) => {
         const ids = new Set(prev.map((m) => m._id));
 
@@ -1542,7 +1545,19 @@ function Tchat() {
   };
 
   // fin supprimer messages
-  
+  useLayoutEffect(() => {
+  if (firstLoadRef.current) return;
+
+  if (loadingOlderMessagesRef.current) {
+    loadingOlderMessagesRef.current = false;
+    return;
+  }
+
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "smooth",
+    block: "end",
+  });
+}, [messages]);
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
