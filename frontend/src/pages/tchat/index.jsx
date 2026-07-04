@@ -4,8 +4,8 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
-import { FaTrash, FaTrashAlt } from "react-icons/fa";
 import {
+  FaTrash,
   FaArrowLeft,
   FaPaperPlane,
   FaUserCircle,
@@ -32,7 +32,6 @@ import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
 
-
 const ExpandButton = styled.button`
   position: absolute;
   top: 10px;
@@ -51,6 +50,33 @@ const ExpandButton = styled.button`
   justify-content: center;
 
   cursor: pointer;
+`;
+
+const PreviewActions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-top: 20px;
+`;
+
+const CircleAction = styled.button`
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  color: white;
+  font-size: 18px;
+
+  transition: 0.2s;
 `;
 
 const Wrapper = styled.div`
@@ -211,9 +237,9 @@ const FileInput = styled.input`
 const IconButton = styled.label`
   width: 52px;
   height: 52px;
-  
+
   border: none;
- 
+
   color: #4f6cff;
   display: flex;
   align-items: center;
@@ -250,8 +276,8 @@ const SendButton = styled.button`
   font-size: 20px;
   cursor: pointer;
   border-radius: 12px;
- 
-   color: #4f6cff;
+
+  color: #4f6cff;
   box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
   transition: 0.2s ease;
 
@@ -265,7 +291,7 @@ const SendButton = styled.button`
     cursor: not-allowed;
     transform: none;
   }
-`; 
+`;
 
 const ErrorBox = styled.div`
   margin: 40px auto;
@@ -687,6 +713,7 @@ function Tchat() {
   const firstLoadRef = useRef(true);
 
   const audioRefs = useRef({});
+  const previewAudioRef = useRef(null);
 
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
@@ -733,6 +760,9 @@ function Tchat() {
   const [notification, setNotification] = useState("");
   const [messageRepondu, setMessageRepondu] = useState(null);
   const [swipeOffsets, setSwipeOffsets] = useState({});
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
   // swipe pour messages
 
@@ -822,6 +852,57 @@ function Tchat() {
 
   // audio
 
+  const togglePreviewAudio = () => {
+    const audio = previewAudioRef.current;
+
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio.play();
+      setIsPreviewPlaying(true);
+    } else {
+      audio.pause();
+      setIsPreviewPlaying(false);
+    }
+  };
+
+  const supprimerPreviewAudio = () => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+    }
+
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+
+    setIsPreviewPlaying(false);
+    setAudioBlob(null);
+    setAudioUrl("");
+    setAudioDuration(0);
+  };
+
+  const formatRecordingTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  useEffect(() => {
+    if (!isRecording) {
+      setRecordingTime(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!draggingAudioId) return;
@@ -904,6 +985,7 @@ function Tchat() {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: mimeType,
         });
+
         const duration = Math.max(
           1,
           Math.round((Date.now() - recordingStartRef.current) / 1000),
@@ -911,7 +993,13 @@ function Tchat() {
 
         stream.getTracks().forEach((track) => track.stop());
 
-        await sendAudioMessage(audioBlob, duration);
+        setAudioBlob(audioBlob);
+        setAudioUrl(URL.createObjectURL(audioBlob));
+
+        // (optionnel mais conseillé)
+        setAudioDuration?.(duration);
+
+        setIsRecording(false);
       };
 
       recordingStartRef.current = Date.now();
@@ -2148,64 +2236,93 @@ function Tchat() {
       )}
 
       {notification && <NotificationToast>{notification}</NotificationToast>}
+
       {isRecording && (
         <RecordingModal>
           <RecordingDot />
 
-          <strong>Enregistrement...</strong>
+          <strong>{formatRecordingTime(recordingTime)}</strong>
 
-          <span>Relâchez pour envoyer</span>
+          <span>Relâchez pour terminer</span>
         </RecordingModal>
       )}
       <InputContainer>
-        <IconButton htmlFor="file-upload">
-          <FaImage />
-        </IconButton>
+  {audioBlob ? (
+    <>
+    <audio
+      ref={previewAudioRef}
+      onEnded={() => setIsPreviewPlaying(false)}
+    >
+      <source src={audioUrl} type="audio/webm" />
+    </audio>
+    <PreviewActions>
+      <CircleAction onClick={supprimerPreviewAudio}>
+        <FaTrash />
+      </CircleAction>
 
-        <FileInput
-          id="file-upload"
-          type="file"
-          accept="image/*,video/*"
-          onChange={handleFileChange}
-        />
+      <CircleAction onClick={togglePreviewAudio}>
+        {isPreviewPlaying ? <FaPause /> : <FaPlay />}
+      </CircleAction>
 
-        <Input
-          placeholder="Écrire un message..."
-          value={newMessage}
-          onChange={(e) => {
-            setNewMessage(e.target.value);
+      <span>{formatRecordingTime(audioDuration)}</span>
 
-            if (!typingTimeoutRef.current) {
-              socket.emit("typing", { to: id });
-            }
+      <CircleAction
+        onClick={() => sendAudioMessage(audioBlob, audioDuration)}
+      >
+        <FaPaperPlane />
+      </CircleAction>
+    </PreviewActions>
+     </>
+  ) : (
+    <>
+      <IconButton htmlFor="file-upload">
+        <FaImage />
+      </IconButton>
 
-            clearTimeout(typingTimeoutRef.current);
+      <FileInput
+        id="file-upload"
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleFileChange}
+      />
 
-            typingTimeoutRef.current = setTimeout(() => {
-              typingTimeoutRef.current = null;
+      <Input
+        placeholder="Écrire un message..."
+        value={newMessage}
+        onChange={(e) => {
+          setNewMessage(e.target.value);
 
-              // 🔥 NOUVEAU : stop typing
-              socket.emit("stopTyping", { to: id });
-            }, 2000);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
+          if (!typingTimeoutRef.current) {
+            socket.emit("typing", { to: id });
+          }
 
-        {newMessage.trim() || selectedFile || audioBlob ? (
-          <SendButton onClick={sendMessage} disabled={sending}>
-            <FaPaperPlane />
-          </SendButton>
-        ) : (
-          <SendButton
-            onPointerDown={startRecording}
-            onPointerUp={stopRecording}
-            onPointerLeave={stopRecording}
-            onPointerCancel={stopRecording}
-          >
-            <FaMicrophone />
-          </SendButton>
-        )}
-      </InputContainer>
+          clearTimeout(typingTimeoutRef.current);
+
+          typingTimeoutRef.current = setTimeout(() => {
+            typingTimeoutRef.current = null;
+            socket.emit("stopTyping", { to: id });
+          }, 2000);
+        }}
+        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+      />
+
+      {newMessage.trim() || selectedFile ? (
+        <SendButton onClick={sendMessage} disabled={sending}>
+          <FaPaperPlane />
+        </SendButton>
+      ) : (
+        <SendButton
+          onPointerDown={startRecording}
+          onPointerUp={stopRecording}
+          onPointerLeave={stopRecording}
+          onPointerCancel={stopRecording}
+        >
+          <FaMicrophone />
+        </SendButton>
+      )}
+    </>
+  )}
+</InputContainer>
     </Wrapper>
   );
 }
