@@ -22,7 +22,6 @@ import { socket } from "../../socket";
 
 import { useTchatSocket } from "../../hooks/useTchatSocket";
 import {
-  getMonProfil,
   getProfilCible,
   getMessagesConversation,
   envoyerMessageApi,
@@ -32,7 +31,7 @@ import {
 import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
-import Profilpublic from "./../profilpublic/index";
+
 
 const ExpandButton = styled.button`
   position: absolute;
@@ -246,10 +245,13 @@ const Input = styled.input`
 
 const SendButton = styled.button`
   width: 52px;
+  height: 52px;
   border: none;
-  color:  #6f88ff;
   font-size: 20px;
   cursor: pointer;
+  border-radius: 12px;
+ 
+   color: #4f6cff;
   box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
   transition: 0.2s ease;
 
