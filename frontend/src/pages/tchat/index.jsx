@@ -73,7 +73,7 @@ const CircleAction = styled.button`
 
   cursor: pointer;
 
-  color: white;
+  color: black;
   font-size: 18px;
 
   transition: 0.2s;
@@ -645,6 +645,7 @@ const ReplyIconVisible = styled.div`
 
   position: absolute;
   left: 10px;
+  
 
   font-size: 20px;
 `;
