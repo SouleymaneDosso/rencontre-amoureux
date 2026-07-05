@@ -1919,8 +1919,8 @@ const cancelCall = ()=>{
 
 const rejectCall = () => {
   socket.emit("rejectCall", {
-    to: id,
-    from: monProfilId,
+    to: monProfilId,
+    from: profilCible?._id,
   });
   setIncomingCall(false);
   setCalling(false)
