@@ -63,6 +63,16 @@ socket.on("cancelCall", ({to, from})=>{
   } 
 })
 
+socket.on("rejectCall", ({ to, from }) => {
+  const receiverSocketId = onlineUsers.get(to);
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("callRejected", {
+      from,
+    });
+  }
+});
+
 
   socket.on("typing", ({to})=>{
     const receiverSocketId = onlineUsers.get(to);
