@@ -68,7 +68,8 @@ socket.on("rejectCall", ({ to, from }) => {
 
   if (receiverSocketId) {
     io.to(receiverSocketId).emit("callRejected", {
-      from,
+    from,
+    to,
     });
   }
 });
