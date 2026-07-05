@@ -46,12 +46,16 @@ io.on("connection", (socket) => {
   socket.on("callUser", ({ to, from }) => {
   const receiverSocketId = onlineUsers.get(to);
 
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("incomingCall", {
-      from,
-      to,
-    });
-  }
+  if (!receiverSocketId) return;
+
+  io.to(receiverSocketId).emit("incomingCall", {
+    from: {
+      id: from.id || from,
+      pseudo: from.pseudo || "Utilisateur",
+      avatar: from.avatar || null,
+    },
+    to,
+  });
 });
 
   socket.on("typing", ({to})=>{
