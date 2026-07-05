@@ -1923,6 +1923,7 @@ const rejectCall = () => {
     from: monProfilId,
   });
   setIncomingCall(false);
+  setCalling(false)
 };
 
   // supprimer messages
@@ -2047,7 +2048,7 @@ const rejectCall = () => {
         <CallBox>
           <h3>📞 Appel entrant</h3>
 
-          <p>{incomingCall.from.pseudo} vous appelle</p>
+          <p>{profilCible?.pseudo} vous appelle</p>
 
           {incomingCall.from.avatar && (
             <Avatar
