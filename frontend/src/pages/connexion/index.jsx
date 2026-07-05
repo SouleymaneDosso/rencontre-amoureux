@@ -2,12 +2,12 @@ import styled from "styled-components";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+
 const Page = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-
   font-family: "Poppins", sans-serif;
   background-color: #f5f5f5;
 `;
@@ -47,6 +47,11 @@ const Logo = styled.img`
   height: auto;
   margin-bottom: 20px;
   border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  &:hover{
+    transform: scale(1.05);
+    transition: transform 0.3s ease-in-out;}
 `;
 const Conteneurimage = styled.div`
   display: flex;
