@@ -1615,8 +1615,8 @@ const acceptCall = async () => {
 
         return [...uniques, ...prev];
       });
-      setPage(nextPage);
-
+    setPage(nextPage);
+  
       requestAnimationFrame(() => {
         const container = containerRef.current;
 
