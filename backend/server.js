@@ -54,6 +54,16 @@ io.on("connection", (socket) => {
   }
 });
 
+socket.on("cancelCall", ({to})=>{
+  const receiverSocketId = onlineUsers.get(to);
+  if(receiverSocketId){
+    io.to(receiverSocketId).emit("callCancelled",{
+      to,
+    })
+  } 
+})
+
+
   socket.on("typing", ({to})=>{
     const receiverSocketId = onlineUsers.get(to);
     if(receiverSocketId){
