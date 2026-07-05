@@ -777,13 +777,13 @@ const CallModal = styled.div`
   position: fixed;
   inset: 0;
 
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0,0,0,.6);
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
-  z-index: 20000;
+  z-index:20000;
 `;
 
 const CallBox = styled.div`
@@ -891,9 +891,9 @@ function Tchat() {
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
-  const monProfil = JSON.parse(localStorage.getItem("monProfil"));
+ const monProfil = JSON.parse(localStorage.getItem("monProfil"));
 
-  const [monProfilId] = useState(monProfil?._id || null);
+const [monProfilId] = useState(monProfil?._id || null);
   const [profilCible, setProfilCible] = useState(
     location.state?.profilCible || null,
   );
@@ -1024,25 +1024,30 @@ function Tchat() {
   };
   // fin modal message
 
-  //appelles//
 
-  const acceptCall = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
 
-      localStreamRef.current = stream;
+//appelles//
 
-      setIncomingCall(null);
+const acceptCall = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-      console.log("🎤 Micro autorisé :", stream);
-    } catch (error) {
-      console.error("Accès au micro refusé :", error);
-    }
-  };
+    localStreamRef.current = stream;
 
-  // finAPPelle
+    setIncomingCall(null);
+
+    console.log("🎤 Micro autorisé :", stream);
+
+  } catch (error) {
+    console.error("Accès au micro refusé :", error);
+  }
+};
+
+// finAPPelle
+
+
 
   // audio
 
@@ -1313,21 +1318,22 @@ function Tchat() {
     }
   };
 
+
   useEffect(() => {
-    const handleIncomingCall = ({ from }) => {
-      console.log("📞 Appel entrant de :", from);
+  const handleIncomingCall = ({ from }) => {
+    console.log("📞 Appel entrant de :", from);
 
-      setIncomingCall({
-        from,
-      });
-    };
+    setIncomingCall({
+      from,
+    });
+  };
 
-    socket.on("incomingCall", handleIncomingCall);
+  socket.on("incomingCall", handleIncomingCall);
 
-    return () => {
-      socket.off("incomingCall", handleIncomingCall);
-    };
-  }, []);
+  return () => {
+    socket.off("incomingCall", handleIncomingCall);
+  };
+}, []);
 
   // fin audio
 
@@ -1609,8 +1615,8 @@ function Tchat() {
 
         return [...uniques, ...prev];
       });
-      setPage(nextPage);
-
+    setPage(nextPage);
+  
       requestAnimationFrame(() => {
         const container = containerRef.current;
 
@@ -1889,35 +1895,35 @@ function Tchat() {
     }
   };
 
-  const startCall = () => {
-    setCalling(true);
+const startCall = () => {
+  setCalling(true);
 
-    socket.emit("callUser", {
-      to: id,
-      from: {
-        id: monProfilId,
-        pseudo: profilCible?.pseudo,
-        avatar: profilCible?.avatar?.url,
-      },
-    });
-  };
+  socket.emit("callUser", {
+    to: id,
+    from: {
+      id: monProfilId,
+      pseudo: profilCible?.pseudo,
+      avatar: profilCible?.avatar?.url,
+    },
+  });
+};
 
-  const cancelCall = () => {
-    setCalling(false);
-    socket.emit("cancelCall", {
-      to: id,
-      from: monProfilId,
-    });
-  };
+const cancelCall = ()=>{
+  setCalling(false);
+  socket.emit("cancelCall", {
+    to: id,
+     from: monProfilId,
+  }); 
+}
 
-  const rejectCall = () => {
-    socket.emit("rejectCall", {
-      to: incomingCall.from.id,
-      from: monProfilId,
-    });
-    setCalling(false);
-    setIncomingCall(false);
-  };
+
+const rejectCall = () => {
+  socket.emit("rejectCall", {
+    to: id,
+    from: monProfilId,
+  });
+  setIncomingCall(false);
+};
 
   // supprimer messages
   const supprimemoi = async (messageId) => {
@@ -1992,6 +1998,7 @@ function Tchat() {
       block: "end",
     });
   }, [messages]);
+  
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -2030,51 +2037,58 @@ function Tchat() {
     );
   }
 
+  
+
   return (
     <Wrapper>
-      {incomingCall && (
-        <CallModal>
-          <CallBox>
-            <h3>📞 Appel entrant</h3>
 
-            <p>{incomingCall.from.pseudo} vous appelle</p>
+    {incomingCall && (
+      <CallModal>
+        <CallBox>
+          <h3>📞 Appel entrant</h3>
 
-            {incomingCall.from.avatar && (
-              <Avatar
-                src={incomingCall.from.avatar}
-                alt={incomingCall.from.pseudo}
-                style={{ width: "50px", height: "50px", borderRadius: "50%" }}
-              />
-            )}
+          <p>{incomingCall.from.pseudo} vous appelle</p>
 
-            <CallActions>
-              <DeclineButton onClick={rejectCall}>Refuser</DeclineButton>
+          {incomingCall.from.avatar && (
+            <Avatar
+              src={incomingCall.from.avatar}
+              alt={incomingCall.from.pseudo}
+              style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+            />
+          )}
 
-              <AcceptButton onClick={acceptCall}>Accepter</AcceptButton>
-            </CallActions>
-          </CallBox>
-        </CallModal>
-      )}
-
-      {calling && (
-        <CallModal>
-          <CallBox>
-            <CallingIcon>
-              <FaPhoneAlt />
-            </CallingIcon>
-
-            <h3>Appel en cours...</h3>
-
-            <CallStatus>
-              Appel de <strong>{profilCible?.pseudo}</strong>
-            </CallStatus>
-
-            <DeclineButton onClick={() => setCalling(false)}>
-              Annuler
+          <CallActions>
+            <DeclineButton onClick={rejectCall}>
+              Refuser
             </DeclineButton>
-          </CallBox>
-        </CallModal>
-      )}
+
+            <AcceptButton onClick={acceptCall}>
+              Accepter
+            </AcceptButton>
+          </CallActions>
+        </CallBox>
+      </CallModal>
+    )}
+
+   {calling && (
+  <CallModal>
+    <CallBox>
+      <CallingIcon>
+        <FaPhoneAlt />
+      </CallingIcon>
+
+      <h3>Appel en cours...</h3>
+
+      <CallStatus>
+        Appel de <strong>{profilCible?.pseudo}</strong>
+      </CallStatus>
+
+      <DeclineButton onClick={() => setCalling(false)}>
+        Annuler
+      </DeclineButton>
+    </CallBox>
+  </CallModal>
+)}
       <Header>
         <BackButton onClick={() => navigate(-1)}>
           <FaArrowLeft />
