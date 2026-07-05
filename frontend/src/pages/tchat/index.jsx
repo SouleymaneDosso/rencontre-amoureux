@@ -776,11 +776,14 @@ const RecordingDot = styled.div`
 const CallModal = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0,0,0,.6);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index:20000;
 `;
 
 const CallBox = styled.div`
@@ -815,6 +818,49 @@ const DeclineButton = styled.button`
   cursor: pointer;
 `;
 
+const CallingIcon = styled.div`
+  width: 80px;
+  height: 80px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 32px;
+
+  animation: pulse 1.2s infinite;
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+    }
+
+    70% {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 18px rgba(34, 197, 94, 0);
+    }
+
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+`;
+const CallStatus = styled.p`
+  margin-top: 12px;
+  margin-bottom: 24px;
+
+  color: #6b7280;
+  font-size: 15px;
+`;
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -836,6 +882,7 @@ function Tchat() {
   const previewProgressRef = useRef(null);
   const audioRefs = useRef({});
   const previewAudioRef = useRef(null);
+  const localStreamRef = useRef(null);
 
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
@@ -976,6 +1023,31 @@ function Tchat() {
     }
   };
   // fin modal message
+
+
+
+//appelles//
+
+const acceptCall = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+
+    localStreamRef.current = stream;
+
+    setIncomingCall(null);
+
+    console.log("🎤 Micro autorisé :", stream);
+
+  } catch (error) {
+    console.error("Accès au micro refusé :", error);
+  }
+};
+
+// finAPPelle
+
+
 
   // audio
 
@@ -1905,6 +1977,7 @@ function Tchat() {
       block: "end",
     });
   }, [messages]);
+  
 
   const isProfilCibleOnline = onlineUsers.includes(id);
 
@@ -1967,6 +2040,26 @@ function Tchat() {
         </CallBox>
       </CallModal>
     )}
+
+   {calling && (
+  <CallModal>
+    <CallBox>
+      <CallingIcon>
+        <FaPhoneAlt />
+      </CallingIcon>
+
+      <h3>Appel en cours...</h3>
+
+      <CallStatus>
+        Appel de <strong>{profilCible?.pseudo}</strong>
+      </CallStatus>
+
+      <DeclineButton onClick={() => setCalling(false)}>
+        Annuler
+      </DeclineButton>
+    </CallBox>
+  </CallModal>
+)}
       <Header>
         <BackButton onClick={() => navigate(-1)}>
           <FaArrowLeft />
