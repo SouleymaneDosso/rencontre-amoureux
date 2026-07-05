@@ -23,6 +23,10 @@ const Bienvenue = styled.h2`
   overflow: hidden;
   color: white;
   border-radius: 8px;
+
+@media (max-width: 768px) {
+  font-size: 20px;
+}
 `;
 const Logo = styled.img`
   width: 250px;
