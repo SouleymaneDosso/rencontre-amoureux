@@ -1916,6 +1916,16 @@ const cancelCall = ()=>{
   }); 
 }
 
+
+const rejectCall = () => {
+  socket.emit("rejectCall", {
+    to: incomingCall.from.id,
+    from: monProfilId,
+  });
+
+  setIncomingCall(null);
+};
+
   // supprimer messages
   const supprimemoi = async (messageId) => {
     try {
@@ -2049,7 +2059,7 @@ const cancelCall = ()=>{
           )}
 
           <CallActions>
-            <DeclineButton onClick={() => cancelCall()}>
+            <DeclineButton onClick={rejectCall}>
               Refuser
             </DeclineButton>
 
