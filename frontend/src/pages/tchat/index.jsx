@@ -773,6 +773,47 @@ const RecordingDot = styled.div`
 
   animation: ${blink} 1s infinite;
 `;
+const CallModal = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CallBox = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 300px;
+`;
+
+const CallActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+`;
+
+const AcceptButton = styled.button`
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+`;
+
+const DeclineButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+`;
 
 function Tchat() {
   const { id } = useParams();
@@ -848,6 +889,7 @@ function Tchat() {
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
   const [draggingPreview, setDraggingPreview] = useState(false);
   const [calling, setCalling] = useState(false);
+  const [incomingCall, setIncomingCall] = useState(null);
 
   // swipe pour messages
 
@@ -1203,6 +1245,23 @@ function Tchat() {
       setSending(false);
     }
   };
+
+
+  useEffect(() => {
+  const handleIncomingCall = ({ from }) => {
+    console.log("📞 Appel entrant de :", from);
+
+    setIncomingCall({
+      from,
+    });
+  };
+
+  socket.on("incomingCall", handleIncomingCall);
+
+  return () => {
+    socket.off("incomingCall", handleIncomingCall);
+  };
+}, []);
 
   // fin audio
 
@@ -1884,8 +1943,30 @@ function Tchat() {
     );
   }
 
+  
+
   return (
     <Wrapper>
+
+    {incomingCall && (
+      <CallModal>
+        <CallBox>
+          <h3>📞 Appel entrant</h3>
+
+          <p>{incomingCall.from} vous appelle</p>
+
+          <CallActions>
+            <DeclineButton onClick={() => setIncomingCall(null)}>
+              Refuser
+            </DeclineButton>
+
+            <AcceptButton onClick={acceptCall}>
+              Accepter
+            </AcceptButton>
+          </CallActions>
+        </CallBox>
+      </CallModal>
+    )}
       <Header>
         <BackButton onClick={() => navigate(-1)}>
           <FaArrowLeft />
