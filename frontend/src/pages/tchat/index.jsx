@@ -2050,10 +2050,10 @@ const rejectCall = () => {
 
           <p>{profilCible?.pseudo} vous appelle</p>
 
-          {incomingCall.from.avatar && (
+          {profilCible?.avatar && (
             <Avatar
-              src={incomingCall.from.avatar}
-              alt={incomingCall.from.pseudo}
+              src={profilCible.avatar.url}
+              alt={profilCible.pseudo}
               style={{ width: "50px", height: "50px", borderRadius: "50%" }}
             />
           )}
