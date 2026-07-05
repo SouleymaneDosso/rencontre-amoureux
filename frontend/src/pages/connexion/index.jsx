@@ -12,6 +12,20 @@ const Page = styled.div`
   background-color: #f5f5f5;
 `;
 
+const Input = styled.input`
+  width: 50%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #4f6cff;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+`;
+
 const Bienvenue = styled.h2`
   margin-bottom: 20px;
   padding: 10px;
@@ -32,6 +46,7 @@ const Logo = styled.img`
   width: 250px;
   height: auto;
   margin-bottom: 20px;
+  border-radius: 8px;
 `;
 const Conteneurimage = styled.div`
   display: flex;
@@ -88,14 +103,14 @@ function Connexion() {
         </Conteneurimage>
 
         <form onSubmit={connexion}>
-          <input
+          <Input
             type="email"
             placeholder="Entrer votre email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <input
+          <Input
             type="password"
             placeholder="Entrer votre mot de passe"
             value={code}
