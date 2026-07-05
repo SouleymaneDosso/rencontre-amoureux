@@ -263,10 +263,10 @@ const BioBox = styled.section`
   color: black;
   font-size: 15px;
   line-height: 1.7;
-  color: #4f6cff;
+  color: #1f2a44;
 
   padding: 3px;
-  border: 2px solid #4f6cff;
+
 
   border-radius: 8px;
     transition: border-width 0.3s ease;
