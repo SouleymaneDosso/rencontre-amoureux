@@ -54,11 +54,11 @@ io.on("connection", (socket) => {
   }
 });
 
-socket.on("cancelCall", ({to})=>{
+socket.on("cancelCall", ({to, from})=>{
   const receiverSocketId = onlineUsers.get(to);
   if(receiverSocketId){
     io.to(receiverSocketId).emit("callCancelled",{
-      to,
+      from,
     })
   } 
 })
