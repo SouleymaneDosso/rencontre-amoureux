@@ -412,6 +412,7 @@ function Conversations() {
 
         setMonProfilId(monProfilData._id);
         localStorage.setItem("monProfilId", monProfilData._id);
+       localStorage.setItem("monProfil", JSON.stringify(monProfilData));
         // 2) récupérer les conversations
         const conversationsRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
@@ -503,7 +504,6 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
-            
 
             return (
               <Card

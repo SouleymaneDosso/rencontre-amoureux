@@ -891,9 +891,9 @@ function Tchat() {
 
   const [messages, setMessages] = useState(location.state?.messages || []);
   const [newMessage, setNewMessage] = useState("");
-  const [monProfilId, setMonProfilId] = useState(() =>
-    localStorage.getItem("monProfilId"),
-  );
+ const monProfil = JSON.parse(localStorage.getItem("monProfil"));
+
+const [monProfilId] = useState(monProfil?._id || null);
   const [profilCible, setProfilCible] = useState(
     location.state?.profilCible || null,
   );
@@ -1895,12 +1895,16 @@ const acceptCall = async () => {
     }
   };
 
-  const startCall = () => {
+const startCall = () => {
   setCalling(true);
 
   socket.emit("callUser", {
     to: id,
-    from: monProfilId,
+    from: {
+      id: monProfilId,
+      pseudo: profilCible?.pseudo,
+      avatar: profilCible?.avatar?.url,
+    },
   });
 };
 
@@ -2026,7 +2030,7 @@ const acceptCall = async () => {
         <CallBox>
           <h3>📞 Appel entrant</h3>
 
-          <p>{incomingCall.from} vous appelle</p>
+          <p>{incomingCall.from.pseudo} vous appelle</p>
 
           <CallActions>
             <DeclineButton onClick={() => setIncomingCall(null)}>
