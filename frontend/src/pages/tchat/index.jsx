@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
+import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
 import {
   FaTrash,
@@ -32,6 +33,33 @@ import {
 import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
+
+const HeaderActions = styled.div`
+  margin-left: auto;
+`;
+
+const CallButton = styled.button`
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  background: #22c55e;
+  color: white;
+
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+`;
 
 const ExpandButton = styled.button`
   position: absolute;
@@ -819,6 +847,7 @@ function Tchat() {
   const [previewProgress, setPreviewProgress] = useState(0);
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
   const [draggingPreview, setDraggingPreview] = useState(false);
+  const [calling, setCalling] = useState(false);
 
   // swipe pour messages
 
@@ -1735,6 +1764,15 @@ function Tchat() {
     }
   };
 
+  const startCall = () => {
+  setCalling(true);
+
+  socket.emit("callUser", {
+    to: id,
+    from: monProfilId,
+  });
+};
+
   // supprimer messages
   const supprimemoi = async (messageId) => {
     try {
@@ -1881,6 +1919,11 @@ function Tchat() {
             )}
           </HeaderSubtitle>
         </HeaderInfo>
+        <HeaderActions>
+          <CallButton onClick={startCall}>
+            <FaPhoneAlt />
+          </CallButton>
+        </HeaderActions>
       </Header>
 
       <MessagesContainer
