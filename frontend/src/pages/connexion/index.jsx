@@ -7,7 +7,7 @@ const Page = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+
   font-family: "Poppins", sans-serif;
   background-color: #f5f5f5;
 `;
