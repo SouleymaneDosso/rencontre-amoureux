@@ -2032,6 +2032,14 @@ const startCall = () => {
 
           <p>{incomingCall.from.pseudo} vous appelle</p>
 
+          {incomingCall.from.avatar && (
+            <Avatar
+              src={incomingCall.from.avatar}
+              alt={incomingCall.from.pseudo}
+              style={{ width: "50px", height: "50px", borderRadius: "50%" }}
+            />
+          )}
+
           <CallActions>
             <DeclineButton onClick={() => setIncomingCall(null)}>
               Refuser
