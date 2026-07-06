@@ -1934,15 +1934,14 @@ function Tchat() {
   }, []);
 
   useEffect(() => {
-    const handleCallCanceled = () => {
+    const handleCancel = () => {
       setIncomingCall(null);
-      setCalling(false);
     };
 
-    socket.on("callCanceled", handleCallCanceled);
+    socket.on("callCancelled", handleCancel);
 
     return () => {
-      socket.off("callCanceled", handleCallCanceled);
+      socket.off("callCancelled", handleCancel);
     };
   }, []);
 
