@@ -1933,6 +1933,19 @@ function Tchat() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleCallCanceled = () => {
+      setIncomingCall(null);
+      setCalling(false);
+    };
+
+    socket.on("callCanceled", handleCallCanceled);
+
+    return () => {
+      socket.off("callCanceled", handleCallCanceled);
+    };
+  }, []);
+
   // supprimer messages
   const supprimemoi = async (messageId) => {
     try {
