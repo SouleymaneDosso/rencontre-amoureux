@@ -28,6 +28,7 @@ import {
   getMessagesConversation,
   envoyerMessageApi,
   marquerMessagesCommeLusApi,
+   creerMessageAppel,
 } from "../../services/tchatApi";
 
 import { useLocation } from "react-router-dom";
@@ -1902,13 +1903,27 @@ function Tchat() {
     });
   };
 
-  const cancelCall = () => {
-    setCalling(false);
+const cancelCall = async () => {
+  setCalling(false);
+
+  try {
+    const message = await creerMessageAppel(token, {
+      conversationId: messages[0]?.conversationId,
+      destinataire: id,
+      status: "cancelled",
+    });
+
+    socket.emit("sendMessage", message);
+
     socket.emit("cancelCall", {
       to: id,
       from: monProfilId,
     });
-  };
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const rejectCall = () => {
     socket.emit("rejectCall", {
@@ -1944,6 +1959,9 @@ function Tchat() {
       socket.off("callCancelled", handleCancel);
     };
   }, []);
+
+
+  
 
   // supprimer messages
   const supprimemoi = async (messageId) => {

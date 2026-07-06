@@ -91,3 +91,22 @@ export const envoyerMessageApi = async (profilId, token, formData) => {
 
   return data;
 };
+
+export const creerMessageAppel = async (token, data) => {
+  const res = await fetch(`${API_URL}/api/tchat/call`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.message);
+  }
+
+  return result;
+};
