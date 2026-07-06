@@ -33,14 +33,14 @@ const Bienvenue = styled.h2`
   font-size: 24px;
   font-weight: bold;
   font-family: "Poppins", sans-serif;
-  background-color: #4f6cff;
+  background-color: #b41870;
   overflow: hidden;
   color: white;
   border-radius: 8px;
 
-@media (max-width: 768px) {
-  font-size: 20px;
-}
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
 `;
 const Logo = styled.img`
   width: 250px;
@@ -49,9 +49,10 @@ const Logo = styled.img`
   border-radius: 70px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease-in-out;
-  &:hover{
+  &:hover {
     transform: scale(1.05);
-    transition: transform 0.3s ease-in-out;}
+    transition: transform 0.3s ease-in-out;
+  }
 `;
 
 const Conteneurimage = styled.div`
@@ -65,6 +66,42 @@ function Connexion() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const [avatar, setAvatar] = useState(null);
+
+
+ const fetchAvatar = async (e) => {
+    const file = e.target.files[0];
+
+    const formdata = new FormData();
+    formdata.append("avatar", file);
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/avatar/${profil._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formdata,
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message);
+
+      setProfil(data);
+    } catch (error) {
+      console.error(error.message);
+    }
+
+    e.target.value = "";
+  };
+
+
+
   const connexion = async (e) => {
     e.preventDefault();
 
@@ -107,6 +144,10 @@ function Connexion() {
         <Conteneurimage>
           <Logo src="logoBabiTendre.png" alt="logo Babitendre" />
         </Conteneurimage>
+
+        <section>
+          <p>Trouvez votre âme sœur avec BabiTendre</p>
+        </section>
 
         <form onSubmit={connexion}>
           <Input
