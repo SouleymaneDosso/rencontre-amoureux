@@ -1919,13 +1919,13 @@ const cancelCall = ()=>{
 
 const rejectCall = () => {
   socket.emit("rejectCall", {
-    to: profilCible?._id,
-    from: monProfilId,
-  });
+    to: monProfilId,
+    from: profilCible,
+  }); 
   setIncomingCall(false);
   setCalling(false)
 };
-
+ 
   // supprimer messages
   const supprimemoi = async (messageId) => {
     try {
