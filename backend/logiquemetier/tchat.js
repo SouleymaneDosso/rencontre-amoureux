@@ -509,3 +509,34 @@ exports.marquerMessagesCommeLus = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
+
+exports.createCallMessage = async (req, res) => {
+  try {
+    const expediteur = req.auth.userId;
+
+    const {
+      destinataire,
+      conversationId,
+      status,
+      duration,
+    } = req.body;
+
+    const message = await Message.create({
+      conversationId,
+      expediteur,
+      destinataire,
+      type: "call",
+
+      call: {
+        status,
+        duration: duration || 0,
+      },
+    });
+
+    res.status(201).json(message);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

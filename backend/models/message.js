@@ -25,7 +25,7 @@ const messageSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["text", "image", "video", "audio", "system"],
+      enum: ["text", "image", "video", "audio", "system", "call"],
       default: "text",
     },
 
@@ -65,6 +65,25 @@ const messageSchema = new mongoose.Schema(
         default: "",
       },
     },
+
+    call: {
+  status: {
+    type: String,
+    enum: [
+      "cancelled",
+      "rejected",
+      "missed",
+      "accepted",
+      "ended",
+    ],
+    default: null,
+  },
+
+  duration: {
+    type: Number,
+    default: 0,
+  },
+},
 
     statut: {
       type: String,
