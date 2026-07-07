@@ -1925,14 +1925,28 @@ const cancelCall = async () => {
   }
 };
 
-  const rejectCall = () => {
+const rejectCall = async () => {
+  try {
+    const message = await creerMessageAppel(token, {
+      conversationId: messages[0]?.conversationId,
+      destinataire: incomingCall.from.id,
+      status: "rejected",
+    });
+
+    socket.emit("sendMessage", message);
+
     socket.emit("rejectCall", {
       to: incomingCall.from.id,
       from: monProfilId,
     });
 
     setIncomingCall(null);
-  };
+    setCalling(false);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   useEffect(() => {
     const handleRejected = () => {
