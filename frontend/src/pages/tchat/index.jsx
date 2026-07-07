@@ -4,6 +4,11 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
+import {
+  FaPhoneSlash,
+} from "react-icons/fa";
+import { MdCallMade, MdCallReceived } from "react-icons/md";
+
 import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
 import {
@@ -28,7 +33,7 @@ import {
   getMessagesConversation,
   envoyerMessageApi,
   marquerMessagesCommeLusApi,
-   creerMessageAppel,
+  creerMessageAppel,
 } from "../../services/tchatApi";
 
 import { useLocation } from "react-router-dom";
@@ -862,6 +867,66 @@ const CallStatus = styled.p`
   color: #6b7280;
   font-size: 15px;
 `;
+const CallMessage = styled.div`
+display:flex;
+align-items:center;
+gap:12px;
+`;
+
+const CallIcon = styled.div`
+width:42px;
+height:42px;
+
+border-radius:50%;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:18px;
+
+background:${({$status})=>{
+
+if($status==="missed") return "#fee2e2";
+
+if($status==="rejected") return "#fee2e2";
+
+if($status==="cancelled") return "#f3f4f6";
+
+return "#dcfce7";
+
+}};
+
+color:${({$status})=>{
+
+if($status==="missed") return "#dc2626";
+
+if($status==="rejected") return "#dc2626";
+
+if($status==="cancelled") return "#6b7280";
+
+return "#16a34a";
+
+}};
+`;
+
+const CallInfos = styled.div`
+display:flex;
+flex-direction:column;
+`;
+const CallTitle = styled.div`
+font-weight:600;
+font-size:15px;
+`;
+
+const CallDuration = styled.div`
+font-size:12px;
+opacity:.7;
+margin-top:3px;
+`;
+
+
+
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -1903,50 +1968,48 @@ function Tchat() {
     });
   };
 
-const cancelCall = async () => {
-  setCalling(false);
-
-  try {
-    const message = await creerMessageAppel(token, {
-      conversationId: messages[0]?.conversationId,
-      destinataire: id,
-      status: "cancelled",
-    });
-
-    socket.emit("sendMessage", message);
-
-    socket.emit("cancelCall", {
-      to: id,
-      from: monProfilId,
-    });
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const rejectCall = async () => {
-  try {
-    const message = await creerMessageAppel(token, {
-      conversationId: messages[0]?.conversationId,
-      destinataire: incomingCall.from.id,
-      status: "rejected",
-    });
-
-    socket.emit("sendMessage", message);
-
-    socket.emit("rejectCall", {
-      to: incomingCall.from.id,
-      from: monProfilId,
-    });
-
-    setIncomingCall(null);
+  const cancelCall = async () => {
     setCalling(false);
 
-  } catch (error) {
-    console.error(error);
-  }
-};
+    try {
+      const message = await creerMessageAppel(token, {
+        conversationId: messages[0]?.conversationId,
+        destinataire: id,
+        status: "cancelled",
+      });
+
+      socket.emit("sendMessage", message);
+
+      socket.emit("cancelCall", {
+        to: id,
+        from: monProfilId,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const rejectCall = async () => {
+    try {
+      const message = await creerMessageAppel(token, {
+        conversationId: messages[0]?.conversationId,
+        destinataire: incomingCall.from.id,
+        status: "rejected",
+      });
+
+      socket.emit("sendMessage", message);
+
+      socket.emit("rejectCall", {
+        to: incomingCall.from.id,
+        from: monProfilId,
+      });
+
+      setIncomingCall(null);
+      setCalling(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const handleRejected = () => {
@@ -1973,9 +2036,6 @@ const rejectCall = async () => {
       socket.off("callCancelled", handleCancel);
     };
   }, []);
-
-
-  
 
   // supprimer messages
   const supprimemoi = async (messageId) => {
@@ -2429,6 +2489,42 @@ const rejectCall = async () => {
                                   : "Message")}
                         </ReplyMessageText>
                       </ReplyMessageContainer>
+                    )}
+
+                    {msg.type === "call" && (
+                      <CallMessage>
+                        <CallIcon $status={msg.call?.status}>
+                          {msg.call?.status === "cancelled" && <FaPhoneSlash />}
+
+                          {msg.call?.status === "rejected" && <FaPhoneSlash />}
+
+                          {msg.call?.status === "missed" && <MdCallReceived />}
+
+                          {msg.call?.status === "accepted" && <MdCallMade />}
+
+                          {msg.call?.status === "ended" && <FaPhoneAlt />}
+                        </CallIcon>
+
+                        <CallInfos>
+                          <CallTitle>
+                            {msg.call?.status === "cancelled" && "Appel annulé"}
+
+                            {msg.call?.status === "rejected" && "Appel refusé"}
+
+                            {msg.call?.status === "missed" && "Appel manqué"}
+
+                            {msg.call?.status === "accepted" && "Appel accepté"}
+
+                            {msg.call?.status === "ended" && "Appel terminé"}
+                          </CallTitle>
+
+                          {msg.call?.duration > 0 && (
+                            <CallDuration>
+                              {formatRecordingTime(msg.call.duration)}
+                            </CallDuration>
+                          )}
+                        </CallInfos>
+                      </CallMessage>
                     )}
                     {msg.contenu && (
                       <MessageText $supprime>{msg.contenu} </MessageText>
