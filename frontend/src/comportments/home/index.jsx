@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import ProfileHero from "../../comportments/home/ProfileHero";
 import Gallery from "./Gallery";
 import InfoCard from "./InfoCard";
+import Interests from "../../comportments/home/Interests";
+import ProfileProgress from "../../comportments/home/ProfileProgress";
 
 const Page = styled.div`
   width: 100%;
@@ -11,33 +13,7 @@ const Page = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 100px;
-`;
-
-const InterestsWrapper = styled.div`
-  margin-top: 25px;
-`;
-
-const SectionTitle = styled.h3`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const ChipsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-`;
-
-const Chip = styled.span`
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid #dce4ff;
-  background: ${({ active }) => (active ? "#eef2ff" : "white")};
-  color: #4f6cff;
-  font-size: 13px;
-  font-weight: 600;
+  margin-top: 70px;
 `;
 
 const Main = styled.main`
@@ -48,13 +24,6 @@ const Main = styled.main`
   @media (max-width: 480px) {
     padding: 0;
   }
-`;
-
-const Card = styled.section`
-  background: white;
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: 0 10px 30px rgba(31, 42, 68, 0.06);
 `;
 
 function Home() {
@@ -92,19 +61,6 @@ function Home() {
       navigate("/connexion");
     }
   }, [token, navigate]);
-
-  const ouvririmage = (index) => {
-    setCurrentIndex(index + 1);
-    setModal(true);
-  };
-
-  const next = () => {
-    setCurrentIndex((prev) => prev + 1);
-  };
-
-  const prev = () => {
-    setCurrentIndex((prev) => prev - 1);
-  };
 
   useEffect(() => {
     if (!photos.length) return;
@@ -301,28 +257,17 @@ function Home() {
           fetchAvatar={fetchAvatar}
         />
 
+         <ProfileProgress
+          progress={progress}
+          message={messageProgress}
+          navigate={navigate}
+          profil={profil}
+        />
+
         <InfoCard profil={profil} />
 
         {/* Affichage des centres d’intérêt */}
-        <Card>
-          <InterestsWrapper>
-            <SectionTitle>Centres d’intérêt</SectionTitle>
-
-            {interet.length > 0 ? (
-              <ChipsContainer>
-                {interet.map((aime) => (
-                  <Chip key={aime} active>
-                    {aime}
-                  </Chip>
-                ))}
-              </ChipsContainer>
-            ) : (
-              <p style={{ fontSize: "13px", color: "#666" }}>
-                Aucun centre d’intérêt.
-              </p>
-            )}
-          </InterestsWrapper>
-        </Card>
+        <Interests interets={interet} />
         <Gallery
           profil={profil}
           uploadMultiple={uploadMultiple}
