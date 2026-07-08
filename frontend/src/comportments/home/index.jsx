@@ -36,6 +36,7 @@ function Home() {
   const [modal, setModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(1);
   const [noTransition, setNoTransition] = useState(false);
+  
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
