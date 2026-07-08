@@ -13,6 +13,7 @@ import {
   Item,
 } from "./Gallery.style";
 
+
 export default function Gallery({
 
   profil,

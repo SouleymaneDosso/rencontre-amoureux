@@ -6,6 +6,7 @@ import Gallery from "./Gallery";
 import InfoCard from "./InfoCard";
 import Interests from "../../comportments/home/Interests";
 import ProfileProgress from "../../comportments/home/ProfileProgress";
+import MatchCard from "../../comportments/home/MatchCard";
 
 const Page = styled.div`
   width: 100%;
@@ -36,8 +37,6 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(1);
   const [noTransition, setNoTransition] = useState(false);
   const navigate = useNavigate();
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
   const token = localStorage.getItem("token");
 
@@ -257,12 +256,14 @@ function Home() {
           fetchAvatar={fetchAvatar}
         />
 
-         <ProfileProgress
+        <ProfileProgress
           progress={progress}
           message={messageProgress}
           navigate={navigate}
           profil={profil}
         />
+
+        <MatchCard profil={profil} />
 
         <InfoCard profil={profil} />
 
@@ -270,8 +271,11 @@ function Home() {
         <Interests interets={interet} />
         <Gallery
           profil={profil}
+          setProfil={setProfil}
           uploadMultiple={uploadMultiple}
           suppression={suppression}
+          fetchAvatar={fetchAvatar}
+          
         />
       </Main>
     </Page>
