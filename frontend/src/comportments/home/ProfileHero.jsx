@@ -1,0 +1,92 @@
+import { FaCamera, FaMapMarkerAlt } from "react-icons/fa";
+
+import {
+  Wrapper,
+  AvatarWrapper,
+  Avatar,
+  CameraButton,
+  Online,
+  Name,
+  City,
+  Bio,
+  Buttons,
+  Button,
+  OutlineButton,
+} from "./ProfileHero.style";
+
+export default function ProfileHero({
+  profil,
+  navigate,
+  fetchAvatar,
+}) {
+  return (
+    <Wrapper>
+
+      <AvatarWrapper>
+
+        <Avatar
+          src={
+            profil.avatar?.url ||
+            "https://i.pravatar.cc/300"
+          }
+        />
+
+        <Online />
+
+        <CameraButton htmlFor="avatarInput">
+          <FaCamera />
+        </CameraButton>
+
+        <input
+          id="avatarInput"
+          type="file"
+          hidden
+          onChange={fetchAvatar}
+        />
+
+      </AvatarWrapper>
+
+      <Name>
+
+        {profil.prenom} {profil.nom}, {profil.age}
+
+      </Name>
+
+      <City>
+
+        <FaMapMarkerAlt />
+
+        {" "}
+
+        {profil.ville}, {profil.pays}
+
+      </City>
+
+      <Bio>
+
+        {profil.bio ||
+          "Ajoutez une biographie pour que les autres puissent mieux vous connaître."}
+
+      </Bio>
+
+      <Buttons>
+
+        <Button
+          onClick={() =>
+            navigate(`/modifier/${profil._id}`)
+          }
+        >
+          Modifier mon profil
+        </Button>
+
+        <OutlineButton>
+
+          Partager mon profil
+
+        </OutlineButton>
+
+      </Buttons>
+
+    </Wrapper>
+  );
+}

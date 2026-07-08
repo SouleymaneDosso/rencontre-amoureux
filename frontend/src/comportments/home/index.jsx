@@ -1,17 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-
-import {
-  FaCamera,
-  FaMapMarkerAlt,
-  FaGlobe,
-  FaBirthdayCake,
-  FaHeart,
-  FaPlus,
-  FaTrash,
-  FaEllipsisH,
-} from "react-icons/fa";
+import ProfileHero from "../../comportments/home/ProfileHero";
+import Gallery from "./Gallery";
+import InfoCard from "./InfoCard";
 
 const Page = styled.div`
   width: 100%;
@@ -21,260 +13,6 @@ const Page = styled.div`
   margin-bottom: 100px;
 `;
 
-const ProfileHero = styled.div`
-  position: relative;
-  inset: 0;
-
- margin-top: -280px;
- 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-`;
-
-const Name = styled.h1`
-  font-size: 32px;
-  margin-top: 20px;
-  margin-bottom: 8px;
-  color: #1f2a44;
-  font-weight: 800;
-`;
-
-
-const AvatarWrapper = styled.div`
-  width: 160px;
-  height: 160px;
-  display: inline-block;
-  position: absolute;
-  margin-bottom: 190px;
-  left: 30px;
- ;
-
-
-  @media (max-width: 480px) {
-    width: 120px;
-    height: 120px;
-  }
-`;
-
-
-const Avatar = styled.img`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-`;
-
-
-const CameraButton = styled.label`
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: #4f6cff;
-  color: white;
-  padding: 10px;
-  border-radius: 50%;
-  cursor: pointer;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 15px;
-  margin-top: 30px;
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const InfoBox = styled.div`
-  background: #f9fbff;
-  padding: 18px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  color: #2b3551;
-  border: 1px solid #edf1ff;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(79, 108, 255, 0.08);
-  }
-`;
-
-const PhotosSection = styled.div`
-  margin-top: 40px;
-`;
-
-const PhotoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
-`;
-
-const ImageWrapper = styled.div`
-  position: relative;
-  overflow: hidden;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f4ff;
-  border-radius: 22px;
-  border: 1px solid #edf1ff;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.1);
-  }
-  @media (max-width: 480px) {
-    height: 170px;
-  }
-`;
-
-const Image = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-
-  ${ImageWrapper}:hover & {
-    transform: scale(1.04);
-  }
-`;
-// boutonsupprimer de la photo
-
-const Boutton = styled.button`
-  display: flex;
-  position: absolute;
-  border: none;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(6px);
-  top: 12px;
-  right: 12px;
-  font-size: 16px;
-  color: white;
-  cursor: pointer;
-  transition: 0.25s ease;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.5);
-  }
-`;
-
-const MoalImages = styled.ul`
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-  position: absolute;
-  top: 40px;
-  right: 10px;
-  background: white;
-  min-width: 130px;
-  color: black;
-  list-style: none;
-  padding: 8px 0;
-  margin: 0;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-
-  opacity: ${({ open }) => (open ? 1 : 0)};
-  transform: ${({ open }) => (open ? "translateY(0)" : "translateY(-8px)")};
-  visibility: ${({ open }) => (open ? "visible" : "hidden")};
-  pointer-events: ${({ open }) => (open ? "auto" : "none")};
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s ease,
-    visibility 0.25s ease;
-`;
-
-const ItemBoutton = styled.li`
-  padding: 10px 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: red;
-  font-weight: 600;
-
-  &:hover {
-    background: #f8f8f8;
-  }
-`;
-
-// fin
-
-const AddPhotoButton = styled.label`
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  color: white;
-  background: linear-gradient(135deg, #4f6cff, #6f88ff);
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  font-size: 20px;
-  box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
-  transition: all 0.25s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
-
-const MessageAvatar = styled.div`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 14px;
-  font-weight: 600;
-  font-size: 14px;
-  color: #4f6cff;
-  background: white;
-  border: 4px solid white;
-`;
-
-const BioBox = styled.section`
-  margin-top: 270px;
-  max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
-  color: black;
-  font-size: 15px;
-  line-height: 1.7;
-  color: #1f2a44;
-
-  padding: 3px;
-
-
-  border-radius: 8px;
-    transition: border-width 0.3s ease;
-  &:hover{
-  border-width:4px;
-  }
-`;
 const InterestsWrapper = styled.div`
   margin-top: 25px;
 `;
@@ -302,50 +40,6 @@ const Chip = styled.span`
   font-weight: 600;
 `;
 
-const Modification = styled.p`
-  padding-top: 14px;
-`;
-const Boutonmodifier = styled.button`
-  border: none;
-  background: linear-gradient(135deg, #4f6cff, #6f88ff);
-  color: white;
-  padding: 14px 22px;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(79, 108, 255, 0.22);
-  transition: all 0.25s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 30px rgba(79, 108, 255, 0.28);
-  }
-`;
-const Span = styled.span``;
-
-const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 20, 40, 0.85);
-  backdrop-filter: blur(12px);
-  z-index: 9999;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  animation: fadeIn 0.25s ease;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-`;
 const Main = styled.main`
   width: 100%;
   display: flex;
@@ -356,47 +50,6 @@ const Main = styled.main`
   }
 `;
 
-const Conteneur = styled.section`
-  margin-top: 90px;
-  width: 100%;
-  background: #f8faff;
-  border-radius: 22px;
- 
-  font-family: Arial, sans-serif;
-`;
-const Topbarre = styled.div`
-  width: 100%;
-  background: #e6ebff;
-  border-radius: 999px;
-  margin-top: 12px;
-  height: 16px;
-  overflow: hidden;
-`;
-const Interrieur = styled.div`
-  height: 100%;
-  width: ${({ progress }) => progress}%;
-  background: ${({ progress }) =>
-    progress < 50
-      ? "linear-gradient(90deg, #ff6b6b, #ff8e8e)"
-      : progress < 80
-        ? "linear-gradient(90deg, #ffb347, #ffd166)"
-        : "linear-gradient(90deg, #2ecc71, #7bed9f)"};
-  transition: width 0.5s ease;
-  border-radius: 999px;
-`;
-const ProgressTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2a44;
-  margin: 0;
-`;
-
-const ProgressText = styled.p`
-  margin-top: 10px;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.6;
-`;
 const Card = styled.section`
   background: white;
   border-radius: 24px;
@@ -404,97 +57,10 @@ const Card = styled.section`
   box-shadow: 0 10px 30px rgba(31, 42, 68, 0.06);
 `;
 
-const SuccessTitle = styled.h3`
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  color: #1f7a4d;
-`;
-
-const SuccessText = styled.p`
-  margin-top: 10px;
-  font-size: 14px;
-  color: #4b6b58;
-  line-height: 1.6;
-`;
-
-const Slider = styled.div`
-  display: flex;
-  height: 100%;
-  width: 100%;
-
-  transform: translateX(-${({ index }) => index * 100}%);
-  transition: ${({ noTransition }) =>
-    noTransition ? "none" : "transform 0.35s ease"};
-`;
-
-const Slide = styled.img`
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
-  flex-shrink: 0;
-`;
-
-const SliderWrapper = styled.div`
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-`;
-
-const SlideContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  flex-shrink: 0;
-`;
-
-const CloseOnImage = styled.button`
-  position: absolute;
-  top: 90px;
-  right: 20px;
-
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  border: none;
-  color: white;
-  font-size: 22px;
-
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  z-index: 10;
-
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.6);
-    transform: scale(1.1);
-  }
-`;
-
-const Cover = styled.img`
-  width: 100%;
-  height: 85%;
-  object-fit: cover;
-  border-radius: 24px;
-`;
-
-const HeroContainer = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
 function Home() {
   const [profil, setProfil] = useState(null);
   const [interet, setInteret] = useState([]);
-  const [modaldelete, setmodalDelete] = useState(null);
+
   const [progress, setProgress] = useState(0);
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
@@ -729,89 +295,13 @@ function Home() {
   return (
     <Page>
       <Main>
-       
-          <HeroContainer>
-            <Cover src={profil.avatar?.url} alt="cover" />
-            </HeroContainer>
-          
-          <ProfileHero>
-            <AvatarWrapper onClick={() => ouvririmage(0)}>
-              {profil.avatar?.url ? (
-                <Avatar src={profil.avatar.url} alt="avatar" />
-              ) : (
-                <MessageAvatar>Ajouter une photo</MessageAvatar>
-              )}
-              <CameraButton htmlFor="avatarInput">
-                <FaCamera />
-              </CameraButton>
-              <input
-                type="file"
-                id="avatarInput"
-                style={{ display: "none" }}
-                onChange={fetchAvatar}
-              />
-            </AvatarWrapper>
+        <ProfileHero
+          profil={profil}
+          navigate={navigate}
+          fetchAvatar={fetchAvatar}
+        />
 
-            <BioBox>
-              <span>{profil.bio || "Pas encore de bio"}</span>
-            </BioBox>
-
-            {progress < 100 && (
-              <Conteneur>
-                <ProgressTitle>
-                  Complétude du profil : {progress}%
-                </ProgressTitle>
-                <ProgressText>{messageProgress}</ProgressText>
-
-                <Topbarre>
-                  <Interrieur progress={progress} />
-                </Topbarre>
-              </Conteneur>
-            )}
-
-            {afficher && (
-              <Conteneur>
-                <SuccessTitle>🎉 Profil complété à 100%</SuccessTitle>
-                <SuccessText>Ton profil est prêt et bien optimisé.</SuccessText>
-              </Conteneur>
-            )}
-
-            <section>
-              <Modification>
-                <Boutonmodifier
-                  onClick={() => navigate(`/modifier/${profil._id}`)}
-                >
-                  Compléter mon profil
-                  <Span></Span>
-                </Boutonmodifier>
-              </Modification>
-            </section>
-
-            <Name>
-              {profil.prenom} {profil.nom}
-            </Name>
-          </ProfileHero>
-          
-
-        <Card>
-          <SectionTitle>Informations personnelles</SectionTitle>
-          <InfoGrid>
-            <InfoBox>
-              <FaBirthdayCake /> {profil.age} ans
-            </InfoBox>
-            <InfoBox>
-              <FaHeart /> recherche: {profil.recherche}
-            </InfoBox>
-            <InfoBox>
-              <FaGlobe />
-              pays: {profil.pays}
-            </InfoBox>
-            <InfoBox>
-              <FaMapMarkerAlt />
-              ville: {profil.ville}
-            </InfoBox>
-          </InfoGrid>
-        </Card>
+        <InfoCard profil={profil} />
 
         {/* Affichage des centres d’intérêt */}
         <Card>
@@ -833,92 +323,11 @@ function Home() {
             )}
           </InterestsWrapper>
         </Card>
-        <Card>
-          <PhotosSection>
-            <h2>Photos</h2>
-            <AddPhotoButton htmlFor="photosInput">
-              <FaPlus />
-            </AddPhotoButton>
-            <PhotoGrid>
-              <input
-                type="file"
-                id="photosInput"
-                multiple
-                style={{ display: "none" }}
-                onChange={uploadMultiple}
-              />
-
-              {modal && photos.length > 0 && (
-                <Overlay onClick={() => setModal(false)}>
-                  <SliderWrapper
-                    onClick={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => {
-                      touchStartX.current = e.touches[0].clientX;
-                    }}
-                    onTouchMove={(e) => {
-                      touchEndX.current = e.touches[0].clientX;
-                    }}
-                    onTouchEnd={() => {
-                      const diff = touchStartX.current - touchEndX.current;
-
-                      if (diff > 50) {
-                        next();
-                      } else if (diff < -50) {
-                        prev();
-                      }
-                    }}
-                  >
-                    <Slider index={currentIndex} noTransition={noTransition}>
-                      {loopedPhotos.map((img, i) => (
-                        <SlideContainer key={i}>
-                          <Slide src={img?.url} />
-
-                          <CloseOnImage onClick={() => setModal(false)}>
-                            ✕
-                          </CloseOnImage>
-                        </SlideContainer>
-                      ))}
-                    </Slider>
-                  </SliderWrapper>
-                </Overlay>
-              )}
-
-              {profil.photos &&
-                profil.photos.map((image, index) => (
-                  <ImageWrapper key={image.public_id}>
-                    <Image
-                      src={image.url}
-                      alt={profil.nom}
-                      onClick={() => ouvririmage(index)}
-                    />
-                    <Boutton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setmodalDelete(
-                          modaldelete === image.public_id
-                            ? null
-                            : image.public_id,
-                        );
-                      }}
-                    >
-                      <FaEllipsisH />
-                    </Boutton>
-                    <MoalImages open={modaldelete === image.public_id}>
-                      <ItemBoutton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          suppression(image.public_id);
-                          setmodalDelete(null);
-                        }}
-                      >
-                        supprimer <FaTrash />
-                      </ItemBoutton>
-                    </MoalImages>
-                  </ImageWrapper>
-                ))}
-            </PhotoGrid>
-          </PhotosSection>
-        </Card>
+        <Gallery
+          profil={profil}
+          uploadMultiple={uploadMultiple}
+          suppression={suppression}
+        />
       </Main>
     </Page>
   );

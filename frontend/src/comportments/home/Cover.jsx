@@ -11,20 +11,21 @@ export default function Cover({ profil, onAvatar }) {
   return (
     <Container>
 
-      <Image
-        src={
-          profil.avatar?.url ||
-          "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1400"
-        }
-        alt="cover"
-      />
-
-      <Overlay />
-
-      <Gradient />
+      {profil.cover?.url ? (
+        <Image
+          src={profil.cover.url}
+          alt="Couverture"
+        />
+      ) : (
+        <>
+          <Gradient />
+          <Overlay />
+        </>
+      )}
 
       <EditButton onClick={onAvatar}>
-        <FaCamera /> Changer la photo
+        <FaCamera />
+        Changer la couverture
       </EditButton>
 
     </Container>
