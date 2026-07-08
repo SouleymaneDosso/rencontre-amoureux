@@ -1,4 +1,6 @@
-import { FaPlus, FaTrash, FaEllipsisH } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
+import PhotoMenu from "../../comportments/home/Gallery/PhotoMenu";
+import ImageModal from "../../comportments/home/Gallery/ImageModal";
 
 import {
   Section,
@@ -8,16 +10,10 @@ import {
   Grid,
   Card,
   Image,
-  MenuButton,
-  Menu,
-  Item,
 } from "./Gallery.style";
 
-
 export default function Gallery({
-
   profil,
-
   uploadMultiple,
 
   ouvririmage,
@@ -25,125 +21,65 @@ export default function Gallery({
   suppression,
 
   modaldelete,
-
   setmodalDelete,
 
+  modal,
+  setModal,
+
+  currentIndex,
+  setCurrentIndex,
 }) {
-
-  return (
-
+    return (
+  <>
     <Section>
-
       <Header>
-
-        <Title>
-
-          Mes photos
-
-        </Title>
+        <Title>Mes photos</Title>
 
         <AddPhotoButton htmlFor="photosInput">
-
-          <FaPlus/>
-
+          <FaPlus />
         </AddPhotoButton>
-
       </Header>
 
       <input
-
         id="photosInput"
-
         hidden
-
         multiple
-
         type="file"
-
         onChange={uploadMultiple}
-
       />
 
       <Grid>
+        {profil.photos?.map((photo, index) => (
+          <Card key={photo.public_id}>
+            <Image
+              src={photo.url}
+              onClick={() => ouvririmage(index + 1)}
+            />
 
-        {
-
-          profil.photos?.map((photo,index)=>(
-
-            <Card
-
-              key={photo.public_id}
-
-            >
-
-              <Image
-
-                src={photo.url}
-
-                onClick={()=>ouvririmage(index)}
-
-              />
-
-              <MenuButton
-
-                onClick={(e)=>{
-
-                  e.stopPropagation();
-
-                  setmodalDelete(
-
-                    modaldelete===photo.public_id
-
-                    ?null
-
-                    :photo.public_id
-
-                  );
-
-                }}
-
-              >
-
-                <FaEllipsisH/>
-
-              </MenuButton>
-
-              <Menu
-
-                open={modaldelete===photo.public_id}
-
-              >
-
-                <Item
-
-                  onClick={()=>{
-
-                    suppression(photo.public_id);
-
-                    setmodalDelete(null);
-
-                  }}
-
-                >
-
-                  <FaTrash/>
-
-                  {" "}Supprimer
-
-                </Item>
-
-              </Menu>
-
-            </Card>
-
-          ))
-
-        }
-
+            <PhotoMenu
+              open={modaldelete}
+              setOpen={setmodalDelete}
+              image={photo}
+              onDelete={suppression}
+              onView={() => ouvririmage(index + 1)}
+            />
+          </Card>
+        ))}
       </Grid>
-
     </Section>
 
-  );
-
+    {modal && (
+      <ImageModal
+        photos={[
+          ...(profil.avatar ? [profil.avatar] : []),
+          ...(profil.photos || []),
+        ]}
+        index={currentIndex}
+        setIndex={setCurrentIndex}
+        close={() => setModal(false)}
+      />
+    )}
+  </>
+);
+ 
 }

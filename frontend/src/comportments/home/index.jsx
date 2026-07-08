@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState} from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import ProfileHero from "../../comportments/home/ProfileHero";
@@ -6,7 +6,7 @@ import Gallery from "./Gallery";
 import InfoCard from "./InfoCard";
 import Interests from "../../comportments/home/Interests";
 import ProfileProgress from "../../comportments/home/ProfileProgress";
-import MatchCard from "../../comportments/home/MatchCard";
+
 
 const Page = styled.div`
   width: 100%;
@@ -34,12 +34,18 @@ function Home() {
   const [progress, setProgress] = useState(0);
   const [afficher, setAfficher] = useState(false);
   const [modal, setModal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [noTransition, setNoTransition] = useState(false);
-  
+  const [modaldelete, setmodalDelete] = useState(null);
+
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
+
+  const ouvririmage = (index) => {
+  setCurrentIndex(index);
+  setModal(true);
+};
 
   const photos = [
     ...(profil?.avatar ? [profil.avatar] : []),
@@ -264,7 +270,7 @@ function Home() {
           profil={profil}
         />
 
-        <MatchCard profil={profil} />
+        
 
         <InfoCard profil={profil} />
 
@@ -272,11 +278,15 @@ function Home() {
         <Interests interets={interet} />
         <Gallery
           profil={profil}
-          setProfil={setProfil}
           uploadMultiple={uploadMultiple}
+          ouvririmage={ouvririmage}
           suppression={suppression}
-          fetchAvatar={fetchAvatar}
-          
+          modaldelete={modaldelete}
+          setmodalDelete={setmodalDelete}
+          modal={modal}
+          setModal={setModal}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
         />
       </Main>
     </Page>
