@@ -4,18 +4,8 @@ import styled, { keyframes } from "styled-components";
 import HeroPublic from "../profilpublic/public/HeroPublic.jsx";
 import AboutPublic from "../profilpublic/public/AboutPublic.jsx";
 import GalleryPublic from "../profilpublic/public/GalleryPublic.jsx";
-import {
-  FaMapMarkerAlt,
-  FaCheckCircle,
-  FaCircle,
-  FaArrowLeft,
-  FaImages,
-  FaUserCircle,
-  FaComments,
-  FaHeart,
-  FaLock,
-  FaTimes,
-} from "react-icons/fa";
+import MatchActions from "../profilpublic/public/MatchActions";
+import { FaArrowLeft, FaTimes } from "react-icons/fa";
 
 // ======================================
 // Topbar animations
@@ -42,94 +32,64 @@ const TopBar = styled.div`
 // Page layout
 const Page = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff7fb, #eef2ff);
-  padding: 30px 20px 100px;
+  padding: 110px 20px 100px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left,#fde7f3 0%,transparent 35%),
+    radial-gradient(circle at bottom right,#dbeafe 0%,transparent 40%),
+    linear-gradient(135deg,#fdfbff,#eef4ff);
 `;
 
 const Container = styled.div`
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1120px;
+  margin: auto;
+  position: relative;
+  z-index: 2;
 `;
 
 // Back button
 const BackButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: #eef2ff;
-  color: #4f46e5;
+  gap: 10px;
+
+  margin-bottom: 28px;
+
+  padding: 14px 20px;
+
   border: none;
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-size: 14px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.75);
+  backdrop-filter: blur(15px);
+
+  color: #4f46e5;
+
   font-weight: 700;
   cursor: pointer;
-  margin-bottom: 24px;
-  transition: 0.25s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    background: #e0e7ff;
+  transition: .25s;
+
+  &:hover{
+    transform: translateY(-3px);
+    box-shadow:0 15px 30px rgba(79,70,229,.15);
   }
 `;
 
 // Card
 const Card = styled.section`
-  background: white;
-  border-radius: 32px;
   overflow: hidden;
-  box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
-  border: 1px solid #edf1ff;
-`;
+  border-radius: 34px;
 
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(24px);
 
+  border: 1px solid rgba(255,255,255,.7);
 
-// Bio
-
-const SectionTitle = styled.h2`
-  margin: 0 0 16px 0;
-  font-size: 24px;
-  color: #1f2a44;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-
-
-// Photos
-const PhotosSection = styled.div`
-  padding: 32px;
-  border-top: 1px solid #f1f5f9;
-`;
-
-const PhotosGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-`;
-
-const PhotoCard = styled.div`
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #f8fafc;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  &:hover {
-    transform: scale(1.05);
-  }
-`;
-
-const Photo = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  box-shadow:
+    0 30px 80px rgba(31,42,68,.12),
+    inset 0 1px 0 rgba(255,255,255,.8);
 `;
 
 // Modal
@@ -141,22 +101,6 @@ const ModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 10000;
-`;
-
-const ModalContent = styled.div`
-  max-width: 90%;
-  max-height: 90%;
-  overflow: hidden;
-  border-radius: 20px;
-  position: relative;
-`;
-
-const ModalImage = styled.img`
-  width: 100%;
-  height: auto;
-  max-height: 90vh;
-  display: block;
-  border-radius: 20px;
 `;
 
 const CloseButton = styled.button`
@@ -174,65 +118,6 @@ const CloseButton = styled.button`
   &:hover {
     background: rgba(255, 255, 255, 1);
   }
-`;
-
-// Actions
-const Actions = styled.div`
-  padding: 32px;
-  border-top: 1px solid #f1f5f9;
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-`;
-
-const ActionButton = styled.button`
-  flex: 1;
-  min-width: 180px;
-  padding: 14px 18px;
-  border: none;
-  border-radius: 18px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.25s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-
-  &.message {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.22);
-  }
-
-  &.like {
-    background: linear-gradient(135deg, #ec4899, #f472b6);
-    color: white;
-    box-shadow: 0 10px 24px rgba(236, 72, 153, 0.22);
-  }
-
-  &.disabled {
-    background: #e5e7eb;
-    color: #6b7280;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  &.disabled:hover {
-    transform: none;
-  }
-`;
-
-const InfoMatch = styled.p`
-  margin-top: 18px;
-  color: #6b7280;
-  font-size: 14px;
-  line-height: 1.6;
 `;
 
 const CenterText = styled.h3`
@@ -461,27 +346,12 @@ function Profilpublic() {
 
           <GalleryPublic photos={profil.photos || []} openModal={openModal} />
 
-          <Actions>
-            {isMatch ? (
-              <ActionButton
-                className="message"
-                onClick={() => navigate(`/tchat/${profil._id}`)}
-              >
-                <FaComments />
-                Envoyer un message
-              </ActionButton>
-            ) : (
-              <ActionButton className="disabled" disabled>
-                <FaLock />
-                Message verrouillé
-              </ActionButton>
-            )}
-
-            <ActionButton className="like" onClick={like}>
-              <FaHeart />
-              Liker ce profil
-            </ActionButton>
-          </Actions>
+          <MatchActions
+            profil={profil}
+            isMatch={isMatch}
+            like={like}
+            navigate={navigate}
+          />
         </Card>
       </Container>
 

@@ -17,10 +17,6 @@ import {
   StatusRow,
   Badge,
   InfoMatch,
-  Stats,
-  Stat,
-  Number,
-  Label,
 } from "./Profilpublic.style";
 
 export default function HeroPublic({
@@ -73,22 +69,6 @@ export default function HeroPublic({
             {profil.recherche || "Rencontre"}
           </Badge>
         </StatusRow>
-        <Stats>
-          <Stat>
-            <Number>{profil.photos?.length || 0}</Number>
-            <Label>Photos</Label>
-          </Stat>
-
-          <Stat>
-            <Number>{profil.centresInteret?.length || 0}</Number>
-            <Label>Centres</Label>
-          </Stat>
-
-          <Stat>
-            <Number>{profil.bio ? "100%" : "70%"}</Number>
-            <Label>Profil</Label>
-          </Stat>
-        </Stats>
 
         {!checkingMatch && !isMatch && (
           <InfoMatch>
@@ -96,8 +76,6 @@ export default function HeroPublic({
             Tu pourras envoyer un message uniquement après un match.
           </InfoMatch>
         )}
-
-        
       </Infos>
     </Hero>
   );
