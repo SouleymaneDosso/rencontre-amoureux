@@ -1,4 +1,4 @@
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import ProfileHero from "../../comportments/home/ProfileHero";
@@ -7,7 +7,7 @@ import InfoCard from "./InfoCard";
 import Interests from "../../comportments/home/Interests";
 import ProfileProgress from "../../comportments/home/ProfileProgress";
 import DeleteModal from "../../comportments/home/Gallery/DeleteModal";
-
+import AvatarModal from "../../comportments/home/Gallery/AvatarModal";
 
 const Page = styled.div`
   width: 100%;
@@ -39,27 +39,28 @@ function Home() {
   const [noTransition, setNoTransition] = useState(false);
   const [modaldelete, setmodalDelete] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
-const [photoDelete, setPhotoDelete] = useState(null);
+  const [photoDelete, setPhotoDelete] = useState(null);
+  const [avatarModal, setAvatarModal] = useState(false);
 
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
   const ouvririmage = (index) => {
-  setCurrentIndex(index);
-  setModal(true);
-};
+    setCurrentIndex(index);
+    setModal(true);
+  };
 
-const demanderSuppression = (public_id) => {
-  setPhotoDelete(public_id);
-  setDeleteModal(true);
-};
-const confirmerSuppression = async () => {
-  await suppression(photoDelete);
+  const demanderSuppression = (public_id) => {
+    setPhotoDelete(public_id);
+    setDeleteModal(true);
+  };
+  const confirmerSuppression = async () => {
+    await suppression(photoDelete);
 
-  setDeleteModal(false);
-  setPhotoDelete(null);
-};
+    setDeleteModal(false);
+    setPhotoDelete(null);
+  };
 
   const photos = [
     ...(profil?.avatar ? [profil.avatar] : []),
@@ -275,6 +276,7 @@ const confirmerSuppression = async () => {
           profil={profil}
           navigate={navigate}
           fetchAvatar={fetchAvatar}
+          openAvatar={() => setAvatarModal(true)}
         />
 
         <ProfileProgress
@@ -283,8 +285,6 @@ const confirmerSuppression = async () => {
           navigate={navigate}
           profil={profil}
         />
-
-        
 
         <InfoCard profil={profil} />
 
@@ -303,11 +303,20 @@ const confirmerSuppression = async () => {
           setCurrentIndex={setCurrentIndex}
           demanderSuppression={demanderSuppression}
         />
+        <AvatarModal
+          open={avatarModal}
+          close={() => setAvatarModal(false)}
+          avatar={profil.avatar}
+          onChange={fetchAvatar}
+          onDelete={() => {
+            // on branchera l'API de suppression de l'avatar
+          }}
+        />
         <DeleteModal
-  open={deleteModal}
-  close={() => setDeleteModal(false)}
-  confirm={confirmerSuppression}
-/>
+          open={deleteModal}
+          close={() => setDeleteModal(false)}
+          confirm={confirmerSuppression}
+        />
       </Main>
     </Page>
   );

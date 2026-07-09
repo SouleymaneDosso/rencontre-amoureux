@@ -18,75 +18,43 @@ export default function ProfileHero({
   profil,
   navigate,
   fetchAvatar,
+  openAvatar,
 }) {
   return (
     <Wrapper>
-
       <AvatarWrapper>
-
         <Avatar
-          src={
-            profil.avatar?.url ||
-            "https://i.pravatar.cc/300"
-          }
+          src={profil.avatar?.url || "https://i.pravatar.cc/300"}
+          onClick={openAvatar}
         />
 
         <Online />
 
-        <CameraButton htmlFor="avatarInput">
+        <CameraButton onClick={openAvatar}>
           <FaCamera />
         </CameraButton>
-
-        <input
-          id="avatarInput"
-          type="file"
-          hidden
-          onChange={fetchAvatar}
-        />
-
       </AvatarWrapper>
 
       <Name>
-
         {profil.prenom} {profil.nom}, {profil.age}
-
       </Name>
 
       <City>
-
-        <FaMapMarkerAlt />
-
-        {" "}
-
-        {profil.ville}, {profil.pays}
-
+        <FaMapMarkerAlt /> {profil.ville}, {profil.pays}
       </City>
 
       <Bio>
-
         {profil.bio ||
           "Ajoutez une biographie pour que les autres puissent mieux vous connaître."}
-
       </Bio>
 
       <Buttons>
-
-        <Button
-          onClick={() =>
-            navigate(`/modifier/${profil._id}`)
-          }
-        >
+        <Button onClick={() => navigate(`/modifier/${profil._id}`)}>
           Modifier mon profil
         </Button>
 
-        <OutlineButton>
-
-          Partager mon profil
-
-        </OutlineButton>
-
+        <OutlineButton>Partager mon profil</OutlineButton>
       </Buttons>
-
     </Wrapper>
   );
 }

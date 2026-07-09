@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+import HeroPublic from "../profilpublic/HeroPublic";
 import {
   FaMapMarkerAlt,
   FaCheckCircle,
