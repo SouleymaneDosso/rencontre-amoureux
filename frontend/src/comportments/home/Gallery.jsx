@@ -19,7 +19,7 @@ export default function Gallery({
   ouvririmage,
 
   suppression,
-
+demanderSuppression,
   modaldelete,
   setmodalDelete,
 
@@ -60,7 +60,7 @@ export default function Gallery({
               open={modaldelete}
               setOpen={setmodalDelete}
               image={photo}
-              onDelete={suppression}
+             onDelete={demanderSuppression}
               onView={() => ouvririmage(index + 1)}
             />
           </Card>

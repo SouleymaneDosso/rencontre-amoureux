@@ -6,6 +6,7 @@ import Gallery from "./Gallery";
 import InfoCard from "./InfoCard";
 import Interests from "../../comportments/home/Interests";
 import ProfileProgress from "../../comportments/home/ProfileProgress";
+import DeleteModal from "../../comportments/home/Gallery/DeleteModal";
 
 
 const Page = styled.div`
@@ -37,6 +38,8 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [noTransition, setNoTransition] = useState(false);
   const [modaldelete, setmodalDelete] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+const [photoDelete, setPhotoDelete] = useState(null);
 
   const navigate = useNavigate();
 
@@ -45,6 +48,17 @@ function Home() {
   const ouvririmage = (index) => {
   setCurrentIndex(index);
   setModal(true);
+};
+
+const demanderSuppression = (public_id) => {
+  setPhotoDelete(public_id);
+  setDeleteModal(true);
+};
+const confirmerSuppression = async () => {
+  await suppression(photoDelete);
+
+  setDeleteModal(false);
+  setPhotoDelete(null);
 };
 
   const photos = [
@@ -287,7 +301,13 @@ function Home() {
           setModal={setModal}
           currentIndex={currentIndex}
           setCurrentIndex={setCurrentIndex}
+          demanderSuppression={demanderSuppression}
         />
+        <DeleteModal
+  open={deleteModal}
+  close={() => setDeleteModal(false)}
+  confirm={confirmerSuppression}
+/>
       </Main>
     </Page>
   );
