@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
-import HeroPublic from "../profilpublic/HeroPublic";
+import HeroPublic from "../profilpublic/public/HeroPublic.jsx";
+import AboutPublic from "../profilpublic/public/AboutPublic.jsx";
+import GalleryPublic from "../profilpublic/public/GalleryPublic.jsx";
 import {
   FaMapMarkerAlt,
   FaCheckCircle,
@@ -80,107 +82,9 @@ const Card = styled.section`
   border: 1px solid #edf1ff;
 `;
 
-// Hero (Avatar + Infos)
-const Hero = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
 
-  @media (max-width: 850px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const AvatarWrapper = styled.div`
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: #f1f4ff;
-  border-radius: 24px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Avatar = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  &:hover {
-    transform: scale(1.05);
-  }
-`;
-
-const AvatarPlaceholder = styled.div`
-  font-size: 120px;
-  color: #c084fc;
-  background: linear-gradient(135deg, #f5e8ff, #eef2ff);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-// Infos
-const Infos = styled.div`
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-`;
-
-const Name = styled.h1`
-  margin: 0;
-  font-size: 36px;
-  color: #1f2a44;
-`;
-
-const Location = styled.p`
-  margin-top: 14px;
-  color: #5f6b85;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const StatusRow = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-`;
-
-const Badge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 700;
-  background: ${({ type }) =>
-    type === "online"
-      ? "#dcfce7"
-      : type === "verified"
-        ? "#eef2ff"
-        : "#ffe4f1"};
-  color: ${({ type }) =>
-    type === "online"
-      ? "#15803d"
-      : type === "verified"
-        ? "#4f46e5"
-        : "#db2777"};
-`;
 
 // Bio
-const BioSection = styled.div`
-  padding: 32px;
-  border-top: 1px solid #f1f5f9;
-`;
 
 const SectionTitle = styled.h2`
   margin: 0 0 16px 0;
@@ -191,12 +95,7 @@ const SectionTitle = styled.h2`
   gap: 10px;
 `;
 
-const BioText = styled.p`
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.8;
-  color: #6b7280;
-`;
+
 
 // Photos
 const PhotosSection = styled.div`
@@ -551,83 +450,16 @@ function Profilpublic() {
         </BackButton>
 
         <Card>
-          <Hero>
-            <AvatarWrapper>
-              {profil.avatar?.url ? (
-                <Avatar
-                  src={profil.avatar.url}
-                  alt={profil.pseudo}
-                  onClick={() => setModal(profil.avatar.url)}
-                />
-              ) : (
-                <AvatarPlaceholder>
-                  <FaUserCircle />
-                </AvatarPlaceholder>
-              )}
-            </AvatarWrapper>
+          <HeroPublic
+            profil={profil}
+            isMatch={isMatch}
+            checkingMatch={checkingMatch}
+            setModal={setModal}
+          />
 
-            <Infos>
-              <Name>
-                {profil.pseudo}, {profil.age} ans
-              </Name>
+          <AboutPublic profil={profil} />
 
-              <Location>
-                <FaMapMarkerAlt />
-                {profil.ville}, {profil.pays}
-              </Location>
-
-              <StatusRow>
-                <Badge type="online">
-                  <FaCircle />
-                  {profil.enLigne ? "En ligne" : "Hors ligne"}
-                </Badge>
-
-                {profil.verifie && (
-                  <Badge type="verified">
-                    <FaCheckCircle />
-                    Profil vérifié
-                  </Badge>
-                )}
-
-                <Badge>
-                  <FaHeart />
-                  {profil.recherche || "Rencontre"}
-                </Badge>
-              </StatusRow>
-
-              {!checkingMatch && !isMatch && (
-                <InfoMatch>
-                  <FaLock style={{ marginRight: "8px" }} />
-                  Tu pourras envoyer un message uniquement après un match
-                  réciproque.
-                </InfoMatch>
-              )}
-            </Infos>
-          </Hero>
-
-          <BioSection>
-            <SectionTitle>À propos</SectionTitle>
-            <BioText>{profil.bio || "Aucune bio pour le moment."}</BioText>
-          </BioSection>
-
-          <PhotosSection>
-            <SectionTitle>
-              <FaImages />
-              Photos
-            </SectionTitle>
-
-            {profil.photos && profil.photos.length > 0 ? (
-              <PhotosGrid>
-                {profil.photos.map((photo, index) => (
-                  <PhotoCard key={index} onClick={() => openModal(index)}>
-                    <Photo src={photo.url} alt={`photo-${index}`} />
-                  </PhotoCard>
-                ))}
-              </PhotosGrid>
-            ) : (
-              <CenterText>Aucune photo disponible.</CenterText>
-            )}
-          </PhotosSection>
+          <GalleryPublic photos={profil.photos || []} openModal={openModal} />
 
           <Actions>
             {isMatch ? (
