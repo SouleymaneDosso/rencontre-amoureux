@@ -8,40 +8,6 @@ import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
 
 /* ================== STYLES ================== */
-const H1 = styled.h1`
-  text-align: center;
-  padding: 10px;
-  font-size: 32px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #6a11cb, #2575fc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-`;
-
-const Labelstyle = styled.label`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 30px auto;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  cursor: pointer;
-
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  box-shadow:
-    0 0 20px rgba(106, 17, 203, 0.6),
-    0 0 40px rgba(37, 117, 252, 0.4);
-
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow:
-      0 0 30px rgba(106, 17, 203, 0.9),
-      0 0 60px rgba(37, 117, 252, 0.7);
-  }
-`;
 
 const Pagewrapper = styled.div`
   min-height: 100vh;
@@ -138,50 +104,76 @@ const Titre = styled.h3`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `;
+
 const Conteneurvideo = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
+
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+
+  gap: 28px;
+
+  max-width: 1300px;
+
+  margin: auto;
 `;
 
 const Overlay = styled.div`
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 
-  padding: 15px;
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: flex-end;
+
+  padding: 24px;
 
   background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.2),
-    transparent
+    transparent 20%,
+
+    rgba(0, 0, 0, 0.25),
+    rgba(0, 0, 0, 0.92)
   );
 `;
 
 const CardVideo = styled.div`
   position: relative;
-  width: 100%;
-  height: 350px;
-  border-radius: 20px;
+
+  height: 520px;
+
   overflow: hidden;
 
-  background: #111;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border-radius: 30px;
 
-  transition: 0.3s;
+  cursor: pointer;
+
+  background: #111827;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+
+  transition: 0.45s;
 
   &:hover {
-    transform: translateY(-5px) scale(1.02);
+    transform: translateY(-12px) scale(1.02);
   }
 `;
 
 const Videos = styled.video`
   width: 100%;
+
   height: 100%;
+
   object-fit: cover;
+
+  transition: 0.5s;
+
+  ${CardVideo}:hover & {
+    transform: scale(1.08);
+  }
 `;
 
 const Bouton = styled.button`
@@ -190,7 +182,6 @@ const Bouton = styled.button`
   padding: 10px;
   border-radius: 12px;
   border: none;
-
   font-weight: bold;
   cursor: pointer;
 
@@ -217,8 +208,13 @@ const TopInfo = styled.div`
 `;
 
 const Description = styled.p`
-  font-size: 13px;
-  opacity: 0.9;
+  font-size: 15px;
+
+  line-height: 1.6;
+
+  font-weight: 500;
+
+  color: white;
 `;
 
 const RightPanel = styled.div`
@@ -234,27 +230,49 @@ const RightPanel = styled.div`
 
 const IconBox = styled.div`
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
-  cursor: pointer;
+
+  gap: 8px;
 
   svg {
-    font-size: 24px;
+    font-size: 28px;
+
+    transition: 0.3s;
+  }
+
+  &:hover svg {
+    transform: scale(1.25);
+
+    color: #ec4899;
   }
 
   span {
-    font-size: 12px;
+    font-weight: 700;
   }
 `;
+
 const Badge = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 5px 10px;
-  border-radius: 10px;
-  font-size: 12px;
+  display: inline-flex;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-weight: 700;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(15px);
+
+  margin-bottom: 18px;
 `;
+
 const Boutonretour = styled.button`
   display: flex;
+
   text-align: center;
   z-index: 2;
   position: absolute;
@@ -262,7 +280,7 @@ const Boutonretour = styled.button`
   top: 13px;
   border: none;
   background: none;
-  color: blue;
+  color: white;
   font-size: 15px;
 `;
 
@@ -314,14 +332,7 @@ const ModalActions = styled.div`
 
   z-index: 2;
 `;
-const GradientOverlay = styled.div`
-  position: absolute;
-  inset: 0;
 
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent 40%);
-
-  z-index: 1;
-`;
 const Boutonfermer = styled.button`
   position: absolute;
   z-index: 1;
