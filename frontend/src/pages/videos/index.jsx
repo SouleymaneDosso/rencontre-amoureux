@@ -4,6 +4,7 @@ import { HiVideoCamera } from "react-icons/hi";
 import { FaHeart, FaCommentDots } from "react-icons/fa";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -11,7 +12,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const Pagewrapper = styled.div`
   min-height: 100vh;
-
+  scroll-snap-type: y mandatory;
+  overflow-y: auto;
   background:
     radial-gradient(circle at top left, #8b5cf6 0%, transparent 30%),
     radial-gradient(circle at bottom right, #ec4899 0%, transparent 30%),
@@ -105,16 +107,28 @@ const Titre = styled.h3`
   -webkit-text-fill-color: transparent;
 `;
 
-const Conteneurvideo = styled.div`
-  display: grid;
+const Feed = styled.div`
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
 
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+`;
 
-  gap: 28px;
+const VideoSection = styled.div`
+  position: relative;
+  height: 90vh;
 
-  max-width: 1300px;
+  border-radius: 32px;
+  overflow: hidden;
 
-  margin: auto;
+  background: black;
+
+  scroll-snap-align: center;
+
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
 `;
 
 const Overlay = styled.div`
@@ -430,7 +444,7 @@ function Video() {
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-
+  const MotionVideo = motion.create(CardVideo);
   const togglePlay = () => {
     const video = modalVideoRef.current;
     if (!video) return;
@@ -600,10 +614,27 @@ function Video() {
             </div>
           )}
 
-          <Conteneurvideo>
+          <Feed>
             {mesdeos.map((video) => (
-              <CardVideo
+              <MotionVideo
                 key={video._id}
+                initial={{
+                  opacity: 0,
+                  y: 80,
+                  scale: 0.96,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                }}
+                transition={{
+                  duration: 0.45,
+                }}
+                viewport={{
+                  once: false,
+                  amount: 0.6,
+                }}
                 onClick={() => setSelectedVideo(video)}
               >
                 <Videos src={video.url} muted loop />
@@ -631,9 +662,9 @@ function Video() {
                     </RightPanel>
                   </div>
                 </Overlay>
-              </CardVideo>
+              </MotionVideo>
             ))}
-          </Conteneurvideo>
+          </Feed>
         </section>
       </main>
 
