@@ -29,19 +29,30 @@ const Pagewrapper = styled.div`
 `;
 
 const Header = styled.div`
-  max-width: 1200px;
-  margin: auto;
+position:fixed;
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+top:0;
+left:0;
+right:0;
 
-  margin-bottom: 40px;
+height:70px;
 
-  @media (max-width: 700px) {
-    flex-direction: column;
-    gap: 20px;
-  }
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:0 25px;
+
+z-index:500;
+
+background:
+linear-gradient(
+to bottom,
+rgba(0,0,0,.75),
+transparent
+);
+
+backdrop-filter:blur(15px);
 `;
 
 const LeftHeader = styled.div``;
@@ -110,86 +121,82 @@ const Titre = styled.h3`
 `;
 
 const Feed = styled.div`
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+width:100%;
 `;
 
 const VideoSection = styled.div`
-  position: relative;
-  height: 90vh;
+position:relative;
 
-  border-radius: 32px;
-  overflow: hidden;
+width:100vw;
 
-  background: black;
+height:100vh;
 
-  scroll-snap-align: center;
+scroll-snap-align:start;
 
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+background:black;
+
+overflow:hidden;
 `;
 
 const Overlay = styled.div`
-  position: absolute;
+position:absolute;
 
-  inset: 0;
+inset:0;
 
-  display: flex;
+display:flex;
 
-  flex-direction: column;
+justify-content:space-between;
 
-  justify-content: flex-end;
+padding:25px;
 
-  padding: 24px;
+background:
 
-  background: linear-gradient(
-    transparent 20%,
-
-    rgba(0, 0, 0, 0.25),
-    rgba(0, 0, 0, 0.92)
-  );
+linear-gradient(
+to top,
+rgba(0,0,0,.85),
+transparent 35%
+);
 `;
 
-const CardVideo = styled.div`
-  position: relative;
+const BottomInfos = styled.div`
+position:absolute;
 
-  height: 520px;
+left:18px;
 
-  overflow: hidden;
+bottom:30px;
 
-  border-radius: 30px;
+width:70%;
 
-  cursor: pointer;
-
-  background: #111827;
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
-
-  transition: 0.45s;
-
-  &:hover {
-    transform: translateY(-12px) scale(1.02);
-  }
+z-index:20;
 `;
+
+const RightPanel = styled.div`
+position:absolute;
+
+right:14px;
+
+bottom:110px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:24px;
+
+z-index:30;
+`;
+
+
 
 const Videos = styled.video`
-  width: 100%;
+position:absolute;
 
-  height: 100%;
+inset:0;
 
-  object-fit: cover;
+width:100%;
+height:100%;
 
-  transition: 0.5s;
-
-  ${CardVideo}:hover & {
-    transform: scale(1.08);
-  }
+object-fit:cover;
 `;
 
 const Bouton = styled.button`
@@ -233,16 +240,7 @@ const Description = styled.p`
   color: white;
 `;
 
-const RightPanel = styled.div`
-  position: absolute;
-  right: 10px;
-  bottom: 20px;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-`;
 
 const IconBox = styled.div`
   display: flex;
@@ -287,17 +285,29 @@ const Badge = styled.div`
 `;
 
 const Boutonretour = styled.button`
-  display: flex;
+position:fixed;
 
-  text-align: center;
-  z-index: 2;
-  position: absolute;
-  left: 5px;
-  top: 13px;
-  border: none;
-  background: none;
-  color: white;
-  font-size: 15px;
+top:18px;
+left:20px;
+
+width:45px;
+height:45px;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.12);
+
+backdrop-filter:blur(12px);
+
+border:none;
+
+color:white;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+z-index:1000;
 `;
 
 const ModalOverlay = styled.div`
@@ -446,7 +456,7 @@ function Video() {
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-  const MotionVideo = motion.create(CardVideo);
+  const MotionVideo = motion.create(VideoSection);
   const togglePlay = () => {
     const video = modalVideoRef.current;
     if (!video) return;
@@ -563,7 +573,6 @@ function Video() {
   return (
     <Pagewrapper>
       <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-      <main>
         <Header>
           <LeftHeader>
             <Title>Mes vidéos</Title>
@@ -588,15 +597,12 @@ function Video() {
           multiple
           onChange={uploadeMultiple}
         />
-        <section>
-          <Titre>Mes videos</Titre>
-
           {videos.length > 0 && (
             <Conteneurvideo>
               {videos.map((video, index) => (
-                <CardVideo key={index}>
+                < VideoSection key={index}>
                   <Videos src={video.url} autoPlay muted loop />
-                </CardVideo>
+                </ VideoSection>
               ))}
             </Conteneurvideo>
           )}
@@ -667,8 +673,6 @@ function Video() {
               </MotionVideo>
             ))}
           </Feed>
-        </section>
-      </main>
 
       {selectedVideo && (
         <ModalOverlay onClick={() => setSelectedVideo(null)}>
