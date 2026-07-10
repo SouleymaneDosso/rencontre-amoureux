@@ -44,9 +44,91 @@ const Labelstyle = styled.label`
 `;
 
 const Pagewrapper = styled.div`
-  height: 100vh;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(circle at top left, #8b5cf6 0%, transparent 30%),
+    radial-gradient(circle at bottom right, #ec4899 0%, transparent 30%),
+    linear-gradient(180deg, #050816, #0f172a);
+
   color: white;
-  margin-bottom: 400px;
+
+  padding: 40px 24px 120px;
+
+  overflow-x: hidden;
+`;
+
+const Header = styled.div`
+  max-width: 1200px;
+  margin: auto;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 40px;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    gap: 20px;
+  }
+`;
+
+const LeftHeader = styled.div``;
+
+const Title = styled.h1`
+  margin: 0;
+
+  font-size: 48px;
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  background: linear-gradient(90deg, #ffffff, #c084fc, #60a5fa);
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+`;
+
+const Subtitle = styled.p`
+  color: #94a3b8;
+  margin-top: 10px;
+`;
+
+const UploadCard = styled.label`
+  width: 150px;
+  height: 150px;
+
+  border-radius: 30px;
+
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(20px);
+
+  transition: 0.35s;
+
+  &:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  svg {
+    font-size: 42px;
+    margin-bottom: 12px;
+  }
+
+  span {
+    font-weight: 700;
+  }
 `;
 
 const Titre = styled.h3`
@@ -300,11 +382,11 @@ const InputDescription = styled.textarea`
   border: none;
   outline: none;
 
-  resize: none; 
+  resize: none;
   min-height: 100px;
   max-height: 180px;
 
-  font-size: 16px; 
+  font-size: 16px;
   line-height: 1.5;
 
   background: rgba(255, 255, 255, 0.12);
@@ -455,22 +537,30 @@ function Video() {
     <Pagewrapper>
       <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
       <main>
-        <H1>Vidéos et reactions</H1>
+        <Header>
+          <LeftHeader>
+            <Title>Mes vidéos</Title>
 
-        <section>
-          <Labelstyle htmlFor="masque">
-            <HiVideoCamera size={30} />
-          </Labelstyle>
+            <Subtitle>
+              Partage tes meilleurs moments avec la communauté.
+            </Subtitle>
+          </LeftHeader>
 
-          <input
-            id="masque"
-            type="file"
-            accept="video/*"
-            multiple
-            onChange={uploadeMultiple}
-            hidden
-          />
-        </section>
+          <UploadCard htmlFor="masque">
+            <HiVideoCamera />
+
+            <span>Ajouter</span>
+          </UploadCard>
+        </Header>
+
+        <input
+          id="masque"
+          hidden
+          type="file"
+          accept="video/*"
+          multiple
+          onChange={uploadeMultiple}
+        />
         <section>
           <Titre>Mes videos</Titre>
 
@@ -491,7 +581,7 @@ function Video() {
               </Bouton>
               <Bouton onClick={supprimerurl}>Annuller</Bouton>
 
-              <InputDescription 
+              <InputDescription
                 placeholder="Ajoute une description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
