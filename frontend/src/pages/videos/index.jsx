@@ -11,19 +11,21 @@ const API_URL = import.meta.env.VITE_API_URL;
 /* ================== STYLES ================== */
 
 const Pagewrapper = styled.div`
-  min-height: 100vh;
-  scroll-snap-type: y mandatory;
+  position: fixed;
+  inset: 0;
+
+  background: #000;
+
   overflow-y: auto;
-  background:
-    radial-gradient(circle at top left, #8b5cf6 0%, transparent 30%),
-    radial-gradient(circle at bottom right, #ec4899 0%, transparent 30%),
-    linear-gradient(180deg, #050816, #0f172a);
-
-  color: white;
-
-  padding: 40px 24px 120px;
-
   overflow-x: hidden;
+
+  scroll-snap-type: y mandatory;
+
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar{
+    display:none;
+  }
 `;
 
 const Header = styled.div`
