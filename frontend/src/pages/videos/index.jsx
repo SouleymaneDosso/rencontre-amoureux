@@ -5,7 +5,9 @@ import { FaHeart, FaCommentDots } from "react-icons/fa";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { FaArrowLeft } from "react-icons/fa";
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
 
 /* ================== STYLES ================== */
@@ -23,180 +25,123 @@ const Pagewrapper = styled.div`
 
   scrollbar-width: none;
 
-  &::-webkit-scrollbar{
-    display:none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;
 
 const Header = styled.div`
-position:fixed;
+  position: fixed;
 
-top:0;
-left:0;
-right:0;
+  top: 0;
+  left: 0;
+  right: 0;
 
-height:70px;
+  height: 70px;
 
-display:flex;
-justify-content:space-between;
-align-items:center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-padding:0 25px;
+  padding: 0 25px;
 
-z-index:500;
+  z-index: 500;
 
-background:
-linear-gradient(
-to bottom,
-rgba(0,0,0,.75),
-transparent
-);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent);
 
-backdrop-filter:blur(15px);
+  backdrop-filter: blur(15px);
 `;
 
 const LeftHeader = styled.div``;
 
-const Title = styled.h1`
-  margin: 0;
 
-  font-size: 48px;
-  font-weight: 900;
+const UploadButton = styled.label`
+  position: fixed;
 
-  line-height: 1.05;
+  top: 20px;
+  right: 16px;
 
-  background: linear-gradient(90deg, #ffffff, #c084fc, #60a5fa);
+  width: 46px;
+  height: 46px;
 
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-`;
-
-const Subtitle = styled.p`
-  color: #94a3b8;
-  margin-top: 10px;
-`;
-
-const UploadCard = styled.label`
-  width: 150px;
-  height: 150px;
-
-  border-radius: 30px;
-
-  cursor: pointer;
+  border-radius: 50%;
 
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
 
-  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
 
-  backdrop-filter: blur(20px);
+  color: white;
 
-  transition: 0.35s;
+  z-index: 1000;
 
-  &:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.08);
-  }
+  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
 
   svg {
-    font-size: 42px;
-    margin-bottom: 12px;
+    font-size: 22px;
   }
-
-  span {
-    font-weight: 700;
-  }
-`;
-
-const Titre = styled.h3`
-  text-align: center;
-  padding: 15px;
-  background: linear-gradient(90deg, #6a11cb, #2575fc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 `;
 
 const Feed = styled.div`
-width:100%;
+  width: 100%;
 `;
 
 const VideoSection = styled.div`
-position:relative;
+  position: relative;
 
-width:100vw;
+  width: 100vw;
 
-height:100vh;
+  height: 100vh;
 
-scroll-snap-align:start;
+  scroll-snap-align: start;
 
-background:black;
+  background: black;
 
-overflow:hidden;
+  overflow: hidden;
 `;
 
 const Overlay = styled.div`
-position:absolute;
+  position: absolute;
 
-inset:0;
+  inset: 0;
 
-display:flex;
+  display: flex;
 
-justify-content:space-between;
+  justify-content: space-between;
 
-padding:25px;
+  padding: 25px;
 
-background:
-
-linear-gradient(
-to top,
-rgba(0,0,0,.85),
-transparent 35%
-);
-`;
-
-const BottomInfos = styled.div`
-position:absolute;
-
-left:18px;
-
-bottom:30px;
-
-width:70%;
-
-z-index:20;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent 35%);
 `;
 
 const RightPanel = styled.div`
-position:absolute;
+  position: absolute;
 
-right:14px;
+  right: 14px;
 
-bottom:110px;
+  bottom: 110px;
 
-display:flex;
+  display: flex;
 
-flex-direction:column;
+  flex-direction: column;
 
-gap:24px;
+  gap: 24px;
 
-z-index:30;
+  z-index: 30;
 `;
 
-
-
 const Videos = styled.video`
-position:absolute;
+  position: absolute;
 
-inset:0;
+  inset: 0;
 
-width:100%;
-height:100%;
+  width: 100%;
+  height: 100%;
 
-object-fit:cover;
+  object-fit: cover;
 `;
 
 const Bouton = styled.button`
@@ -240,10 +185,9 @@ const Description = styled.p`
   color: white;
 `;
 
-
-
 const IconBox = styled.div`
   display: flex;
+  color: white;
 
   flex-direction: column;
 
@@ -284,30 +228,26 @@ const Badge = styled.div`
   margin-bottom: 18px;
 `;
 
-const Boutonretour = styled.button`
-position:fixed;
+const BackButton = styled.button`
+  position: fixed;
 
-top:18px;
-left:20px;
+  top: 20px;
+  left: 16px;
 
-width:45px;
-height:45px;
+  width: 46px;
+  height: 46px;
 
-border-radius:50%;
+  border-radius: 50%;
 
-background:rgba(255,255,255,.12);
+  border: none;
 
-backdrop-filter:blur(12px);
+  background: rgba(0, 0, 0, 0.35);
 
-border:none;
+  backdrop-filter: blur(20px);
 
-color:white;
+  color: white;
 
-display:flex;
-justify-content:center;
-align-items:center;
-
-z-index:1000;
+  z-index: 1000;
 `;
 
 const ModalOverlay = styled.div`
@@ -572,107 +512,101 @@ function Video() {
 
   return (
     <Pagewrapper>
-      <Boutonretour onClick={() => navigate(-1)}>Retour</Boutonretour>
-        <Header>
-          <LeftHeader>
-            <Title>Mes vidéos</Title>
+      <BackButton onClick={() => navigate(-1)}>
+        {" "}
+        <FaArrowLeft />
+      </BackButton>
+      <Header>
+        <LeftHeader />
+        <UploadButton htmlFor="masque">
+          <FaPlus />
+        </UploadButton>
+      </Header>
 
-            <Subtitle>
-              Partage tes meilleurs moments avec la communauté.
-            </Subtitle>
-          </LeftHeader>
+      <input
+        id="masque"
+        hidden
+        type="file"
+        accept="video/*"
+        multiple
+        onChange={uploadeMultiple}
+      />
+      {videos.length > 0 && (
+        <Conteneurvideo>
+          {videos.map((video, index) => (
+            <VideoSection key={index}>
+              <Videos src={video.url} autoPlay muted loop />
+            </VideoSection>
+          ))}
+        </Conteneurvideo>
+      )}
 
-          <UploadCard htmlFor="masque">
-            <HiVideoCamera />
+      {videos.length > 0 && (
+        <div>
+          <Bouton onClick={sauvegardedb} disabled={loading}>
+            {loading ? "Envoi..." : "Ajouter"}
+          </Bouton>
+          <Bouton onClick={supprimerurl}>Annuller</Bouton>
 
-            <span>Ajouter</span>
-          </UploadCard>
-        </Header>
+          <InputDescription
+            placeholder="Ajoute une description..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      )}
 
-        <input
-          id="masque"
-          hidden
-          type="file"
-          accept="video/*"
-          multiple
-          onChange={uploadeMultiple}
-        />
-          {videos.length > 0 && (
-            <Conteneurvideo>
-              {videos.map((video, index) => (
-                < VideoSection key={index}>
-                  <Videos src={video.url} autoPlay muted loop />
-                </ VideoSection>
-              ))}
-            </Conteneurvideo>
-          )}
+      <Feed>
+        {mesdeos.map((video) => (
+          <MotionVideo
+            key={video._id}
+            initial={{
+              opacity: 0,
+              y: 80,
+              scale: 0.96,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+            }}
+            transition={{
+              duration: 0.45,
+            }}
+            viewport={{
+              once: false,
+              amount: 0.6,
+            }}
+            onClick={() => setSelectedVideo(video)}
+          >
+            <Videos src={video.url} muted loop />
 
-          {videos.length > 0 && (
-            <div>
-              <Bouton onClick={sauvegardedb} disabled={loading}>
-                {loading ? "Envoi..." : "Ajouter"}
-              </Bouton>
-              <Bouton onClick={supprimerurl}>Annuller</Bouton>
+            <Overlay>
+              <TopInfo>
+                <Badge>🎬 vidéo</Badge>
+              </TopInfo>
 
-              <InputDescription
-                placeholder="Ajoute une description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-          )}
+              <div>
+                <Description>
+                  {video.description || "Pas de description"}
+                </Description>
 
-          <Feed>
-            {mesdeos.map((video) => (
-              <MotionVideo
-                key={video._id}
-                initial={{
-                  opacity: 0,
-                  y: 80,
-                  scale: 0.96,
-                }}
-                whileInView={{
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                }}
-                transition={{
-                  duration: 0.45,
-                }}
-                viewport={{
-                  once: false,
-                  amount: 0.6,
-                }}
-                onClick={() => setSelectedVideo(video)}
-              >
-                <Videos src={video.url} muted loop />
+                <RightPanel>
+                  <IconBox>
+                    <FaHeart />
+                    <span>{video.likes?.length || 0}</span>
+                  </IconBox>
 
-                <Overlay>
-                  <TopInfo>
-                    <Badge>🎬 vidéo</Badge>
-                  </TopInfo>
-
-                  <div>
-                    <Description>
-                      {video.description || "Pas de description"}
-                    </Description>
-
-                    <RightPanel>
-                      <IconBox>
-                        <FaHeart />
-                        <span>{video.likes?.length || 0}</span>
-                      </IconBox>
-
-                      <IconBox>
-                        <FaCommentDots />
-                        <span>{video.comments?.length || 0}</span>
-                      </IconBox>
-                    </RightPanel>
-                  </div>
-                </Overlay>
-              </MotionVideo>
-            ))}
-          </Feed>
+                  <IconBox>
+                    <FaCommentDots />
+                    <span>{video.comments?.length || 0}</span>
+                  </IconBox>
+                </RightPanel>
+              </div>
+            </Overlay>
+          </MotionVideo>
+        ))}
+      </Feed>
 
       {selectedVideo && (
         <ModalOverlay onClick={() => setSelectedVideo(null)}>
