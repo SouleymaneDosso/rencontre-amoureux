@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import { HiVideoCamera } from "react-icons/hi";
+
 import { FaHeart, FaCommentDots } from "react-icons/fa";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";

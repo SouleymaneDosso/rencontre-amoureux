@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LandingHeader from "../../components/Landing/LandingHeader";
 
 const Page = styled.div`
   min-height: 100vh;
@@ -52,6 +53,7 @@ const Subtitle = styled.p`
 const Buttons = styled.div`
   display: flex;
   gap: 20px;
+  padding-top: 12px;
 
   @media (max-width: 900px) {
     justify-content: center;
@@ -232,6 +234,7 @@ export default function LandingPage() {
 
   return (
     <Page>
+       <LandingHeader />
       <Hero>
         <HeroContent>
           <Left>
@@ -268,10 +271,10 @@ export default function LandingPage() {
           </Left>
 
           <Gallery>
-            <Photo src="" />
-            <Photo src="/images/user2.jpg" />
-            <Photo src="/images/user3.jpg" />
-            <Photo src="/images/user4.jpg" />
+            <Photo src="ChatGPT Image 7 janv. 2026, 17_48_17.png" />
+            <Photo src="WhatsApp Image 2026-04-06 at 16.50.55.jpeg" />
+            <Photo src="image.jpg" />
+            <Photo src="ChatGPT Image 7 janv. 2026, 17_54_17.png" />
           </Gallery>
         </HeroContent>
       </Hero>
@@ -303,7 +306,7 @@ export default function LandingPage() {
         <SectionTitle>Découvrez BabiTendre en vidéo</SectionTitle>
 
         <Video controls>
-          <source src="/videos/presentation.mp4" type="video/mp4" />
+          <source src="WhatsApp Video 2026-04-24 at 17.28.19.mp4"/>
         </Video>
       </Section>
 

@@ -5,6 +5,7 @@ import { FaHeart, FaCommentDots, FaShare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { FaPlay, FaPause } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Page = styled.div`
   position: fixed;
@@ -17,6 +18,27 @@ const Page = styled.div`
   scroll-snap-type: y mandatory;
 
   background: black;
+`;
+const BackButton = styled.button`
+  position: fixed;
+
+  top: 20px;
+  left: 16px;
+
+  width: 46px;
+  height: 46px;
+
+  border-radius: 50%;
+
+  border: none;
+
+  background: rgba(0, 0, 0, 0.35);
+
+  backdrop-filter: blur(20px);
+
+  color: white;
+
+  z-index: 1000;
 `;
 
 const VideoContainer = styled.div`
@@ -780,7 +802,10 @@ function Videopublic() {
               {showIcon.type === "play" ? <FaPlay /> : <FaPause />}
             </CenterIcon>
           )}
-          <Boutonretour onClick={() => navigate(-1)}> ← Retour</Boutonretour>
+          <BackButton onClick={() => navigate(-1)}>
+            {" "}
+            <FaArrowLeft />
+          </BackButton>
 
           {showUI && (
             <Overlay show={showUI}>
