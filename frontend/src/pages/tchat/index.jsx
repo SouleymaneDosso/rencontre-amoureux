@@ -4,9 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
-import {
-  FaPhoneSlash,
-} from "react-icons/fa";
+import { FaPhoneSlash } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
 
 import { FaPhoneAlt } from "react-icons/fa";
@@ -824,108 +822,167 @@ const DeclineButton = styled.button`
   cursor: pointer;
 `;
 
-const CallingIcon = styled.div`
-  width: 80px;
-  height: 80px;
+const CallMessage = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
 
-  margin: 0 auto 18px;
+const CallIcon = styled.div`
+  width: 42px;
+  height: 42px;
 
   border-radius: 50%;
-
-  background: #22c55e;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: white;
-  font-size: 32px;
+  font-size: 18px;
 
-  animation: pulse 1.2s infinite;
+  background: ${({ $status }) => {
+    if ($status === "missed") return "#fee2e2";
 
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
-    }
+    if ($status === "rejected") return "#fee2e2";
 
-    70% {
-      transform: scale(1.08);
-      box-shadow: 0 0 0 18px rgba(34, 197, 94, 0);
-    }
+    if ($status === "cancelled") return "#f3f4f6";
 
-    100% {
-      transform: scale(1);
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-    }
+    return "#dcfce7";
+  }};
+
+  color: ${({ $status }) => {
+    if ($status === "missed") return "#dc2626";
+
+    if ($status === "rejected") return "#dc2626";
+
+    if ($status === "cancelled") return "#6b7280";
+
+    return "#16a34a";
+  }};
+`;
+
+const CallAvatar = styled.div`
+  width: 56px;
+  height: 56px;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f3f4f6;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-`;
-const CallStatus = styled.p`
-  margin-top: 12px;
-  margin-bottom: 24px;
-
-  color: #6b7280;
-  font-size: 15px;
-`;
-const CallMessage = styled.div`
-display:flex;
-align-items:center;
-gap:12px;
-`;
-
-const CallIcon = styled.div`
-width:42px;
-height:42px;
-
-border-radius:50%;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-font-size:18px;
-
-background:${({$status})=>{
-
-if($status==="missed") return "#fee2e2";
-
-if($status==="rejected") return "#fee2e2";
-
-if($status==="cancelled") return "#f3f4f6";
-
-return "#dcfce7";
-
-}};
-
-color:${({$status})=>{
-
-if($status==="missed") return "#dc2626";
-
-if($status==="rejected") return "#dc2626";
-
-if($status==="cancelled") return "#6b7280";
-
-return "#16a34a";
-
-}};
 `;
 
 const CallInfos = styled.div`
-display:flex;
-flex-direction:column;
+  display: flex;
+  flex-direction: column;
 `;
 const CallTitle = styled.div`
-font-weight:600;
-font-size:15px;
+  font-weight: 600;
+  font-size: 15px;
 `;
 
 const CallDuration = styled.div`
-font-size:12px;
-opacity:.7;
-margin-top:3px;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 3px;
 `;
 
+const CallingBanner = styled.div`
+  position: fixed;
 
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 360px;
+  max-width: calc(100% - 20px);
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+
+  z-index: 99999;
+
+  animation: slideDown 0.25s ease;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+`;
+const CallerSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`;
+
+const CallerText = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 16px;
+    color: #111827;
+  }
+
+  small {
+    margin-top: 3px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+`;
+
+const EndCallButton = styled.button`
+  width: 52px;
+  height: 52px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #ef4444;
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  font-size: 18px;
+
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+`;
 
 function Tchat() {
   const { id } = useParams();
@@ -1920,7 +1977,6 @@ function Tchat() {
     setAudioUrl("");
     setPreviewUrl("");
     setMessageRepondu(null);
-  
 
     try {
       const formData = new FormData();
@@ -2176,21 +2232,28 @@ function Tchat() {
       )}
 
       {calling && (
-        <CallModal>
-          <CallBox>
-            <CallingIcon>
-              <FaPhoneAlt />
-            </CallingIcon>
+        <CallingBanner>
+          <CallerSection>
+            <IoCall color="#22c55e" size={22} />
+            <CallAvatar>
+              {profilCible?.avatar ? (
+                <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
+              ) : (
+                <FaUserCircle size={56} color="#9ca3af" />
+              )}
+            </CallAvatar>
 
-            <h3>Appel en cours...</h3>
+            <CallerText>
+              <strong>{profilCible?.pseudo}</strong>
 
-            <CallStatus>
-              Appel de <strong>{profilCible?.pseudo}</strong>
-            </CallStatus>
+              <small>📞 Appel audio...</small>
+            </CallerText>
+          </CallerSection>
 
-            <DeclineButton onClick={cancelCall}>Annuler</DeclineButton>
-          </CallBox>
-        </CallModal>
+          <EndCallButton onClick={cancelCall}>
+            <FaPhoneSlash />
+          </EndCallButton>
+        </CallingBanner>
       )}
       <Header>
         <BackButton onClick={() => navigate(-1)}>
