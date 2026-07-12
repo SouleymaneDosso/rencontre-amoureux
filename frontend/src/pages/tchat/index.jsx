@@ -8,7 +8,7 @@ import { FaPhoneSlash, FaPhone } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
 import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
-import useAudioCall from "../../Components/hooks/useAudioCall";
+import useAudioCall from "../../components/hooks/useAudioCall";
 
 import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -34,7 +34,6 @@ import {
   getMessagesConversation,
   envoyerMessageApi,
   marquerMessagesCommeLusApi,
-  creerMessageAppel,
 } from "../../services/tchatApi";
 
 import { useLocation } from "react-router-dom";
