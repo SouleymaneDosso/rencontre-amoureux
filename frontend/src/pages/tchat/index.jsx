@@ -404,6 +404,40 @@ const MOdalcontain = styled.div`
   justify-content: center;
 `;
 
+const ExpandButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+
+  cursor: pointer;
+
+  z-index: 10;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: scale(1.1);
+  }
+
+  svg {
+    font-size: 16px;
+  }
+`;
+
 const ModalImage = styled.img`
   max-width: 100%;
   max-height: 100%;
