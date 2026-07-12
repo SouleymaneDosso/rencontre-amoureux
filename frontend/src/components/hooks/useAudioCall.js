@@ -1,20 +1,19 @@
-import { useState,useRef,useEffect} from "react";
-import {
-  creerMessageAppel,
-} from "../../services/tchatApi";
+import { useState, useRef, useEffect } from "react";
+import { creerMessageAppel } from "../../services/tchatApi";
 
-export default function useAudioCall({socket,
-    id,
-    token,
-    messages,
-    profilCible,
-    monProfilId}) {
-const localStreamRef = useRef(null);
- const [calling, setCalling] = useState(false);
+export default function useAudioCall({
+  socket,
+  id,
+  token,
+  messages,
+  profilCible,
+  monProfilId,
+}) {
+  const localStreamRef = useRef(null);
+  const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
-  
 
-useEffect(() => {
+  useEffect(() => {
     const handleIncomingCall = ({ from }) => {
       console.log("📞 Appel entrant de :", from);
 
@@ -30,7 +29,7 @@ useEffect(() => {
     };
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const handleRejected = () => {
       setCalling(false);
 
@@ -56,22 +55,28 @@ useEffect(() => {
     };
   }, []);
 
+
   const acceptCall = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-      localStreamRef.current = stream;
+    localStreamRef.current = stream;
 
-      setIncomingCall(null);
+    socket.emit("acceptCall", {
+      to: incomingCall.from.id,
+      from: monProfilId,
+    });
 
-      console.log("🎤 Micro autorisé :", stream);
-    } catch (error) {
-      console.error("Accès au micro refusé :", error);
-    }
-  };
-const startCall = () => {
+    setIncomingCall(null);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  const startCall = () => {
     setCalling(true);
 
     socket.emit("callUser", {
@@ -127,15 +132,13 @@ const startCall = () => {
       console.error(error);
     }
   };
-  
 
-  return{
-calling,
-incomingCall,
-acceptCall,
-rejectCall,
-cancelCall,
-startCall
-
-  }
+  return {
+    calling,
+    incomingCall,
+    acceptCall,
+    rejectCall,
+    cancelCall,
+    startCall,
+  };
 }
