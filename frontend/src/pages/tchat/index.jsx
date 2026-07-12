@@ -2236,7 +2236,7 @@ function Tchat() {
       {calling && (
         <CallingBanner>
           <CallerSection>
-            <IoCall color="#22c55e" size={22} />
+            <FaPhoneAlt color="#22c55e" size={22} />
             <CallAvatar>
               {profilCible?.avatar ? (
                 <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
@@ -2258,12 +2258,12 @@ function Tchat() {
         </CallingBanner>
       )}
       <HeaderChat
-  navigate={navigate}
-  profilCible={profilCible}
-  isTyping={isTyping}
-  isProfilCibleOnline={isProfilCibleOnline}
-  startCall={startCall}
-/>
+        navigate={navigate}
+        profilCible={profilCible}
+        isTyping={isTyping}
+        isProfilCibleOnline={isProfilCibleOnline}
+        startCall={startCall}
+      />
 
       <MessagesContainer
         ref={containerRef}
