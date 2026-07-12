@@ -2257,45 +2257,13 @@ function Tchat() {
           </EndCallButton>
         </CallingBanner>
       )}
-      <Header>
-        <BackButton onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-        </BackButton>
-
-        <Avatarplaceholder>
-          {profilCible?.avatar ? (
-            <Avatar
-              src={profilCible.avatar?.url}
-              alt="Profil"
-              onClick={() => navigate(`/Profilpublic/${profilCible._id}`)}
-            />
-          ) : (
-            <FaUserCircle size={42} color="#4f6cff" />
-          )}
-        </Avatarplaceholder>
-
-        <HeaderInfo>
-          <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>
-          <HeaderSubtitle>
-            {isTyping ? (
-              "en train d’écrire..."
-            ) : (
-              <>
-                <FaCircle
-                  size={10}
-                  color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
-                />
-                {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
-              </>
-            )}
-          </HeaderSubtitle>
-        </HeaderInfo>
-        <HeaderActions>
-          <CallButton onClick={startCall}>
-            <FaPhoneAlt />
-          </CallButton>
-        </HeaderActions>
-      </Header>
+      <HeaderChat
+  navigate={navigate}
+  profilCible={profilCible}
+  isTyping={isTyping}
+  isProfilCibleOnline={isProfilCibleOnline}
+  startCall={startCall}
+/>
 
       <MessagesContainer
         ref={containerRef}
