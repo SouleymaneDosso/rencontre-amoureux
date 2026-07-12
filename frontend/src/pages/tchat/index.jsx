@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import imageCompression from "browser-image-compression";
 import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
-import { FaPhoneSlash } from "react-icons/fa";
+import { FaPhoneSlash, FaPhone } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
 import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
@@ -40,52 +40,6 @@ import { useLocation } from "react-router-dom";
 
 import { FaExpand } from "react-icons/fa";
 
-const HeaderActions = styled.div`
-  margin-left: auto;
-`;
-
-const CallButton = styled.button`
-  width: 42px;
-  height: 42px;
-
-  border: none;
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  background: #22c55e;
-  color: white;
-
-  transition: 0.2s;
-
-  &:hover {
-    transform: scale(1.08);
-  }
-`;
-
-const ExpandButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: none;
-
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-`;
 
 const PreviewActions = styled.div`
   display: flex;
@@ -226,15 +180,6 @@ const HeaderTitle = styled.h2`
   margin: 0;
   font-size: 18px;
   color: #1f2a44;
-`;
-
-const HeaderSubtitle = styled.div`
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #6b7280;
 `;
 
 const MessagesContainer = styled.div`
@@ -418,25 +363,6 @@ const StatusWrapper = styled.span`
   opacity: 0.9;
 `;
 
-const Avatarplaceholder = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4f6cff, #6f88ff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-  font-weight: 700;
-`;
-
-const Avatar = styled.img`
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-`;
 
 const SkeletonBubble = styled.div`
   width: ${(props) => props.width || "60%"};
@@ -779,50 +705,6 @@ const RecordingDot = styled.div`
 
   animation: ${blink} 1s infinite;
 `;
-const CallModal = styled.div`
-  position: fixed;
-  inset: 0;
-
-  background: rgba(0, 0, 0, 0.6);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  z-index: 20000;
-`;
-
-const CallBox = styled.div`
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  width: 300px;
-`;
-
-const CallActions = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-`;
-
-const AcceptButton = styled.button`
-  background: #22c55e;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-`;
-
-const DeclineButton = styled.button`
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-`;
 
 const CallMessage = styled.div`
   display: flex;
@@ -985,7 +867,32 @@ const EndCallButton = styled.button`
     transform: scale(1.08);
   }
 `;
+const Acceptbutton = styled.button`
+  width: 52px;
+  height: 52px;
 
+  border: none;
+
+  border-radius: 50%;
+
+  background: rgba(249, 18, 145, 0.83);
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  font-size: 18px;
+
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+`;
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -2209,34 +2116,36 @@ function Tchat() {
 
   return (
     <Wrapper>
-      {incomingCall && (
-        <CallModal>
-          <CallBox>
-            <h3>📞 Appel entrant</h3>
+       {incomingCall && (
+        <CallingBanner>
+          <CallerSection>
+            <CallAvatar>
+              {profilCible?.avatar ? (
+                <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
+              ) : (
+                <FaUserCircle size={56} color="#9ca3af" />
+              )}
+            </CallAvatar>
 
-            <p>{profilCible?.pseudo} vous appelle</p>
+            <CallerText>
+              <strong>{profilCible?.pseudo}</strong>
 
-            {profilCible?.avatar && (
-              <Avatar
-                src={profilCible.avatar.url}
-                alt={profilCible.pseudo}
-                style={{ width: "50px", height: "50px", borderRadius: "50%" }}
-              />
-            )}
+              <small>📞 Appel Entrant</small>
+            </CallerText>
+          </CallerSection>
 
-            <CallActions>
-              <DeclineButton onClick={rejectCall}>Refuser</DeclineButton>
-
-              <AcceptButton onClick={acceptCall}>Accepter</AcceptButton>
-            </CallActions>
-          </CallBox>
-        </CallModal>
+          <EndCallButton onClick={rejectCall}>
+            <FaPhoneSlash />
+          </EndCallButton>
+          <Acceptbutton onClick={acceptCall}>
+            <FaPhone/>
+          </Acceptbutton>
+        </CallingBanner>
       )}
 
       {calling && (
         <CallingBanner>
           <CallerSection>
-            <FaPhoneAlt color="#22c55e" size={22} />
             <CallAvatar>
               {profilCible?.avatar ? (
                 <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
