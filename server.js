@@ -54,6 +54,36 @@ io.on("connection", (socket) => {
   }
 });
 
+socket.on("offer", ({ to, offer }) => {
+  const receiverSocketId = onlineUsers.get(to);
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("offer", {
+      offer,
+    });
+  }
+});
+
+socket.on("answer", ({ to, answer }) => {
+  const receiverSocketId = onlineUsers.get(to);
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("answer", {
+      answer,
+    });
+  }
+});
+
+socket.on("iceCandidate", ({ to, candidate }) => {
+  const receiverSocketId = onlineUsers.get(to);
+
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("iceCandidate", {
+      candidate,
+    });
+  }
+});
+
 socket.on("cancelCall", ({to, from})=>{
   const receiverSocketId = onlineUsers.get(to);
   if(receiverSocketId){
