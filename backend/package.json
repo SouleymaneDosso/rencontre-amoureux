@@ -1,7 +1,18 @@
 {
-  "name": "backend",
+  "name": "rencontre",
   "version": "1.0.0",
   "description": "application de rencontre",
+  "keywords": [
+    "05922151DS@"
+  ],
+  "homepage": "https://github.com/SouleymaneDosso/rencontre-amoureux#readme",
+  "bugs": {
+    "url": "https://github.com/SouleymaneDosso/rencontre-amoureux/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SouleymaneDosso/rencontre-amoureux.git"
+  },
   "license": "ISC",
   "author": "Dosso Souleymane",
   "type": "commonjs",
@@ -23,5 +34,6 @@
     "nodemon": "^3.1.14",
     "socket.io": "^4.8.3",
     "streamifier": "^0.1.1"
-  }
+  },
+  "devDependencies": {}
 }

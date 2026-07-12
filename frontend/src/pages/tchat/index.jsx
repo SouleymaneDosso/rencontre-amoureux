@@ -1354,7 +1354,7 @@ function Tchat() {
       setMessages((prev) =>
         prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
       );
-
+    
       socket.emit("sendMessage", data.nouveauMessage);
     } catch (error) {
       console.error(error);
