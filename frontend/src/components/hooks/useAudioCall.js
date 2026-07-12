@@ -13,10 +13,18 @@ export default function useAudioCall({
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
 
+  useEffect(()=>{
+    const accepeterappel = ()=>{
+        setCalling(false);
+    }
+    socket.on("callAccepted",accepeterappel)
+    return ()=>{
+        socket.off("callAccepted", accepeterappel)
+    };
+  },[])
+
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
-      console.log("📞 Appel entrant de :", from);
-
       setIncomingCall({
         from,
       });
@@ -32,8 +40,6 @@ export default function useAudioCall({
   useEffect(() => {
     const handleRejected = () => {
       setCalling(false);
-
-      alert("L'appel a été refusé.");
     };
 
     socket.on("callRejected", handleRejected);
