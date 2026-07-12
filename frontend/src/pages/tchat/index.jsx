@@ -6,6 +6,8 @@ import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
 import { FaPhoneSlash } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
+import MessageItem from "../../components/chat/MessageItem";
+import HeaderChat from "../../components/chat/HeaderChat";
 
 import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
