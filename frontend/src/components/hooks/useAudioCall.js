@@ -49,7 +49,9 @@ export default function useAudioCall({
 
     peerConnectionRef.current.ontrack = (event) => {
       console.log("Flux distant reçu :", event.streams[0]);
+      console.log(remoteAudioRef.current);
       remoteAudioRef.current.srcObject = event.streams[0];
+      console.log(remoteAudioRef.current.srcObject);
     };
 
     peerConnectionRef.current.onicecandidate = (event) => {
