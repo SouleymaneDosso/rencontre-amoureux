@@ -23,7 +23,7 @@ export default function useAudioCall({
     const offer = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(offer);
 
-    socket.emit("callOffer", {
+    socket.emit("offer", {
       to: id,
       offer,
     });
@@ -46,7 +46,6 @@ export default function useAudioCall({
   useEffect(() => {
     const accepeterappel = () => {
       setCalling(false);
-      createOffer();
     };
     socket.on("callAccepted", accepeterappel);
 
@@ -106,9 +105,9 @@ export default function useAudioCall({
         peerConnectionRef.current.addTrack(track, stream);
       });
 
-      await  peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(offer)
-      )
+      await peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(offer),
+      );
 
       socket.emit("acceptCall", {
         to: incomingCall.from.id,
@@ -121,7 +120,17 @@ export default function useAudioCall({
     }
   };
 
-  const startCall = () => {
+  const startCall = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+    localStreamRef.current = stream;
+
+    createPeerConnection();
+    stream.getTracks().forEach((track) => {
+      peerConnectionRef.current.addTrack(track, stream);
+    });
+    await createOffer();
     setCalling(true);
 
     socket.emit("callUser", {
