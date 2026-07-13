@@ -31,7 +31,6 @@ export default function useAudioCall({
 
     peerConnectionRef.current.onicecandidate = (event) => {
       if (event.candidate) {
-        console.log("ICE candidate :", event.candidate);
         socket.emit("iceCandidate", {
           to: id,
           candidate: event.candidate,
@@ -49,6 +48,23 @@ export default function useAudioCall({
       offer,
     });
   };
+
+  useEffect(() => {
+    const handleIceCandidate = async ({ candidate }) => {
+      console.log("ICE reçue :", candidate);
+      if (!peerConnectionRef.current) return;
+
+      await peerConnectionRef.current.addIceCandidate(
+        new RTCIceCandidate(candidate),
+      );
+    };
+
+    socket.on("iceCandidate", handleIceCandidate);
+
+    return () => {
+      socket.off("iceCandidate", handleIceCandidate);
+    };
+  }, []);
 
   useEffect(() => {
     const handleAnswer = async ({ answer }) => {
