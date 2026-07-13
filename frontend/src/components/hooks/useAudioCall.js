@@ -15,6 +15,17 @@ export default function useAudioCall({
   const [offer, setOffer] = useState(null);
   const peerConnectionRef = useRef(null);
 
+  const createAnswer = async () => {
+    const answer = await peerConnectionRef.current.createAnswer();
+
+    await peerConnectionRef.current.setLocalDescription(answer);
+
+    socket.emit("answer", {
+      to: incomingCall.from.id,
+      answer,c
+    });
+  };
+
   const createPeerConnection = () => {
     peerConnectionRef.current = new RTCPeerConnection();
   };
@@ -28,6 +39,22 @@ export default function useAudioCall({
       offer,
     });
   };
+
+  useEffect(() => {
+  const handleAnswer = async ({ answer }) => {
+    console.log("Answer reçue :", answer);
+
+    await peerConnectionRef.current.setRemoteDescription(
+      new RTCSessionDescription(answer)
+    );
+  };
+
+  socket.on("answer", handleAnswer);
+
+  return () => {
+    socket.off("answer", handleAnswer);
+  };
+}, []);
 
   useEffect(() => {
     const handleOffer = ({ offer }) => {
@@ -108,7 +135,7 @@ export default function useAudioCall({
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(offer),
       );
-
+      await createAnswer();
       socket.emit("acceptCall", {
         to: incomingCall.from.id,
         from: monProfilId,
