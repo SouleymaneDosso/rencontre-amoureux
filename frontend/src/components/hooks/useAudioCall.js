@@ -9,13 +9,13 @@ export default function useAudioCall({
   profilCible,
   monProfilId,
 }) {
-  
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
+  const peerUserIdRef = useRef(null);
 
   const createAnswer = async () => {
     const answer = await peerConnectionRef.current.createAnswer();
@@ -29,7 +29,13 @@ export default function useAudioCall({
   };
 
   const createPeerConnection = () => {
-    peerConnectionRef.current = new RTCPeerConnection();
+    peerConnectionRef.current = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: "stun:stun.l.google.com:19302",
+        },
+      ],
+    });
     peerConnectionRef.current.onconnectionstatechange = () => {
       console.log(
         "État connexion :",
@@ -42,17 +48,17 @@ export default function useAudioCall({
     };
 
     peerConnectionRef.current.ontrack = (event) => {
-  console.log("Flux distant reçu :", event.streams[0]);
-  remoteAudioRef.current.srcObject = event.streams[0];
-};
+      console.log("Flux distant reçu :", event.streams[0]);
+      remoteAudioRef.current.srcObject = event.streams[0];
+    };
 
     peerConnectionRef.current.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("iceCandidate", {
-          to: id,
-          candidate: event.candidate,
-        });
-      }
+      if (!event.candidate) return;
+
+      socket.emit("iceCandidate", {
+        to: peerUserIdRef.current,
+        candidate: event.candidate,
+      });
     };
   };
 
@@ -169,6 +175,7 @@ export default function useAudioCall({
       stream.getTracks().forEach((track) => {
         peerConnectionRef.current.addTrack(track, stream);
       });
+      peerUserIdRef.current = id;
 
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(offer),
@@ -195,6 +202,7 @@ export default function useAudioCall({
     stream.getTracks().forEach((track) => {
       peerConnectionRef.current.addTrack(track, stream);
     });
+    peerUserIdRef.current = id;
     await createOffer();
     setCalling(true);
 
