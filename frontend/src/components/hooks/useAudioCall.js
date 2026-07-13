@@ -12,28 +12,48 @@ export default function useAudioCall({
   const localStreamRef = useRef(null);
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
+  const [offer, setOffer] = useState(null);
   const peerConnectionRef = useRef(null);
 
-
-  const createPeerConnection = ()=>{
+  const createPeerConnection = () => {
     peerConnectionRef.current = new RTCPeerConnection();
-  }
+  };
 
   const createOffer = async () => {
-const offer = await peerConnectionRef.current.createOffer();
-await peerConnectionRef.current.setLocalDescription(offer);
-};
+    const offer = await peerConnectionRef.current.createOffer();
+    await peerConnectionRef.current.setLocalDescription(offer);
 
+    socket.emit("offer", {
+      to: id,
+      offer,
+    });
+  };
 
-  useEffect(()=>{
-    const accepeterappel = ()=>{
-        setCalling(false);
-    }
-    socket.on("callAccepted",accepeterappel)
-    return ()=>{
-        socket.off("callAccepted", accepeterappel)
+  useEffect(() => {
+    const handleOffer = ({ offer }) => {
+      console.log("Offer reçue :", offer);
+
+      setOffer(offer);
     };
-  },[])
+
+    socket.on("offer", handleOffer);
+
+    return () => {
+      socket.off("offer", handleOffer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const accepeterappel = () => {
+      setCalling(false);
+      createOffer();
+    };
+    socket.on("callAccepted", accepeterappel);
+
+    return () => {
+      socket.off("callAccepted", accepeterappel);
+    };
+  }, []);
 
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
@@ -73,31 +93,33 @@ await peerConnectionRef.current.setLocalDescription(offer);
     };
   }, []);
 
-
   const acceptCall = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
 
-    localStreamRef.current = stream;
-     createPeerConnection();
+      localStreamRef.current = stream;
+      createPeerConnection();
 
-     stream.getTracks().forEach((track)=>{
-         peerConnectionRef.current.addTrack(track, stream)
-     });
+      stream.getTracks().forEach((track) => {
+        peerConnectionRef.current.addTrack(track, stream);
+      });
 
-    socket.emit("acceptCall", {
-      to: incomingCall.from.id,
-      from: monProfilId,
-    });
+      await peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(offer),
+      );
 
-    setIncomingCall(null);
+      socket.emit("acceptCall", {
+        to: incomingCall.from.id,
+        from: monProfilId,
+      });
 
-  } catch (error) {
-    console.error(error);
-  }
-};
+      setIncomingCall(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const startCall = () => {
     setCalling(true);

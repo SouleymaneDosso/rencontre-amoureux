@@ -43,16 +43,6 @@ app.set("onlineUsers", onlineUsers);
 io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
-  socket.on("callUser", ({ to, from }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("incomingCall", {
-      from,
-      to,
-    });
-  }
-});
 
 socket.on("offer", ({ to, offer }) => {
   const receiverSocketId = onlineUsers.get(to);
