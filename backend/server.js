@@ -85,8 +85,15 @@ io.on("connection", (socket) => {
   });
 
   socket.on("endCall", ({ to, from }) => {
-    io.to(users[to]).emit("callEnded", { from });
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callEnded", {
+        from,
+      });
+    }
   });
+
   socket.on("acceptCall", ({ to, from }) => {
     const receiverSocketId = onlineUsers.get(to);
 
