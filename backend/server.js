@@ -95,6 +95,21 @@ socket.on("acceptCall", ({ to, from }) => {
   }
 });
 
+socket.on("callOffer", ({to, offer}) => {
+
+    const receiverSocketId = onlineUsers.get(to);
+
+    if(receiverSocketId){
+
+        io.to(receiverSocketId).emit("callOffer", {
+            offer
+        });
+
+    }
+
+});
+
+
 socket.on("cancelCall", ({to, from})=>{
   const receiverSocketId = onlineUsers.get(to);
   if(receiverSocketId){

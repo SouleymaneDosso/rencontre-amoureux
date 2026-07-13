@@ -12,6 +12,18 @@ export default function useAudioCall({
   const localStreamRef = useRef(null);
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
+  const peerConnectionRef = useRef(null);
+
+
+  const createPeerConnection = ()=>{
+    peerConnectionRef.current = new RTCPeerConnection();
+  }
+
+  const createOffer = async () => {
+const offer = await peerConnectionRef.current.createOffer();
+await peerConnectionRef.current.setLocalDescription(offer);
+};
+
 
   useEffect(()=>{
     const accepeterappel = ()=>{
@@ -69,6 +81,11 @@ export default function useAudioCall({
     });
 
     localStreamRef.current = stream;
+     createPeerConnection();
+
+     stream.getTracks().forEach((track)=>{
+         peerConnectionRef.current.addTrack(track, stream)
+     });
 
     socket.emit("acceptCall", {
       to: incomingCall.from.id,
