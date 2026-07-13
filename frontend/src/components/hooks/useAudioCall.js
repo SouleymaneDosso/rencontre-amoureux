@@ -61,7 +61,6 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleIceCandidate = async ({ candidate }) => {
-      console.log("ICE reçue :", candidate);
       if (!peerConnectionRef.current) return;
 
       await peerConnectionRef.current.addIceCandidate(
