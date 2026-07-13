@@ -143,8 +143,15 @@ function CallModal({
   onAccept,
   onReject,
   onCancel,
+  callDuration,
 }) {
   if (!open) return null;
+
+  const minutes = String(Math.floor(callDuration / 60)).padStart(2, "0");
+
+const seconds = String(callDuration % 60).padStart(2, "0");
+
+const formattedDuration = `${minutes}:${seconds}`;
 
   return (
     <CallModalOverlay>
@@ -166,35 +173,26 @@ function CallModal({
         {incoming
           ? "📞 Appel entrant..."
           : inCall
-            ? "🟢 Appel en cours"
+            ? `🟢 ${formattedDuration}`
             : "📞 Appel audio..."}
       </CallModalStatus>
 
       <CallModalActions>
         {incoming ? (
-  <>
-    <CallActionButton
-      $type="reject"
-      onClick={onReject}
-    >
-      <FaPhoneSlash />
-    </CallActionButton>
+          <>
+            <CallActionButton $type="reject" onClick={onReject}>
+              <FaPhoneSlash />
+            </CallActionButton>
 
-    <CallActionButton
-      $type="accept"
-      onClick={onAccept}
-    >
-      <FaPhone />
-    </CallActionButton>
-  </>
-) : (
-  <CallActionButton
-    $type="reject"
-    onClick={onCancel}
-  >
-    <FaPhoneSlash />
-  </CallActionButton>
-)}
+            <CallActionButton $type="accept" onClick={onAccept}>
+              <FaPhone />
+            </CallActionButton>
+          </>
+        ) : (
+          <CallActionButton $type="reject" onClick={onCancel}>
+            <FaPhoneSlash />
+          </CallActionButton>
+        )}
       </CallModalActions>
     </CallModalOverlay>
   );

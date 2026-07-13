@@ -13,10 +13,33 @@ export default function useAudioCall({
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
   const [inCall, setInCall] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+
+  const timerRef = useRef(null);
+  const startedAtRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const peerUserIdRef = useRef(null);
+
+  // durée d'appelle
+
+  const startTimer = () => {
+    startedAtRef.current = Date.now();
+
+    timerRef.current = setInterval(() => {
+      setCallDuration(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = null;
+    startedAtRef.current = null;
+    setCallDuration(0);
+  };
+
+  // fin durée d'appelle
 
   const createAnswer = async () => {
     const answer = await peerConnectionRef.current.createAnswer();
@@ -74,6 +97,7 @@ export default function useAudioCall({
   };
 
   const cleanupCall = () => {
+    stopTimer();
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
 
     peerConnectionRef.current?.close();
@@ -142,6 +166,7 @@ export default function useAudioCall({
       );
       setCalling(false);
       setInCall(true);
+      startTimer();
     };
 
     socket.on("answer", handleAnswer);
@@ -237,6 +262,7 @@ export default function useAudioCall({
 
       setIncomingCall(null);
       setInCall(true);
+      startTimer();
     } catch (error) {
       console.error(error);
     }
@@ -319,5 +345,6 @@ export default function useAudioCall({
     cancelCall,
     startCall,
     remoteAudioRef,
+    callDuration,
   };
 }

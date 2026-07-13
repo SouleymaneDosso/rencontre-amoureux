@@ -897,6 +897,7 @@ function Tchat() {
     remoteAudioRef,
     inCall,
     endCall,
+      callDuration,
   } = useAudioCall({
     socket,
     id,
@@ -1942,6 +1943,7 @@ function Tchat() {
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
+        callDuration={callDuration}
       />
       <HeaderChat
         navigate={navigate}
