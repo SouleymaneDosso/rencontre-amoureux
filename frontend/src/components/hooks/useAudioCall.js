@@ -74,50 +74,50 @@ export default function useAudioCall({
   };
 
   const cleanupCall = () => {
-  localStreamRef.current?.getTracks().forEach(track => track.stop());
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
 
-  peerConnectionRef.current?.close();
+    peerConnectionRef.current?.close();
 
-  localStreamRef.current = null;
-  peerConnectionRef.current = null;
+    localStreamRef.current = null;
+    peerConnectionRef.current = null;
 
-  if (remoteAudioRef.current) {
-    remoteAudioRef.current.srcObject = null;
-  }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = null;
+    }
 
-  setCalling(false);
-  setIncomingCall(null);
-  setInCall(false);
-};
+    setCalling(false);
+    setIncomingCall(null);
+    setInCall(false);
+  };
 
-const endCall = async () => {
-  cleanupCall();
-
-  socket.emit("endCall", {
-    to: id,
-    from: monProfilId,
-  });
-
-  const message = await creerMessageAppel(token, {
-    conversationId: messages[0]?.conversationId,
-    destinataire: id,
-    status: "ended",
-  });
-
-  socket.emit("sendMessage", message);
-};
-
-useEffect(() => {
-  const handleEndCall = () => {
+  const endCall = async () => {
     cleanupCall();
+
+    socket.emit("endCall", {
+      to: id,
+      from: monProfilId,
+    });
+
+    const message = await creerMessageAppel(token, {
+      conversationId: messages[0]?.conversationId,
+      destinataire: id,
+      status: "ended",
+    });
+
+    socket.emit("sendMessage", message);
   };
 
-  socket.on("callEnded", handleEndCall);
+  useEffect(() => {
+    const handleEndCall = () => {
+      cleanupCall();
+    };
 
-  return () => {
-    socket.off("callEnded", handleEndCall);
-  };
-}, []);
+    socket.on("callEnded", handleEndCall);
+
+    return () => {
+      socket.off("callEnded", handleEndCall);
+    };
+  }, []);
 
   useEffect(() => {
     const handleIceCandidate = async ({ candidate }) => {
@@ -282,7 +282,7 @@ useEffect(() => {
         to: id,
         from: monProfilId,
       });
-
+      cleanupCall();
       setInCall(false);
     } catch (error) {
       console.error(error);
@@ -304,7 +304,7 @@ useEffect(() => {
         to: incomingCall.from.id,
         from: monProfilId,
       });
-
+      cleanupCall();
       setIncomingCall(null);
       setInCall(false);
       setCalling(false);
@@ -316,6 +316,7 @@ useEffect(() => {
   return {
     calling,
     inCall,
+    endCall,
     incomingCall,
     acceptCall,
     rejectCall,
