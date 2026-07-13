@@ -814,118 +814,6 @@ const CallDuration = styled.div`
   margin-top: 3px;
 `;
 
-const CallingBanner = styled.div`
-  position: fixed;
-
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-
-  width: 360px;
-  max-width: calc(100% - 20px);
-
-  background: white;
-
-  border-radius: 18px;
-
-  padding: 14px 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
-
-  z-index: 99999;
-
-  animation: slideDown 0.25s ease;
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translate(-50%, -20px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-  }
-`;
-const CallerSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-`;
-
-const CallerText = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  strong {
-    font-size: 16px;
-    color: #111827;
-  }
-
-  small {
-    margin-top: 3px;
-    font-size: 13px;
-    color: #6b7280;
-  }
-`;
-
-const EndCallButton = styled.button`
-  width: 52px;
-  height: 52px;
-
-  border: none;
-
-  border-radius: 50%;
-
-  background: #ef4444;
-
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  font-size: 18px;
-
-  transition: 0.2s;
-
-  &:hover {
-    transform: scale(1.08);
-  }
-`;
-const Acceptbutton = styled.button`
-  width: 52px;
-  height: 52px;
-
-  border: none;
-
-  border-radius: 50%;
-
-  background: hsla(138, 95%, 52%, 0.83);
-
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  font-size: 18px;
-
-  transition: 0.2s;
-
-  &:hover {
-    transform: scale(1.08);
-  }
-`;
 function Tchat() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -1007,6 +895,7 @@ function Tchat() {
     rejectCall,
     cancelCall,
     remoteAudioRef,
+     inCall,
   } = useAudioCall({
     socket,
     id,
@@ -2043,61 +1932,11 @@ function Tchat() {
     <Wrapper>
       <audio ref={remoteAudioRef} autoPlay playsInline />
 
-      {/* {incomingCall && (
-        <CallingBanner>
-          <CallerSection>
-            <CallAvatar>
-              {profilCible?.avatar ? (
-                <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
-              ) : (
-                <FaUserCircle size={56} color="#9ca3af" />
-              )}
-            </CallAvatar>
-
-            <CallerText>
-              <strong>{profilCible?.pseudo}</strong>
-
-              <small>📞 Appel Entrant</small>
-            </CallerText>
-          </CallerSection>
-
-          <EndCallButton onClick={rejectCall}>
-            <FaPhoneSlash />
-          </EndCallButton>
-          <Acceptbutton onClick={acceptCall}>
-            <FaPhone />
-          </Acceptbutton>
-        </CallingBanner>
-      )}
-
-      {calling && (
-        <CallingBanner>
-          <CallerSection>
-            <CallAvatar>
-              {profilCible?.avatar ? (
-                <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
-              ) : (
-                <FaUserCircle size={56} color="#9ca3af" />
-              )}
-            </CallAvatar>
-
-            <CallerText>
-              <strong>{profilCible?.pseudo}</strong>
-
-              <small>📞 Appel audio...</small>
-            </CallerText>
-          </CallerSection>
-
-          <EndCallButton onClick={cancelCall}>
-            <FaPhoneSlash />
-          </EndCallButton>
-        </CallingBanner>
-      )} */}
-
       <CallModal
         open={incomingCall || calling}
         incoming={!!incomingCall}
         calling={calling}
+         inCall={inCall}
         profilCible={profilCible}
         onAccept={acceptCall}
         onReject={rejectCall}

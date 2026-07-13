@@ -12,6 +12,7 @@ export default function useAudioCall({
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
+  const [inCall, setInCall] = useState(false);
   const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
@@ -93,6 +94,8 @@ export default function useAudioCall({
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(answer),
       );
+      setCalling(false);
+      setInCall(true);
     };
 
     socket.on("answer", handleAnswer);
@@ -187,6 +190,7 @@ export default function useAudioCall({
       });
 
       setIncomingCall(null);
+      setInCall(true);
     } catch (error) {
       console.error(error);
     }
@@ -232,6 +236,8 @@ export default function useAudioCall({
         to: id,
         from: monProfilId,
       });
+
+      setInCall(false);
     } catch (error) {
       console.error(error);
     }
@@ -254,6 +260,7 @@ export default function useAudioCall({
       });
 
       setIncomingCall(null);
+      setInCall(false);
       setCalling(false);
     } catch (error) {
       console.error(error);
@@ -262,6 +269,7 @@ export default function useAudioCall({
 
   return {
     calling,
+    inCall,
     incomingCall,
     acceptCall,
     rejectCall,
