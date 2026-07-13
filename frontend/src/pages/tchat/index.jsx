@@ -946,7 +946,6 @@ function Tchat() {
   const previewProgressRef = useRef(null);
   const audioRefs = useRef({});
   const previewAudioRef = useRef(null);
-  
 
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
@@ -1006,6 +1005,7 @@ function Tchat() {
     acceptCall,
     rejectCall,
     cancelCall,
+    remoteAudioRef,
   } = useAudioCall({
     socket,
     id,
@@ -1354,7 +1354,7 @@ function Tchat() {
       setMessages((prev) =>
         prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
       );
-    
+
       socket.emit("sendMessage", data.nouveauMessage);
     } catch (error) {
       console.error(error);
@@ -2212,6 +2212,7 @@ function Tchat() {
 
                     {msg.type === "audio" && msg.media?.url && (
                       <>
+                        <audio ref={remoteAudioRef} autoPlay playsInline />
                         <audio
                           ref={(el) => {
                             if (el) {

@@ -9,11 +9,13 @@ export default function useAudioCall({
   profilCible,
   monProfilId,
 }) {
-  const localStreamRef = useRef(null);
+  
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
+  const localStreamRef = useRef(null);
   const peerConnectionRef = useRef(null);
+  const remoteAudioRef = useRef(null);
 
   const createAnswer = async () => {
     const answer = await peerConnectionRef.current.createAnswer();
@@ -38,6 +40,11 @@ export default function useAudioCall({
     peerConnectionRef.current.oniceconnectionstatechange = () => {
       console.log("ICE :", peerConnectionRef.current.iceConnectionState);
     };
+
+    peerConnectionRef.current.ontrack = (event) => {
+  console.log("Flux distant reçu :", event.streams[0]);
+  remoteAudioRef.current.srcObject = event.streams[0];
+};
 
     peerConnectionRef.current.onicecandidate = (event) => {
       if (event.candidate) {
@@ -252,5 +259,6 @@ export default function useAudioCall({
     rejectCall,
     cancelCall,
     startCall,
+    remoteAudioRef,
   };
 }
