@@ -28,6 +28,16 @@ export default function useAudioCall({
 
   const createPeerConnection = () => {
     peerConnectionRef.current = new RTCPeerConnection();
+    peerConnectionRef.current.onconnectionstatechange = () => {
+      console.log(
+        "État connexion :",
+        peerConnectionRef.current.connectionState,
+      );
+    };
+
+    peerConnectionRef.current.oniceconnectionstatechange = () => {
+      console.log("ICE :", peerConnectionRef.current.iceConnectionState);
+    };
 
     peerConnectionRef.current.onicecandidate = (event) => {
       if (event.candidate) {
