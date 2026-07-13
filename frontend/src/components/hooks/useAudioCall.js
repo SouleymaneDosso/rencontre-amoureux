@@ -73,6 +73,52 @@ export default function useAudioCall({
     });
   };
 
+  const cleanupCall = () => {
+  localStreamRef.current?.getTracks().forEach(track => track.stop());
+
+  peerConnectionRef.current?.close();
+
+  localStreamRef.current = null;
+  peerConnectionRef.current = null;
+
+  if (remoteAudioRef.current) {
+    remoteAudioRef.current.srcObject = null;
+  }
+
+  setCalling(false);
+  setIncomingCall(null);
+  setInCall(false);
+};
+
+const endCall = async () => {
+  cleanupCall();
+
+  socket.emit("endCall", {
+    to: id,
+    from: monProfilId,
+  });
+
+  const message = await creerMessageAppel(token, {
+    conversationId: messages[0]?.conversationId,
+    destinataire: id,
+    status: "ended",
+  });
+
+  socket.emit("sendMessage", message);
+};
+
+useEffect(() => {
+  const handleEndCall = () => {
+    cleanupCall();
+  };
+
+  socket.on("callEnded", handleEndCall);
+
+  return () => {
+    socket.off("callEnded", handleEndCall);
+  };
+}, []);
+
   useEffect(() => {
     const handleIceCandidate = async ({ candidate }) => {
       if (!peerConnectionRef.current) return;

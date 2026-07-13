@@ -2,7 +2,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
 const Conversation = require("./models/conversation");
-const Message = require("./models/message"); 
+const Message = require("./models/message");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -44,147 +44,140 @@ io.on("connection", (socket) => {
   console.log("🟢 Un utilisateur socket est connecté :", socket.id);
 
   socket.on("callUser", ({ to, from }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("incomingCall", {
-      from,
-      to,
-    });
-  }
-});
-
-socket.on("offer", ({ to, offer }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("offer", {
-      offer,
-    });
-  }
-});
-
-socket.on("answer", ({ to, answer }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("answer", {
-      answer,
-    });
-  }
-});
-
-socket.on("iceCandidate", ({ to, candidate }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("iceCandidate", {
-      candidate,
-    });
-  }
-});
-
-
-socket.on("acceptCall", ({ to, from }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("callAccepted", {
-      from,
-    });
-  }
-});
-
-socket.on("callOffer", ({to, offer}) => {
-
     const receiverSocketId = onlineUsers.get(to);
 
-    if(receiverSocketId){
-
-        io.to(receiverSocketId).emit("callOffer", {
-            offer
-        });
-
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("incomingCall", {
+        from,
+        to,
+      });
     }
+  });
 
-});
-
-
-socket.on("cancelCall", ({to, from})=>{
-  const receiverSocketId = onlineUsers.get(to);
-  if(receiverSocketId){
-    io.to(receiverSocketId).emit("callCancelled",{
-      from,
-    })
-  } 
-})
-
-socket.on("rejectCall", ({ to, from }) => {
-  const receiverSocketId = onlineUsers.get(to);
-
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("callRejected", {
-    from,
-    to,
-    });
-  }
-});
-
-
-  socket.on("typing", ({to})=>{
+  socket.on("offer", ({ to, offer }) => {
     const receiverSocketId = onlineUsers.get(to);
-    if(receiverSocketId){
-      io.to(receiverSocketId).emit("typing")
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("offer", {
+        offer,
+      });
     }
-  })
+  });
+
+  socket.on("answer", ({ to, answer }) => {
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("answer", {
+        answer,
+      });
+    }
+  });
+
+  socket.on("iceCandidate", ({ to, candidate }) => {
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("iceCandidate", {
+        candidate,
+      });
+    }
+  });
+
+  socket.on("endCall", ({ to, from }) => {
+    io.to(users[to]).emit("callEnded", { from });
+  });
+  socket.on("acceptCall", ({ to, from }) => {
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callAccepted", {
+        from,
+      });
+    }
+  });
+
+  socket.on("callOffer", ({ to, offer }) => {
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callOffer", {
+        offer,
+      });
+    }
+  });
+
+  socket.on("cancelCall", ({ to, from }) => {
+    const receiverSocketId = onlineUsers.get(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callCancelled", {
+        from,
+      });
+    }
+  });
+
+  socket.on("rejectCall", ({ to, from }) => {
+    const receiverSocketId = onlineUsers.get(to);
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callRejected", {
+        from,
+        to,
+      });
+    }
+  });
+
+  socket.on("typing", ({ to }) => {
+    const receiverSocketId = onlineUsers.get(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("typing");
+    }
+  });
 
   socket.on("stopTyping", ({ to }) => {
-  const receiverSocketId = onlineUsers.get(to);
+    const receiverSocketId = onlineUsers.get(to);
 
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("stopTyping");
-  }
-});
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("stopTyping");
+    }
+  });
   // =======================
   // Enregistrer un utilisateur connecté
   // =======================
-socket.on("registerUser", async (userId) => {
-  onlineUsers.set(userId, socket.id);
+  socket.on("registerUser", async (userId) => {
+    onlineUsers.set(userId, socket.id);
 
-  io.emit("onlineUsers", Array.from(onlineUsers.keys()));
+    io.emit("onlineUsers", Array.from(onlineUsers.keys()));
 
-  try {
-    const messagesNonLivres = await Message.find({
-      destinataire: userId,
-      statut: "sent",
-    });
+    try {
+      const messagesNonLivres = await Message.find({
+        destinataire: userId,
+        statut: "sent",
+      });
 
-    console.log("🔍 messagesNonLivres:", messagesNonLivres.length);
+      console.log("🔍 messagesNonLivres:", messagesNonLivres.length);
 
-    for (let msg of messagesNonLivres) {
-      
-      // 🔥 1. ENVOYER LE MESSAGE À A
-      io.to(socket.id).emit("receiveMessage", msg);
+      for (let msg of messagesNonLivres) {
+        // 🔥 1. ENVOYER LE MESSAGE À A
+        io.to(socket.id).emit("receiveMessage", msg);
 
-      // 🔥 2. notifier B (expéditeur)
-      const senderSocketId = onlineUsers.get(
-        msg.expediteur.toString()
-      );
+        // 🔥 2. notifier B (expéditeur)
+        const senderSocketId = onlineUsers.get(msg.expediteur.toString());
 
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("messageDelivered", {
-          messageId: msg._id,
-        });
+        if (senderSocketId) {
+          io.to(senderSocketId).emit("messageDelivered", {
+            messageId: msg._id,
+          });
+        }
+
+        // 🔥 3. mettre à jour statut
+        msg.statut = "delivered";
+        await msg.save();
       }
-
-      // 🔥 3. mettre à jour statut
-      msg.statut = "delivered";
-      await msg.save();
+    } catch (err) {
+      console.error(err);
     }
-  } catch (err) { 
-    console.error(err);
-  }
-});
+  });
 
   // =======================
   // Envoyer un message en temps réel
@@ -194,8 +187,6 @@ socket.on("registerUser", async (userId) => {
     const senderSocketId = onlineUsers.get(messageData.expediteur);
 
     console.log("📨 Message temps réel reçu :", messageData);
-
-    
 
     // 🔥 envoyer au destinataire
     if (receiverSocketId) {
@@ -216,36 +207,27 @@ socket.on("registerUser", async (userId) => {
     }
   });
 
+  // messages supprimés en temps réel
 
+  socket.on("messageDeleted", async ({ messageId }) => {
+    const message = await Message.findById(messageId);
+    if (!message) return;
 
-  // messages supprimés en temps réel 
-
-socket.on("messageDeleted", async({messageId}) => {
-  const message = await Message.findById(messageId);
-if(!message) return;
-
-const receiverSocketId  = onlineUsers.get(
-message.destinataire.toString()
-)
-if(receiverSocketId ){
-  io.to(receiverSocketId ).emit("messageDeleted",{
-    messageId
-  })
-}
-
-});
+    const receiverSocketId = onlineUsers.get(message.destinataire.toString());
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messageDeleted", {
+        messageId,
+      });
+    }
+  });
 
   // fin suppression temps reel
 
-
-
-  
   // =======================
   // Messages lus
   // =======================
   socket.on("messagesRead", ({ expediteurId, idsMessagesLus }) => {
     const expediteurSocketId = onlineUsers.get(expediteurId);
-    
 
     console.log("👁️ messagesRead reçu :", idsMessagesLus);
 
