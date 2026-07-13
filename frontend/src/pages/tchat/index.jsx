@@ -1941,8 +1941,7 @@ function Tchat() {
         profilCible={profilCible}
         onAccept={acceptCall}
         onReject={rejectCall}
-        onCancel={cancelCall}
-        onEnd={endCall}
+        onCancel={inCall ? endCall : cancelCall}
       />
       <HeaderChat
         navigate={navigate}

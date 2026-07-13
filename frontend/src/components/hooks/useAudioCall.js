@@ -283,7 +283,6 @@ export default function useAudioCall({
         from: monProfilId,
       });
       cleanupCall();
-      setInCall(false);
     } catch (error) {
       console.error(error);
     }
@@ -305,9 +304,6 @@ export default function useAudioCall({
         from: monProfilId,
       });
       cleanupCall();
-      setIncomingCall(null);
-      setInCall(false);
-      setCalling(false);
     } catch (error) {
       console.error(error);
     }
