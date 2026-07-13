@@ -895,7 +895,7 @@ function Tchat() {
     rejectCall,
     cancelCall,
     remoteAudioRef,
-     inCall,
+    inCall,
   } = useAudioCall({
     socket,
     id,
@@ -1933,10 +1933,10 @@ function Tchat() {
       <audio ref={remoteAudioRef} autoPlay playsInline />
 
       <CallModal
-        open={incomingCall || calling}
+        open={incomingCall || calling || inCall}
         incoming={!!incomingCall}
         calling={calling}
-         inCall={inCall}
+        inCall={inCall}
         profilCible={profilCible}
         onAccept={acceptCall}
         onReject={rejectCall}
