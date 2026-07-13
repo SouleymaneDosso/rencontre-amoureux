@@ -106,7 +106,9 @@ export default function useAudioCall({
         peerConnectionRef.current.addTrack(track, stream);
       });
 
-     
+      await  peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      )
 
       socket.emit("acceptCall", {
         to: incomingCall.from.id,
