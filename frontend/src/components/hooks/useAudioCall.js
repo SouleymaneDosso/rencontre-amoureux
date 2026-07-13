@@ -28,6 +28,16 @@ export default function useAudioCall({
 
   const createPeerConnection = () => {
     peerConnectionRef.current = new RTCPeerConnection();
+
+    peerConnectionRef.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log("ICE candidate :", event.candidate);
+        socket.emit("iceCandidate", {
+          to: id,
+          candidate: event.candidate,
+        });
+      }
+    };
   };
 
   const createOffer = async () => {
@@ -41,25 +51,21 @@ export default function useAudioCall({
   };
 
   useEffect(() => {
-  const handleAnswer = async ({ answer }) => {
-    console.log("Answer reçue :", answer);
+    const handleAnswer = async ({ answer }) => {
+      await peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(answer),
+      );
+    };
 
-    await peerConnectionRef.current.setRemoteDescription(
-      new RTCSessionDescription(answer)
-    );
-  };
+    socket.on("answer", handleAnswer);
 
-  socket.on("answer", handleAnswer);
-
-  return () => {
-    socket.off("answer", handleAnswer);
-  };
-}, []);
+    return () => {
+      socket.off("answer", handleAnswer);
+    };
+  }, []);
 
   useEffect(() => {
     const handleOffer = ({ offer }) => {
-      console.log("Offer reçue :", offer);
-
       setOffer(offer);
     };
 
