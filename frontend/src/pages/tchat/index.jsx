@@ -9,6 +9,7 @@ import { MdCallMade, MdCallReceived } from "react-icons/md";
 import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
 import useAudioCall from "../../components/hooks/useAudioCall";
+import CallModal from "../../pages/tchat/CallModal";
 
 import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -907,7 +908,7 @@ const Acceptbutton = styled.button`
 
   border-radius: 50%;
 
-  background: rgba(249, 18, 145, 0.83);
+  background: hsla(138, 95%, 52%, 0.83);
 
   color: white;
 
@@ -946,7 +947,6 @@ function Tchat() {
   const previewProgressRef = useRef(null);
   const audioRefs = useRef({});
   const previewAudioRef = useRef(null);
-  
 
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
@@ -1006,7 +1006,7 @@ function Tchat() {
     acceptCall,
     rejectCall,
     cancelCall,
-     remoteAudioRef,
+    remoteAudioRef,
   } = useAudioCall({
     socket,
     id,
@@ -1355,7 +1355,7 @@ function Tchat() {
       setMessages((prev) =>
         prev.map((msg) => (msg._id === tempId ? data.nouveauMessage : msg)),
       );
-    
+
       socket.emit("sendMessage", data.nouveauMessage);
     } catch (error) {
       console.error(error);
@@ -2041,14 +2041,9 @@ function Tchat() {
 
   return (
     <Wrapper>
+      <audio ref={remoteAudioRef} autoPlay playsInline />
 
-      <audio
-        ref={remoteAudioRef}
-        autoPlay
-        playsInline
-    />
-    
-      {incomingCall && (
+      {/* {incomingCall && (
         <CallingBanner>
           <CallerSection>
             <CallAvatar>
@@ -2097,7 +2092,17 @@ function Tchat() {
             <FaPhoneSlash />
           </EndCallButton>
         </CallingBanner>
-      )}
+      )} */}
+
+      <CallModal
+        open={incomingCall || calling}
+        incoming={!!incomingCall}
+        calling={calling}
+        profilCible={profilCible}
+        onAccept={acceptCall}
+        onReject={rejectCall}
+        onCancel={cancelCall}
+      />
       <HeaderChat
         navigate={navigate}
         profilCible={profilCible}
@@ -2220,7 +2225,6 @@ function Tchat() {
 
                     {msg.type === "audio" && msg.media?.url && (
                       <>
-                      
                         <audio
                           ref={(el) => {
                             if (el) {
