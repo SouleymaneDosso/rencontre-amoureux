@@ -22,7 +22,7 @@ export default function useAudioCall({
 
     socket.emit("answer", {
       to: incomingCall.from.id,
-      answer,c
+      answer,
     });
   };
 
