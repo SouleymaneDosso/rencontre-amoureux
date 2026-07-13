@@ -23,7 +23,7 @@ export default function useAudioCall({
     const offer = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(offer);
 
-    socket.emit("offer", {
+    socket.emit("callOffer", {
       to: id,
       offer,
     });
