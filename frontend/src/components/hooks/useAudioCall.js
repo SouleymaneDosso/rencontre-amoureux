@@ -33,18 +33,17 @@ export default function useAudioCall({
     callingToneRef.current.loop = true;
   }, []);
 
-
   const stopSounds = () => {
-  ringtoneRef.current.pause();
-  ringtoneRef.current.currentTime = 0;
+    ringtoneRef.current.pause();
+    ringtoneRef.current.currentTime = 0;
 
-  callingToneRef.current.pause();
-  callingToneRef.current.currentTime = 0;
+    callingToneRef.current.pause();
+    callingToneRef.current.currentTime = 0;
 
-  if (navigator.vibrate) {
-    navigator.vibrate(0);
-  }
-};
+    if (navigator.vibrate) {
+      navigator.vibrate(0);
+    }
+  };
 
   // durée d'appelle
 
@@ -139,7 +138,7 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
-    stopSounds()
+    stopSounds();
     cleanupCall();
 
     socket.emit("endCall", {
@@ -157,8 +156,8 @@ export default function useAudioCall({
   };
 
   useEffect(() => {
-    const handleEndCall = () => { 
-      stopSounds()
+    const handleEndCall = () => {
+      stopSounds();
       cleanupCall();
     };
 
@@ -187,6 +186,7 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleAnswer = async ({ answer }) => {
+      stopSounds();
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(answer),
       );
@@ -247,6 +247,8 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleRejected = () => {
+      stopSounds();
+      cleanupCall();
       setCalling(false);
     };
 
@@ -259,6 +261,8 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleCancel = () => {
+      stopSounds();
+      cleanupCall();
       setIncomingCall(null);
     };
 
@@ -270,7 +274,7 @@ export default function useAudioCall({
   }, []);
 
   const acceptCall = async () => {
-    stopSounds()
+    stopSounds();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -327,7 +331,7 @@ export default function useAudioCall({
   };
 
   const cancelCall = async () => {
-    stopSounds()
+    stopSounds();
     setCalling(false);
 
     try {
@@ -350,7 +354,7 @@ export default function useAudioCall({
   };
 
   const rejectCall = async () => {
-    stopSounds()
+    stopSounds();
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
