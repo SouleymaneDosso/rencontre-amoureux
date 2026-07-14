@@ -79,7 +79,7 @@ const CallActionButton = styled.button`
     if ($type === "accept") return "#22c55e";
     if ($type === "reject") return "#ef4444";
      if ($type === "default") return "#334155";
-    return "#3b82f6";c
+    return "#3b82f6";
   }};
 
   transition: 0.2s;
