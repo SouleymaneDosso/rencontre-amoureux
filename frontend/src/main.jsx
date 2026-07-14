@@ -22,6 +22,7 @@ import Conversations from "./pages/conversations";
 import Video from "./pages/videos";
 import { socket } from "./socket";
 import Videopublic from "./pages/videospublic";
+import { ConversationProvider } from "./context/ConversationContext";
 
 // 🔥 Layout principal
 function Layout() {
@@ -75,8 +76,11 @@ function Layout() {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
+    <ConversationProvider>
     <Router>
       <Layout />
+
     </Router>
+    </ConversationProvider>
   </StrictMode>,
 );

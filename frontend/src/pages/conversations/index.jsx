@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useConversation } from "../../context/ConversationContext";
 import {
   FaComments,
   FaSearch,
@@ -210,14 +211,24 @@ const Badge = styled.div`
 `;
 
 function Conversations() {
-  const [conversations, setConversations] = useState([]);
+  const { conversations, setConversations } = useConversation();
   const [filtre, setFiltre] = useState("");
   const [monProfilId, setMonProfilId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [messageErreur, setMessageErreur] = useState("");
 
   const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const profilLocal = localStorage.getItem("monProfil");
+
+    if (profilLocal) {
+      const monProfil = JSON.parse(profilLocal);
+      setMonProfilId(monProfil._id);
+    }
+  }, []);
 
   const getStatutIcon = (statut) => {
     switch (statut) {
@@ -389,30 +400,19 @@ function Conversations() {
       try {
         setLoading(true);
         setMessageErreur("");
+        const conversationsLocales = localStorage.getItem("conversations");
 
-        // 1) récupérer le profil de l'utilisateur connecté
-        const monProfilRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const monProfilData = await monProfilRes.json();
-
-        if (!monProfilRes.ok) {
-          throw new Error(
-            monProfilData.message || "Impossible de récupérer ton profil",
-          );
+        if (conversationsLocales) {
+          setConversations(JSON.parse(conversationsLocales));
         }
 
-        setMonProfilId(monProfilData._id);
-        localStorage.setItem("monProfilId", monProfilData._id);
-       localStorage.setItem("monProfil", JSON.stringify(monProfilData));
+        const profilLocal = localStorage.getItem("monProfil");
+
+        if (!profilLocal) {
+          // ici plus tard on fera le GET /me
+          return;
+        }
+
         // 2) récupérer les conversations
         const conversationsRes = await fetch(
           `${import.meta.env.VITE_API_URL}/api/tchat/conversations`,
@@ -435,6 +435,10 @@ function Conversations() {
         }
 
         setConversations(conversationsData);
+        localStorage.setItem(
+          "conversations",
+          JSON.stringify(conversationsData),
+        );
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
@@ -460,9 +464,9 @@ function Conversations() {
     return autre.pseudo.toLowerCase().includes(filtre.toLowerCase());
   });
 
-  if (loading) {
-    return <Loading>Chargement des conversations...</Loading>;
-  }
+ if (loading && conversations.length === 0) {
+  return <Loading>Chargement des conversations...</Loading>;
+}
 
   if (messageErreur) {
     return <ErrorBox>{messageErreur}</ErrorBox>;
