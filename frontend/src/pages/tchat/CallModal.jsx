@@ -360,9 +360,6 @@ function CallModal({
         <CallModalActions>
           {incoming ? (
             <>
-              <CallActionButton $type="default" onClick={toggleMute}>
-                {isMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
-              </CallActionButton>
               <CallActionButton $type="reject" onClick={onReject}>
                 <FaPhoneSlash />
               </CallActionButton>
@@ -372,9 +369,16 @@ function CallModal({
               </CallActionButton>
             </>
           ) : (
+               <>
+      {inCall && (
+        <CallActionButton $type="default" onClick={toggleMute}>
+          {isMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
+        </CallActionButton>
+      )}
             <CallActionButton $type="reject" onClick={onCancel}>
               <FaPhoneSlash />
             </CallActionButton>
+            </>
           )}
         </CallModalActions>
       </CallModalOverlay>
