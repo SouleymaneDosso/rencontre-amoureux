@@ -33,6 +33,19 @@ export default function useAudioCall({
     callingToneRef.current.loop = true;
   }, []);
 
+
+  const stopSounds = () => {
+  ringtoneRef.current.pause();
+  ringtoneRef.current.currentTime = 0;
+
+  callingToneRef.current.pause();
+  callingToneRef.current.currentTime = 0;
+
+  if (navigator.vibrate) {
+    navigator.vibrate(0);
+  }
+};
+
   // durée d'appelle
 
   const startTimer = () => {
@@ -126,6 +139,7 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
+    stopSounds()
     cleanupCall();
 
     socket.emit("endCall", {
@@ -143,7 +157,8 @@ export default function useAudioCall({
   };
 
   useEffect(() => {
-    const handleEndCall = () => {
+    const handleEndCall = () => { 
+      stopSounds()
       cleanupCall();
     };
 
@@ -255,6 +270,7 @@ export default function useAudioCall({
   }, []);
 
   const acceptCall = async () => {
+    stopSounds()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -311,6 +327,7 @@ export default function useAudioCall({
   };
 
   const cancelCall = async () => {
+    stopSounds()
     setCalling(false);
 
     try {
@@ -333,6 +350,7 @@ export default function useAudioCall({
   };
 
   const rejectCall = async () => {
+    stopSounds()
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
