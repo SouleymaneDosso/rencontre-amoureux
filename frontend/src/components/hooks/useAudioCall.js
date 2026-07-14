@@ -14,6 +14,7 @@ export default function useAudioCall({
   const [offer, setOffer] = useState(null);
   const [inCall, setInCall] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [isMinimized, setIsMinimized] = useState(false);
   const ringtoneRef = useRef(
     new Audio("/sounds/poorartistt-k-pop-ringtone-no-copyright-357140.mp3"),
   );
@@ -27,6 +28,14 @@ export default function useAudioCall({
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const peerUserIdRef = useRef(null);
+
+  const minimizeCall = () => {
+    setIsMinimized(true);
+  };
+
+  const maximizeCall = () => {
+    setIsMinimized(false);
+  };
 
   useEffect(() => {
     ringtoneRef.current.loop = true;
@@ -386,5 +395,8 @@ export default function useAudioCall({
     startCall,
     remoteAudioRef,
     callDuration,
+    isMinimized,
+    minimizeCall,
+    maximizeCall,
   };
 }

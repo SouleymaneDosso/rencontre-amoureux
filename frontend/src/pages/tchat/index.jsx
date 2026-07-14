@@ -898,6 +898,9 @@ function Tchat() {
     inCall,
     endCall,
     callDuration,
+    isMinimized,
+    minimizeCall,
+    maximizeCall,
   } = useAudioCall({
     socket,
     id,
@@ -1944,6 +1947,9 @@ function Tchat() {
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
         callDuration={callDuration}
+        isMinimized={isMinimized}
+        minimizeCall={minimizeCall}
+        maximizeCall={maximizeCall}
       />
       <HeaderChat
         navigate={navigate}

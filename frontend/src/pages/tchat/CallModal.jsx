@@ -1,5 +1,5 @@
 import { FaPhone, FaPhoneSlash, FaUserCircle } from "react-icons/fa";
-
+import { FaMinus } from "react-icons/fa";
 import styled from "styled-components";
 
 const CallModalOverlay = styled.div`
@@ -133,6 +133,123 @@ const CallAvatarWrapper = styled.div`
   align-items: center;
   justify-content: center;
 `;
+const MiniCallBar = styled.div`
+  position: fixed;
+
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 340px;
+  max-width: calc(100vw - 20px);
+
+  background: rgba(15, 23, 42, 0.95);
+
+  backdrop-filter: blur(14px);
+
+  border-radius: 18px;
+
+  padding: 12px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: white;
+
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+
+  cursor: pointer;
+
+  z-index: 999999;
+`;
+const MiniDuration = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+
+  color: #22c55e;
+
+  min-width: 56px;
+
+  text-align: right;
+`;
+
+const MinimizeButton = styled.button`
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(1.08);
+  }
+`;
+
+const MiniLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const MiniAvatar = styled(CallModalAvatar)`
+  width: 42px;
+  height: 42px;
+
+  svg {
+    font-size: 42px;
+  }
+`;
+
+const MiniInfos = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+const MiniEndButton = styled.button`
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #ef4444;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.08);
+    background: #dc2626;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
 
 function CallModal({
   open,
@@ -144,17 +261,53 @@ function CallModal({
   onReject,
   onCancel,
   callDuration,
+  isMinimized,
+  minimizeCall,
+  maximizeCall,
 }) {
   if (!open) return null;
-
   const minutes = String(Math.floor(callDuration / 60)).padStart(2, "0");
 
-const seconds = String(callDuration % 60).padStart(2, "0");
+  const seconds = String(callDuration % 60).padStart(2, "0");
 
-const formattedDuration = `${minutes}:${seconds}`;
+  const formattedDuration = `${minutes}:${seconds}`;
+  if (isMinimized) {
+    return (
+      <MiniCallBar onClick={maximizeCall}>
+        <MiniLeft>
+          <MiniAvatar>
+            {profilCible?.avatar ? (
+              <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
+            ) : (
+              <FaUserCircle />
+            )}
+          </MiniAvatar>
+
+          <MiniInfos>
+            <strong>{profilCible?.pseudo}</strong>
+            <small>Appel en cours</small>
+          </MiniInfos>
+        </MiniLeft>
+
+        <MiniDuration>{formattedDuration}</MiniDuration>
+
+        <MiniEndButton
+          onClick={(event) => {
+            event.stopPropagation();
+            onCancel();
+          }}
+        >
+          <FaPhoneSlash />
+        </MiniEndButton>
+      </MiniCallBar>
+    );
+  }
 
   return (
     <CallModalOverlay>
+      <MinimizeButton onClick={minimizeCall}>
+        <FaMinus size={14} />
+      </MinimizeButton>
       <CallAvatarWrapper>
         <CallPulse />
 
