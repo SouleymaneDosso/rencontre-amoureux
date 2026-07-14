@@ -1,21 +1,12 @@
-import { FaPhone, FaPhoneSlash, FaUserCircle } from "react-icons/fa";
+import {
+  FaPhone,
+  FaPhoneSlash,
+  FaUserCircle,
+  FaMicrophone,
+  FaMicrophoneSlash,
+} from "react-icons/fa";
 import { FaMinus } from "react-icons/fa";
 import styled from "styled-components";
-
-const CallModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-
-  background: linear-gradient(180deg, #0f172a, #1e293b);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  color: white;
-`;
 
 const CallModalAvatar = styled.div`
   width: 140px;
@@ -87,7 +78,8 @@ const CallActionButton = styled.button`
   background: ${({ $type }) => {
     if ($type === "accept") return "#22c55e";
     if ($type === "reject") return "#ef4444";
-    return "#3b82f6";
+     if ($type === "default") return "#334155";
+    return "#3b82f6";c
   }};
 
   transition: 0.2s;
@@ -138,13 +130,20 @@ const MiniCallBar = styled.div`
 
   top: 12px;
   left: 50%;
-  transform: translateX(-50%);
+
+  transform: ${({ $show }) =>
+    $show ? "translate(-50%,0)" : "translate(-50%,-40px)"};
+
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+
+  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
+
+  transition: all 0.28s ease;
 
   width: 340px;
   max-width: calc(100vw - 20px);
 
   background: rgba(15, 23, 42, 0.95);
-
   backdrop-filter: blur(14px);
 
   border-radius: 18px;
@@ -173,7 +172,11 @@ const MiniDuration = styled.div`
 
   text-align: right;
 `;
-
+const MiniRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
 const MinimizeButton = styled.button`
   position: absolute;
   top: 18px;
@@ -250,6 +253,28 @@ const MiniEndButton = styled.button`
     transform: scale(0.95);
   }
 `;
+const CallModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+
+  background: linear-gradient(180deg, #0f172a, #1e293b);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  transition: 0.28s ease;
+
+  opacity: ${({ $minimized }) => ($minimized ? 0 : 1)};
+
+  transform: ${({ $minimized }) => ($minimized ? "scale(.92)" : "scale(1)")};
+
+  pointer-events: ${({ $minimized }) => ($minimized ? "none" : "auto")};
+`;
 
 function CallModal({
   open,
@@ -264,6 +289,8 @@ function CallModal({
   isMinimized,
   minimizeCall,
   maximizeCall,
+  isMuted,
+  toggleMute,
 }) {
   if (!open) return null;
   const minutes = String(Math.floor(callDuration / 60)).padStart(2, "0");
@@ -271,9 +298,10 @@ function CallModal({
   const seconds = String(callDuration % 60).padStart(2, "0");
 
   const formattedDuration = `${minutes}:${seconds}`;
-  if (isMinimized) {
-    return (
-      <MiniCallBar onClick={maximizeCall}>
+
+  return (
+    <>
+      <MiniCallBar $show={isMinimized} onClick={maximizeCall}>
         <MiniLeft>
           <MiniAvatar>
             {profilCible?.avatar ? (
@@ -289,65 +317,68 @@ function CallModal({
           </MiniInfos>
         </MiniLeft>
 
-        <MiniDuration>{formattedDuration}</MiniDuration>
+        <MiniRight>
+          <MiniDuration>{formattedDuration}</MiniDuration>
 
-        <MiniEndButton
-          onClick={(event) => {
-            event.stopPropagation();
-            onCancel();
-          }}
-        >
-          <FaPhoneSlash />
-        </MiniEndButton>
+          <MiniEndButton
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
+          >
+            <FaPhoneSlash />
+          </MiniEndButton>
+        </MiniRight>
       </MiniCallBar>
-    );
-  }
 
-  return (
-    <CallModalOverlay>
-      <MinimizeButton onClick={minimizeCall}>
-        <FaMinus size={14} />
-      </MinimizeButton>
-      <CallAvatarWrapper>
-        <CallPulse />
+      <CallModalOverlay $minimized={isMinimized}>
+        <MinimizeButton onClick={minimizeCall}>
+          <FaMinus size={14} />
+        </MinimizeButton>
+        <CallAvatarWrapper>
+          <CallPulse />
 
-        <CallModalAvatar>
-          {profilCible?.avatar ? (
-            <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
+          <CallModalAvatar>
+            {profilCible?.avatar ? (
+              <img src={profilCible.avatar.url} alt={profilCible.pseudo} />
+            ) : (
+              <FaUserCircle />
+            )}
+          </CallModalAvatar>
+        </CallAvatarWrapper>
+
+        <CallModalName>{profilCible?.pseudo}</CallModalName>
+
+        <CallModalStatus>
+          {incoming
+            ? "📞 Appel entrant..."
+            : inCall
+              ? `${formattedDuration}`
+              : "📞 Appel audio..."}
+        </CallModalStatus>
+
+        <CallModalActions>
+          {incoming ? (
+            <>
+              <CallActionButton $type="default" onClick={toggleMute}>
+                {isMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
+              </CallActionButton>
+              <CallActionButton $type="reject" onClick={onReject}>
+                <FaPhoneSlash />
+              </CallActionButton>
+
+              <CallActionButton $type="accept" onClick={onAccept}>
+                <FaPhone />
+              </CallActionButton>
+            </>
           ) : (
-            <FaUserCircle />
-          )}
-        </CallModalAvatar>
-      </CallAvatarWrapper>
-
-      <CallModalName>{profilCible?.pseudo}</CallModalName>
-
-      <CallModalStatus>
-        {incoming
-          ? "📞 Appel entrant..."
-          : inCall
-            ? `${formattedDuration}`
-            : "📞 Appel audio..."}
-      </CallModalStatus>
-
-      <CallModalActions>
-        {incoming ? (
-          <>
-            <CallActionButton $type="reject" onClick={onReject}>
+            <CallActionButton $type="reject" onClick={onCancel}>
               <FaPhoneSlash />
             </CallActionButton>
-
-            <CallActionButton $type="accept" onClick={onAccept}>
-              <FaPhone />
-            </CallActionButton>
-          </>
-        ) : (
-          <CallActionButton $type="reject" onClick={onCancel}>
-            <FaPhoneSlash />
-          </CallActionButton>
-        )}
-      </CallModalActions>
-    </CallModalOverlay>
+          )}
+        </CallModalActions>
+      </CallModalOverlay>
+    </>
   );
 }
 

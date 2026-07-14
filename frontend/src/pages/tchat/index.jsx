@@ -901,6 +901,8 @@ function Tchat() {
     isMinimized,
     minimizeCall,
     maximizeCall,
+    isMuted,
+    toggleMute,
   } = useAudioCall({
     socket,
     id,
@@ -1950,6 +1952,8 @@ function Tchat() {
         isMinimized={isMinimized}
         minimizeCall={minimizeCall}
         maximizeCall={maximizeCall}
+        isMuted={isMuted}
+        toggleMute={toggleMute}
       />
       <HeaderChat
         navigate={navigate}
