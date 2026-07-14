@@ -22,18 +22,19 @@ const CallButton = styled.button`
   align-items: center;
   justify-content: center;
 
-  cursor: pointer;
-
   background: #22c55e;
   color: white;
+
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   transition: 0.2s;
 
   &:hover {
-    transform: scale(1.08);
+    transform: ${({ disabled }) => (disabled ? "none" : "scale(1.08)")};
   }
 `;
-
 
 const Header = styled.div`
   position: sticky;
@@ -105,56 +106,59 @@ const Avatar = styled.img`
   object-fit: cover;
 `;
 
-
-
-
 function HeaderChat({
   navigate,
   profilCible,
   isTyping,
   isProfilCibleOnline,
   startCall,
+  calling,
+  incomingCall,
+  inCall,
 }) {
   return (
     <Header>
-        <BackButton onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-        </BackButton>
+      <BackButton onClick={() => navigate(-1)}>
+        <FaArrowLeft />
+      </BackButton>
 
-        <Avatarplaceholder>
-          {profilCible?.avatar ? (
-            <Avatar
-              src={profilCible.avatar?.url}
-              alt="Profil"
-              onClick={() => navigate(`/Profilpublic/${profilCible._id}`)}
-            />
+      <Avatarplaceholder>
+        {profilCible?.avatar ? (
+          <Avatar
+            src={profilCible.avatar?.url}
+            alt="Profil"
+            onClick={() => navigate(`/Profilpublic/${profilCible._id}`)}
+          />
+        ) : (
+          <FaUserCircle size={42} color="#4f6cff" />
+        )}
+      </Avatarplaceholder>
+
+      <HeaderInfo>
+        <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>
+        <HeaderSubtitle>
+          {isTyping ? (
+            "en train d’écrire..."
           ) : (
-            <FaUserCircle size={42} color="#4f6cff" />
+            <>
+              <FaCircle
+                size={10}
+                color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
+              />
+              {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
+            </>
           )}
-        </Avatarplaceholder>
-
-        <HeaderInfo>
-          <HeaderTitle>{profilCible?.pseudo || "Discussion"}</HeaderTitle>
-          <HeaderSubtitle>
-            {isTyping ? (
-              "en train d’écrire..."
-            ) : (
-              <>
-                <FaCircle
-                  size={10}
-                  color={isProfilCibleOnline ? "#22c55e" : "#9ca3af"}
-                />
-                {isProfilCibleOnline ? "En ligne" : "Hors ligne"}
-              </>
-            )}
-          </HeaderSubtitle>
-        </HeaderInfo>
-        <HeaderActions>
-          <CallButton onClick={startCall}>
-            <FaPhoneAlt />
-          </CallButton>
-        </HeaderActions>
-      </Header>
+        </HeaderSubtitle>
+      </HeaderInfo>
+      <HeaderActions>
+        <CallButton
+          disabled={calling || incomingCall || inCall}
+          onClick={startCall}
+        >
+          <FaPhoneAlt />
+        </CallButton>
+      </HeaderActions>
+    </Header>
   );
 }
 

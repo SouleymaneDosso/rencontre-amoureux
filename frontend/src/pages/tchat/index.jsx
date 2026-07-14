@@ -897,7 +897,7 @@ function Tchat() {
     remoteAudioRef,
     inCall,
     endCall,
-      callDuration,
+    callDuration,
   } = useAudioCall({
     socket,
     id,
@@ -1951,6 +1951,9 @@ function Tchat() {
         isTyping={isTyping}
         isProfilCibleOnline={isProfilCibleOnline}
         startCall={startCall}
+        calling={calling}
+        incomingCall={incomingCall}
+        inCall={inCall}
       />
 
       <MessagesContainer

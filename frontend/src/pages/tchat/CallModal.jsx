@@ -173,7 +173,7 @@ const formattedDuration = `${minutes}:${seconds}`;
         {incoming
           ? "📞 Appel entrant..."
           : inCall
-            ? `🟢 ${formattedDuration}`
+            ? `${formattedDuration}`
             : "📞 Appel audio..."}
       </CallModalStatus>
 

@@ -14,6 +14,12 @@ export default function useAudioCall({
   const [offer, setOffer] = useState(null);
   const [inCall, setInCall] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const ringtoneRef = useRef(
+    new Audio("/sounds/poorartistt-k-pop-ringtone-no-copyright-357140.mp3"),
+  );
+  const callingToneRef = useRef(
+    new Audio("/sounds/poorartistt-k-pop-ringtone-no-copyright-357142.mp3"),
+  );
 
   const timerRef = useRef(null);
   const startedAtRef = useRef(null);
@@ -21,6 +27,11 @@ export default function useAudioCall({
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const peerUserIdRef = useRef(null);
+
+  useEffect(() => {
+    ringtoneRef.current.loop = true;
+    callingToneRef.current.loop = true;
+  }, []);
 
   // durée d'appelle
 
@@ -201,6 +212,12 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
+      ringtoneRef.current.currentTime = 0;
+      ringtoneRef.current.play();
+
+      if (navigator.vibrate) {
+        navigator.vibrate([500, 300, 500]);
+      }
       setIncomingCall({
         from,
       });
@@ -281,7 +298,8 @@ export default function useAudioCall({
     peerUserIdRef.current = id;
     await createOffer();
     setCalling(true);
-
+    callingToneRef.current.currentTime = 0;
+    callingToneRef.current.play();
     socket.emit("callUser", {
       to: id,
       from: {
