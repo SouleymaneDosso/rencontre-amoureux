@@ -209,6 +209,18 @@ const Badge = styled.div`
   min-width: 20px;
   text-align: center;
 `;
+const OnlineDot = styled.div`
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+
+  width: 16px;
+  height: 16px;
+
+  background: #22c55e;
+  border: 3px solid white;
+  border-radius: 50%;
+`;
 
 function Conversations() {
   const { conversations, setConversations } = useConversation();
@@ -216,6 +228,7 @@ function Conversations() {
   const [monProfilId, setMonProfilId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messageErreur, setMessageErreur] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const navigate = useNavigate();
 
@@ -278,6 +291,7 @@ function Conversations() {
 
     socket.on("onlineUsers", (users) => {
       console.log("🟢 Utilisateurs en ligne :", users);
+      setOnlineUsers(users);
     });
 
     return () => {
@@ -400,12 +414,6 @@ function Conversations() {
       try {
         setLoading(true);
         setMessageErreur("");
-        const conversationsLocales = localStorage.getItem("conversations");
-
-        if (conversationsLocales) {
-          setConversations(JSON.parse(conversationsLocales));
-        }
-
         const profilLocal = localStorage.getItem("monProfil");
 
         if (!profilLocal) {
@@ -435,10 +443,6 @@ function Conversations() {
         }
 
         setConversations(conversationsData);
-        localStorage.setItem(
-          "conversations",
-          JSON.stringify(conversationsData),
-        );
       } catch (error) {
         setMessageErreur(error.message);
       } finally {
@@ -464,9 +468,9 @@ function Conversations() {
     return autre.pseudo.toLowerCase().includes(filtre.toLowerCase());
   });
 
- if (loading && conversations.length === 0) {
-  return <Loading>Chargement des conversations...</Loading>;
-}
+  if (loading && conversations.length === 0) {
+    return <Loading>Chargement des conversations...</Loading>;
+  }
 
   if (messageErreur) {
     return <ErrorBox>{messageErreur}</ErrorBox>;
@@ -508,6 +512,7 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
+            const estEnLigne = onlineUsers.includes(autre._id);
 
             return (
               <Card
@@ -526,6 +531,7 @@ function Conversations() {
                     src={autre.avatar?.url || "https://via.placeholder.com/150"}
                     alt={autre.pseudo}
                   />
+                  {estEnLigne && <OnlineDot />}
                 </AvatarWrapper>
                 <Info>
                   <TopRow>
@@ -533,6 +539,7 @@ function Conversations() {
                       {autre.pseudo}
                       {autre.verifie && <MdVerified color="#4f6cff" />}
                     </Name>
+
                     <Meta>{formatDate(conversation.dernierMessageDate)}</Meta>
                   </TopRow>
 
