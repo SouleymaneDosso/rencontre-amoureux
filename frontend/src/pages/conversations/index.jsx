@@ -531,7 +531,7 @@ function Conversations() {
                     src={autre.avatar?.url || "https://via.placeholder.com/150"}
                     alt={autre.pseudo}
                   />
-                  {estEnLigne && <OnlineDot />}
+                  {/* {estEnLigne && <OnlineDot />} */}
                 </AvatarWrapper>
                 <Info>
                   <TopRow>
