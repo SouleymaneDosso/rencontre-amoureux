@@ -261,7 +261,7 @@ function Home() {
     }
   };
 
-  if (!profil) return <Page>Chargement avez vous la connexion...</Page>;
+  // if (!profil) return <Page>Chargement avez vous la connexion...</Page>;
   const messageProgress =
     progress < 50
       ? "Ton profil a encore besoin de quelques infos pour attirer l’attention."
