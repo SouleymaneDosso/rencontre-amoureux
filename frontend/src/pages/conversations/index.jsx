@@ -414,12 +414,31 @@ function Conversations() {
       try {
         setLoading(true);
         setMessageErreur("");
-        const profilLocal = localStorage.getItem("monProfil");
+        let monProfil = JSON.parse(localStorage.getItem("monProfil"));
 
-        if (!profilLocal) {
-          // ici plus tard on fera le GET /me
-          return;
+        if (!monProfil) {
+          const monProfilRes = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          const monProfilData = await monProfilRes.json();
+
+          if (!monProfilRes.ok) {
+            throw new Error(monProfilData.message);
+          }
+
+          monProfil = monProfilData;
+
+          localStorage.setItem("monProfil", JSON.stringify(monProfil));
         }
+
+        setMonProfilId(monProfil._id);
 
         // 2) récupérer les conversations
         const conversationsRes = await fetch(
@@ -512,7 +531,7 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
-            const estEnLigne = onlineUsers.includes(autre._id);
+            // const estEnLigne = onlineUsers.includes(autre._id);
 
             return (
               <Card
