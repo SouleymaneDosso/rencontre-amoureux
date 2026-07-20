@@ -67,14 +67,16 @@ const List = styled.div`
 `;
 
 const Card = styled.div`
-  background: white;
+  background: ${({ $nonLus }) => ($nonLus ? "#f4f8ff" : "white")};
   border-radius: 24px;
   padding: 18px;
   display: flex;
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  border: 1px solid #edf1ff;
+
+  border: 1px solid ${({ $nonLus }) => ($nonLus ? "#4f6cff" : "#edf1ff")};
+
   box-shadow: 0 10px 28px rgba(31, 42, 68, 0.06);
   transition: all 0.22s ease;
 
@@ -118,8 +120,9 @@ const Name = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
-`;
 
+  font-weight: ${({ $nonLus }) => ($nonLus ? "700" : "600")};
+`;
 const Meta = styled.span`
   font-size: 13px;
   color: #6b7280;
@@ -137,7 +140,11 @@ const BottomRow = styled.div`
 const LastMessage = styled.p`
   margin: 0;
   font-size: 14px;
-  color: #5f6b85;
+
+  color: ${({ $nonLus }) => ($nonLus ? "#1f2a44" : "#5f6b85")};
+
+  font-weight: ${({ $nonLus }) => ($nonLus ? "600" : "400")};
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -220,6 +227,11 @@ const OnlineDot = styled.div`
   background: #22c55e;
   border: 3px solid white;
   border-radius: 50%;
+`;
+
+const OnlineText = styled.span`
+  color: #22c55e;
+  font-weight: 600;
 `;
 
 function Conversations() {
@@ -325,8 +337,6 @@ function Conversations() {
 
   useEffect(() => {
     const handleDelivered = ({ messageId }) => {
-      console.log("📬 livré reçu dans conversations");
-
       setConversations((prev) =>
         prev.map((conv) => ({
           ...conv,
@@ -344,8 +354,6 @@ function Conversations() {
 
   useEffect(() => {
     const handleSeen = ({ idsMessagesLus }) => {
-      console.log("👁️ lu reçu dans conversations");
-
       setConversations((prev) =>
         prev.map((conv) => ({
           ...conv,
@@ -534,12 +542,10 @@ function Conversations() {
             const estEnLigne = onlineUsers.some(
               (id) => id.toString() === autre._id.toString(),
             );
-            console.log("autre._id =", autre._id);
-            console.log("onlineUsers =", onlineUsers);
-            console.log("includes ?", onlineUsers.includes(autre._id));
 
             return (
               <Card
+                $nonLus={conversation.nonLus > 0}
                 key={conversation._id}
                 onClick={() =>
                   navigate(`/tchat/${autre._id}`, {
@@ -555,11 +561,10 @@ function Conversations() {
                     src={autre.avatar?.url || "https://via.placeholder.com/150"}
                     alt={autre.pseudo}
                   />
-                  {estEnLigne && <OnlineDot />}
                 </AvatarWrapper>
                 <Info>
                   <TopRow>
-                    <Name>
+                    <Name $nonLus={conversation.nonLus > 0}>
                       {autre.pseudo}
                       {autre.verifie && <MdVerified color="#4f6cff" />}
                     </Name>
@@ -568,11 +573,17 @@ function Conversations() {
                   </TopRow>
 
                   <UserDetails>
+                    {estEnLigne ? (
+                      <>
+                        <OnlineText>En ligne</OnlineText>
+                        <BsDot />
+                      </>
+                    ) : null}
                     {autre.age} ans <BsDot /> {autre.ville}, {autre.pays}
                   </UserDetails>
 
                   <BottomRow>
-                    <LastMessage>
+                    <LastMessage $nonLus={conversation.nonLus > 0}>
                       {conversation.dernierMessage || "Aucun message"}
 
                       <span style={{ marginLeft: "6px" }}>
