@@ -498,13 +498,22 @@ exports.marquerMessagesCommeLus = async (req, res) => {
 
 exports.createCallMessage = async (req, res) => {
   try {
+    const userId = req.auth.userId;
+
+    const monProfil = await Profil.findOne({ userId });
+
+    if (!monProfil) {
+      return res.status(404).json({
+        message: "Mon profil est introuvable",
+      });
+    }
     const expediteur = req.auth.userId;
 
     const { destinataire, conversationId, status, duration } = req.body;
 
     const message = await Message.create({
       conversationId,
-      expediteur,
+      expediteur: monProfil._id,
       destinataire,
       type: "call",
 
