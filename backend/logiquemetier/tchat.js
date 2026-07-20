@@ -79,7 +79,7 @@ exports.envoyerMessage = async (req, res) => {
       public_id: "",
       originalname: "",
       mimetype: "",
-    };  
+    };
 
     // Si fichier image envoyé
     if (req.file) {
@@ -104,25 +104,21 @@ exports.envoyerMessage = async (req, res) => {
       type = isAudio ? "audio" : isVideo ? "video" : "image";
 
       // 📦 6. stocker données
-     mediaData = {
-  url: uploadResult.secure_url,
-  public_id: uploadResult.public_id,
-  originalname: req.file.originalname,
-  mimetype: req.file.mimetype,
+      mediaData = {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
 
-  duration: isAudio ? Number(duration) : 0,
+        duration: isAudio ? Number(duration) : 0,
 
-  thumbnail: isVideo
-    ? uploadResult.secure_url.replace(
-        "/upload/",
-        "/upload/so_1/"
-      )
-    : "",
-};
+        thumbnail: isVideo
+          ? uploadResult.secure_url.replace("/upload/", "/upload/so_1/")
+          : "",
+      };
     }
 
-const reponseA = req.body.reponseA || null;
-
+    const reponseA = req.body.reponseA || null;
 
     // créer le message
     const nouveauMessage = new Message({
@@ -168,7 +164,7 @@ const reponseA = req.body.reponseA || null;
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
- 
+
 exports.getMessages = async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -194,7 +190,7 @@ exports.getMessages = async (req, res) => {
 
     // vérifier le match
     const estMatch = monProfil.matchs.some(
-      (matchId) => matchId.toString() === profilId
+      (matchId) => matchId.toString() === profilId,
     );
 
     if (!estMatch) {
@@ -215,15 +211,9 @@ exports.getMessages = async (req, res) => {
     }
 
     // pagination
-    const page = Math.max(
-      parseInt(req.query.page, 10) || 1,
-      1
-    );
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
 
-    const limit = Math.max(
-      parseInt(req.query.limit, 10) || 20,
-      1
-    );
+    const limit = Math.max(parseInt(req.query.limit, 10) || 20, 1);
 
     const filtre = {
       conversationId: conversation._id,
@@ -233,33 +223,29 @@ exports.getMessages = async (req, res) => {
     };
 
     const messages = await Message.find(filtre)
-  .populate({
-    path: "reponseA",
-    select: "contenu type media expediteur supprimePourTous",
-  })
-  .sort({
-    createdAt: -1,
-    _id: -1,
-  })
-  .skip((page - 1) * limit)
-  .limit(limit)
-  .lean();
+      .populate({
+        path: "reponseA",
+        select: "contenu type media expediteur supprimePourTous",
+      })
+      .sort({
+        createdAt: -1,
+        _id: -1,
+      })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
 
-  messages.forEach((message) => {
-  if (
-    message.reponseA &&
-    message.reponseA.supprimePourTous
-  ) {
-    message.reponseA.contenu = "↩ Message supprimé";
-    message.reponseA.type = "system";
-  }
+    messages.forEach((message) => {
+      if (message.reponseA && message.reponseA.supprimePourTous) {
+        message.reponseA.contenu = "↩ Message supprimé";
+        message.reponseA.type = "system";
+      }
 
-
-  if(message.supprimePourTous){
-    message.contenu = "↩ Message supprimé";
-    message.type = "system";
-  } 
-});
+      if (message.supprimePourTous) {
+        message.contenu = "↩ Message supprimé";
+        message.type = "system";
+      }
+    });
 
     // ancien -> récent
     messages.reverse();
@@ -331,14 +317,14 @@ exports.supprimertous = async (req, res) => {
   message.supprimePourTous = true;
   message.contenu = "";
   message.media = {
-  url: "",
-  public_id: "",
-  originalname: "",
-  mimetype: "",
-  size: 0,
-  duration: 0,
-  thumbnail: "",
-};
+    url: "",
+    public_id: "",
+    originalname: "",
+    mimetype: "",
+    size: 0,
+    duration: 0,
+    thumbnail: "",
+  };
 
   await message.save();
   res.status(200).json({ message: "Message supprimé avec succes" });
@@ -514,12 +500,7 @@ exports.createCallMessage = async (req, res) => {
   try {
     const expediteur = req.auth.userId;
 
-    const {
-      destinataire,
-      conversationId,
-      status,
-      duration,
-    } = req.body;
+    const { destinataire, conversationId, status, duration } = req.body;
 
     const message = await Message.create({
       conversationId,
@@ -532,7 +513,34 @@ exports.createCallMessage = async (req, res) => {
         duration: duration || 0,
       },
     });
+    let dernierMessage = "📞 Appel";
+    switch (status) {
+      case "missed":
+        dernierMessage = "📞 Appel manqué";
+        break;
 
+      case "accepted":
+        dernierMessage = "📞 Appel accepté";
+        break;
+
+      case "rejected":
+        dernierMessage = "📞 Appel refusé";
+        break;
+
+      case "cancelled":
+        dernierMessage = "📞 Appel annulé";
+        break;
+
+      case "ended":
+        dernierMessage = "📞 Appel terminé";
+        break;
+    }
+
+    await Conversation.findByIdAndUpdate(conversationId, {
+      dernierMessage,
+      dernierMessageDate: new Date(),
+      dernierMessageStatut: "sent",
+    });
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({
