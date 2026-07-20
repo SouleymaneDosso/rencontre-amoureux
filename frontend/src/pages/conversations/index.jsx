@@ -275,11 +275,51 @@ function Conversations() {
     if (!dateString) return "";
 
     const date = new Date(dateString);
+    const maintenant = new Date();
+
+    const diff = maintenant - date;
+
+    const minute = 60 * 1000;
+    const heure = 60 * minute;
+    const jour = 24 * heure;
+
+    // moins d'une minute
+    if (diff < minute) {
+      return "À l'instant";
+    }
+
+    // moins d'une heure
+    if (diff < heure) {
+      return `${Math.floor(diff / minute)} min`;
+    }
+
+    // aujourd'hui
+    if (date.toDateString() === maintenant.toDateString()) {
+      return date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    // hier
+    const hier = new Date();
+    hier.setDate(maintenant.getDate() - 1);
+
+    if (date.toDateString() === hier.toDateString()) {
+      return "Hier";
+    }
+
+    // cette semaine
+    if (diff < 7 * jour) {
+      return date.toLocaleDateString("fr-FR", {
+        weekday: "long",
+      });
+    }
+
+    // ancien
     return date.toLocaleDateString("fr-FR", {
       day: "2-digit",
       month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
