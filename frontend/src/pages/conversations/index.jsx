@@ -531,7 +531,12 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
-            // const estEnLigne = onlineUsers.includes(autre._id);
+            const estEnLigne = onlineUsers.some(
+              (id) => id.toString() === autre._id.toString(),
+            );
+            console.log("autre._id =", autre._id);
+            console.log("onlineUsers =", onlineUsers);
+            console.log("includes ?", onlineUsers.includes(autre._id));
 
             return (
               <Card
@@ -550,7 +555,7 @@ function Conversations() {
                     src={autre.avatar?.url || "https://via.placeholder.com/150"}
                     alt={autre.pseudo}
                   />
-                  {/* {estEnLigne && <OnlineDot />} */}
+                  {estEnLigne && <OnlineDot />}
                 </AvatarWrapper>
                 <Info>
                   <TopRow>
