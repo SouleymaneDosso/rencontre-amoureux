@@ -352,6 +352,7 @@ exports.mesConversations = async (req, res) => {
         const nonLus = await Message.countDocuments({
           conversationId: conv._id,
           destinataire: monProfil._id,
+          type: { $ne: "call" },
           statut: { $ne: "seen" },
         });
 
