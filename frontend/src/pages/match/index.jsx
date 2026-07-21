@@ -229,8 +229,12 @@ const ModalOverlay = styled.div`
   animation: fadeIn 0.25s ease;
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 `;
 
@@ -296,51 +300,107 @@ function Matchs() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-useEffect(()=>{
-  document.body.style.overflow = modalPhoto ? "hidden" : "auto"
-}, [modalPhoto])
-
+  useEffect(() => {
+    document.body.style.overflow = modalPhoto ? "hidden" : "auto";
+  }, [modalPhoto]);
 
   useEffect(() => {
+    if (!token) {
+      setMessage("Utilisateur non connecté.");
+      setTopBar({
+        type: "error",
+        text: "Utilisateur non connecté.",
+      });
+      setLoading(false);
+
+      return;
+    }
+
+    const cacheKey = "mesMatchs";
+
+    // 1️⃣ Chercher les matchs déjà sauvegardés
+    const matchsCache = localStorage.getItem(cacheKey);
+
+    if (matchsCache) {
+      try {
+        const matchsData = JSON.parse(matchsCache);
+
+        // 2️⃣ Afficher immédiatement les matchs du cache
+        setMatchs(matchsData);
+
+        // 3️⃣ Plus besoin d'afficher le chargement
+        setLoading(false);
+      } catch (error) {
+        console.error("Erreur lecture cache matchs :", error);
+
+        // Cache invalide
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
+    // 4️⃣ Récupérer les matchs frais depuis l'API
     const fetchMatchs = async () => {
       try {
-        setLoading(true);
+        // Si on n'a pas de cache,
+        // on garde le chargement
+        if (!matchsCache) {
+          setLoading(true);
+        }
+
         setMessage("");
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/mesInfos/matchs`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/matchs`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         const data = await res.json();
 
         if (!res.ok) {
           setMessage(data.message || "Impossible de charger les matchs.");
-          setTopBar({ type: "error", text: data.message || "Impossible de charger les matchs." });
-          setTimeout(() => setTopBar(null), 4000);
+
+          setTopBar({
+            type: "error",
+            text: data.message || "Impossible de charger les matchs.",
+          });
+
+          setTimeout(() => {
+            setTopBar(null);
+          }, 4000);
+
           return;
         }
 
+        // 5️⃣ Mettre à jour l'affichage
         setMatchs(data);
+
+        // 6️⃣ Mettre à jour le cache
+        localStorage.setItem(cacheKey, JSON.stringify(data));
       } catch (error) {
+        console.error("Erreur récupération matchs :", error);
+
         setMessage("Erreur : " + error.message);
-        setTopBar({ type: "error", text: "Erreur : " + error.message });
-        setTimeout(() => setTopBar(null), 4000);
+
+        setTopBar({
+          type: "error",
+          text: "Erreur : " + error.message,
+        });
+
+        setTimeout(() => {
+          setTopBar(null);
+        }, 4000);
       } finally {
         setLoading(false);
       }
     };
 
-    if (token) {
-      fetchMatchs();
-    } else {
-      setMessage("Utilisateur non connecté.");
-      setTopBar({ type: "error", text: "Utilisateur non connecté." });
-      setLoading(false);
-    }
+    fetchMatchs();
   }, [token]);
 
   if (loading) return <Chargement>Chargement des matchs...</Chargement>;
@@ -351,7 +411,9 @@ useEffect(()=>{
       {topBar && <TopBar type={topBar.type}>{topBar.text}</TopBar>}
       <Header>
         <Title>❤️ Mes Matchs</Title>
-        <Subtitle>Voici les personnes avec qui le feeling est réciproque.</Subtitle>
+        <Subtitle>
+          Voici les personnes avec qui le feeling est réciproque.
+        </Subtitle>
       </Header>
 
       <Section>
@@ -364,9 +426,16 @@ useEffect(()=>{
         ) : (
           matchs.map((profil) => (
             <Card key={profil._id}>
-              <ImageWrapper onClick={() => setModalPhoto(profil.avatar?.url || profil.photos?.[0]?.url)}>
+              <ImageWrapper
+                onClick={() =>
+                  setModalPhoto(profil.avatar?.url || profil.photos?.[0]?.url)
+                }
+              >
                 {profil.avatar?.url || profil.photos?.[0]?.url ? (
-                  <Images src={profil.avatar?.url || profil.photos?.[0]?.url} alt={profil.pseudo} />
+                  <Images
+                    src={profil.avatar?.url || profil.photos?.[0]?.url}
+                    alt={profil.pseudo}
+                  />
                 ) : (
                   <Placeholder>
                     <FaUserCircle />
