@@ -337,7 +337,9 @@ exports.mesConversations = async (req, res) => {
     const monProfil = await Profil.findOne({ userId });
 
     if (!monProfil) {
-      return res.status(404).json({ message: "Mon profil est introuvable" });
+      return res.status(404).json({
+        message: "Mon profil est introuvable",
+      });
     }
 
     const conversations = await Conversation.find({
@@ -345,11 +347,11 @@ exports.mesConversations = async (req, res) => {
     })
       .populate("participants", "pseudo avatar age ville pays")
       .sort({ dernierMessageDate: -1 });
-    lean();
 
-  // compteur non lus
+    // Compteur non lus + expéditeur du dernier message
     const conversationsAvecNonLus = await Promise.all(
       conversations.map(async (conv) => {
+        // Les appels ne sont pas comptés comme messages non lus
         const nonLus = await Message.countDocuments({
           conversationId: conv._id,
           destinataire: monProfil._id,
@@ -357,6 +359,7 @@ exports.mesConversations = async (req, res) => {
           statut: { $ne: "seen" },
         });
 
+        // Récupérer le dernier message réel de la conversation
         const dernierMessageDoc = await Message.findOne({
           conversationId: conv._id,
         })
@@ -367,7 +370,7 @@ exports.mesConversations = async (req, res) => {
           .select("expediteur");
 
         return {
-          ...conv,
+          ...conv.toObject(),
           nonLus,
           dernierMessageExpediteur:
             dernierMessageDoc?.expediteur?.toString() || null,
@@ -378,7 +381,10 @@ exports.mesConversations = async (req, res) => {
     res.status(200).json(conversationsAvecNonLus);
   } catch (error) {
     console.error("Erreur mesConversations :", error);
-    res.status(500).json({ message: "Erreur serveur" });
+
+    res.status(500).json({
+      message: "Erreur serveur",
+    });
   }
 };
 
