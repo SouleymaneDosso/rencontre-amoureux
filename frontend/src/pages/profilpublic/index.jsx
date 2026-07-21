@@ -251,36 +251,83 @@ function Profilpublic() {
 
   // ------------------ Fetch profil public
   useEffect(() => {
-    const infospublic = async () => {
-      try {
-        setLoading(true);
-        setMessage("");
+  if (!id) return;
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
+  // La clé est différente pour chaque profil public
+  const cacheKey = `profilPublic-${id}`;
+
+  // 1️⃣ Chercher le profil dans le cache
+  const profilCache = localStorage.getItem(cacheKey);
+
+  // 2️⃣ Si le profil existe déjà dans le cache,
+  //    on l'affiche immédiatement
+  if (profilCache) {
+    try {
+      const profilData = JSON.parse(profilCache);
+
+      setProfil(profilData);
+
+      // Important :
+      // on enlève le loading immédiatement
+      setLoading(false);
+    } catch (error) {
+      console.error(
+        "Erreur lecture cache profil public :",
+        error,
+      );
+
+      // Si le cache est invalide,
+      // on le supprime
+      localStorage.removeItem(cacheKey);
+    }
+  }
+
+  // 3️⃣ Ensuite, on récupère toujours
+  //    les données fraîches depuis l'API
+  const infospublic = async () => {
+    try {
+      setMessage("");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/${id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           },
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(
+          "Erreur lors du fetch : " + data.message,
         );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setMessage("Erreur lors du fetch : " + data.message);
-          return;
-        }
-
-        setProfil(data);
-      } catch (error) {
-        setMessage("Erreur récupération profil : " + error.message);
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
 
-    infospublic();
-  }, [id]);
+      // 4️⃣ Mettre à jour l'affichage
+      setProfil(data);
+
+      // 5️⃣ Sauvegarder les nouvelles données
+      //    dans le cache correspondant à ce profil
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify(data),
+      );
+    } catch (error) {
+      setMessage(
+        "Erreur récupération profil : " +
+          error.message,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  infospublic();
+}, [id]);
 
   // ------------------ Vérification match
   useEffect(() => {
