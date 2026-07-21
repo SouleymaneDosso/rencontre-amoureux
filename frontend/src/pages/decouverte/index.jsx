@@ -238,7 +238,7 @@ const Empty = styled.div`
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -265,7 +265,7 @@ const CloseButton = styled.button`
   top: 20px;
   right: 20px;
 
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   border: none;
   border-radius: 50%;
 
@@ -285,7 +285,6 @@ function Decouverte() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-
   const handleLike = async (profilId) => {
     try {
       setActionLoading(profilId);
@@ -304,7 +303,16 @@ function Decouverte() {
 
       if (!res.ok) throw new Error(data.message);
 
-      setProfils((prev) => prev.filter((p) => p._id !== profilId));
+      setProfils((prev) => {
+        const nouveauxProfils = prev.filter((p) => p._id !== profilId);
+
+        localStorage.setItem(
+          "profils_decouverte",
+          JSON.stringify(nouveauxProfils),
+        );
+
+        return nouveauxProfils;
+      });
 
       if (data.match) {
         alert("🔥 Match ! Cette personne t'a liké aussi.");
@@ -335,7 +343,16 @@ function Decouverte() {
 
       if (!res.ok) throw new Error(data.message);
 
-      setProfils((prev) => prev.filter((p) => p._id !== profilId));
+      setProfils((prev) => {
+        const nouveauxProfils = prev.filter((p) => p._id !== profilId);
+
+        localStorage.setItem(
+          "profils_decouverte",
+          JSON.stringify(nouveauxProfils),
+        );
+
+        return nouveauxProfils;
+      });
     } catch (error) {
       console.error("Erreur dislike :", error.message);
       alert(error.message);
@@ -345,9 +362,26 @@ function Decouverte() {
   };
 
   useEffect(() => {
+    const cacheKey = "profils_decouverte";
+
     const fetchSuggestions = async () => {
+      // 1️⃣ Charger immédiatement le cache
+      const profilsCache = localStorage.getItem(cacheKey);
+
+      if (profilsCache) {
+        try {
+          const profilsLocal = JSON.parse(profilsCache);
+
+          setProfils(profilsLocal);
+          setLoading(false);
+        } catch (error) {
+          console.error("Erreur lecture cache découverte :", error);
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
+      // 2️⃣ Récupérer les nouvelles suggestions
       try {
-        setLoading(true);
         setMessage("");
 
         const res = await fetch(
@@ -364,13 +398,28 @@ function Decouverte() {
         const data = await res.json();
 
         if (!res.ok) {
-          setMessage(data.message || "Impossible de charger les suggestions.");
+          // Si on a un cache, on garde l'ancien affichage
+          if (!profilsCache) {
+            setMessage(
+              data.message || "Impossible de charger les suggestions.",
+            );
+          }
+
           return;
         }
 
+        // 3️⃣ Afficher les nouvelles données
         setProfils(data);
+
+        // 4️⃣ Sauvegarder les nouvelles données
+        localStorage.setItem(cacheKey, JSON.stringify(data));
       } catch (error) {
-        setMessage("Erreur : " + error.message);
+        console.error("Erreur découverte :", error.message);
+
+        // Si aucun cache n'existe
+        if (!profilsCache) {
+          setMessage("Erreur : " + error.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -435,7 +484,6 @@ function Decouverte() {
                 )}
               </ImageWrapper>
 
-
               <Content>
                 <H2>
                   {photo.pseudo}, {photo.age} ans
@@ -488,16 +536,16 @@ function Decouverte() {
           ))
         )}
 
-            {modal && (
-                <ModalOverlay onClick={() => setModal(null)}>
-                  <ModalContent onClick={(e) => e.stopPropagation()}>
-                    <CloseButton onClick={() => setModal(null)}>
-                      <FaTimes />
-                    </CloseButton>
-                    <ModalImage src={modal} />
-                  </ModalContent>
-                </ModalOverlay>
-              )}
+        {modal && (
+          <ModalOverlay onClick={() => setModal(null)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <CloseButton onClick={() => setModal(null)}>
+                <FaTimes />
+              </CloseButton>
+              <ModalImage src={modal} />
+            </ModalContent>
+          </ModalOverlay>
+        )}
       </Section>
     </Page>
   );
