@@ -429,15 +429,34 @@ function Conversations() {
 
           found = true;
 
+          const dernierMessage =
+            message.type === "call"
+              ? message.call?.status === "missed"
+                ? "📞 Appel manqué"
+                : message.call?.status === "accepted"
+                  ? "📞 Appel accepté"
+                  : message.call?.status === "rejected"
+                    ? "📞 Appel refusé"
+                    : message.call?.status === "cancelled"
+                      ? "📞 Appel annulé"
+                      : message.call?.status === "ended"
+                        ? "📞 Appel terminé"
+                        : "📞 Appel"
+              : message.contenu;
+
           return {
             ...conv,
-            dernierMessage: message.contenu,
+            dernierMessage,
             dernierMessageDate: message.createdAt,
             dernierMessageStatut: "delivered",
+
+            // Un appel ne doit pas augmenter le compteur
             nonLus:
-              message.destinataire === monProfilId
-                ? (conv.nonLus || 0) + 1
-                : conv.nonLus || 0,
+              message.type === "call"
+                ? conv.nonLus || 0
+                : message.destinataire === monProfilId
+                  ? (conv.nonLus || 0) + 1
+                  : conv.nonLus || 0,
           };
         });
 

@@ -196,6 +196,7 @@ function Home() {
 
     e.target.value = "";
   };
+  
 
   useEffect(() => {
     const fetchProfil = async () => {
