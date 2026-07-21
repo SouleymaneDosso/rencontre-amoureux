@@ -13,6 +13,11 @@ const conversationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    dernierMessageExpediteur: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profil",
+      default: null,
+    },
     dernierMessageDate: {
       type: Date,
       default: null,
@@ -21,9 +26,9 @@ const conversationSchema = new mongoose.Schema(
       type: String,
       enum: ["sent", "delivered", "seen"],
       default: "sent",
-    }
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Conversation", conversationSchema);

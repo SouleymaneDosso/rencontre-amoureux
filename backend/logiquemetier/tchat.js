@@ -345,6 +345,7 @@ exports.mesConversations = async (req, res) => {
     })
       .populate("participants", "pseudo avatar age ville pays")
       .sort({ dernierMessageDate: -1 });
+    lean();
 
     // 🔥 AJOUT COMPTEUR NON LUS
     const conversationsAvecNonLus = await Promise.all(
@@ -356,9 +357,20 @@ exports.mesConversations = async (req, res) => {
           statut: { $ne: "seen" },
         });
 
+        const dernierMessageDoc = await Message.findOne({
+          conversationId: conv._id,
+        })
+          .sort({
+            createdAt: -1,
+            _id: -1,
+          })
+          .select("expediteur");
+
         return {
-          ...conv.toObject(),
+          ...conv,
           nonLus,
+          dernierMessageExpediteur:
+            dernierMessageDoc?.expediteur?.toString() || null,
         };
       }),
     );
