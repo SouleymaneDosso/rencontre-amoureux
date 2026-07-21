@@ -437,6 +437,7 @@ exports.marquerMessagesCommeLus = async (req, res) => {
       conversationId: conversation._id,
       expediteur: profilCible._id,
       destinataire: monProfil._id,
+      type: { $ne: "call" },
       statut: { $ne: "seen" },
     });
 
@@ -448,6 +449,7 @@ exports.marquerMessagesCommeLus = async (req, res) => {
         conversationId: conversation._id,
         expediteur: profilCible._id,
         destinataire: monProfil._id,
+        type: { $ne: "call" },
         statut: { $ne: "seen" },
       },
       {
