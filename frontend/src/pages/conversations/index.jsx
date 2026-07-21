@@ -598,6 +598,9 @@ function Conversations() {
             const autre = getAutreParticipant(conversation.participants);
 
             if (!autre) return null;
+            const dernierMessageEstDeMoi =
+              conversation.dernierMessageExpediteur === monProfilId;
+
             const estEnLigne = onlineUsers.some(
               (id) => id.toString() === autre._id.toString(),
             );
@@ -643,12 +646,23 @@ function Conversations() {
 
                   <BottomRow>
                     <LastMessage $nonLus={conversation.nonLus > 0}>
-                      {conversation.dernierMessage || "Aucun message"}
+                      {conversation.dernierMessage ? (
+                        <>
+                          {dernierMessageEstDeMoi && "Vous : "}
+                          {conversation.dernierMessage}
 
-                      <span style={{ marginLeft: "6px" }}>
-                        {conversation.dernierMessageStatut &&
-                          getStatutIcon(conversation.dernierMessageStatut)}
-                      </span>
+                          {dernierMessageEstDeMoi && (
+                            <span style={{ marginLeft: "6px" }}>
+                              {conversation.dernierMessageStatut &&
+                                getStatutIcon(
+                                  conversation.dernierMessageStatut,
+                                )}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        "Aucun message"
+                      )}
                     </LastMessage>
 
                     <RightIcon>
