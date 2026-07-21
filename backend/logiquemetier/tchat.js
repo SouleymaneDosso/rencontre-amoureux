@@ -347,7 +347,7 @@ exports.mesConversations = async (req, res) => {
       .sort({ dernierMessageDate: -1 });
     lean();
 
-    // 🔥 AJOUT COMPTEUR NON LUS
+  // compteur non lus
     const conversationsAvecNonLus = await Promise.all(
       conversations.map(async (conv) => {
         const nonLus = await Message.countDocuments({
