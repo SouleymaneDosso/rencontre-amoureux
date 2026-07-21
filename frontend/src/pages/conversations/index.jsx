@@ -449,6 +449,7 @@ function Conversations() {
             dernierMessage,
             dernierMessageDate: message.createdAt,
             dernierMessageStatut: "delivered",
+            dernierMessageExpediteur: message.expediteur,
 
             // Un appel ne doit pas augmenter le compteur
             nonLus:
