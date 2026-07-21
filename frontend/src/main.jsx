@@ -1,3 +1,4 @@
+import {useState} from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -27,10 +28,84 @@ import { ConversationProvider } from "./context/ConversationContext";
 // 🔥 Layout principal
 function Layout() {
   const location = useLocation();
+ const [monProfilId, setMonProfilId] = useState(null);
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     console.log("🔌 Connexion socket globale");
-    socket.connect();
-  }, []);
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    return () => {
+     
+    };
+  }, [token]);
+
+  useEffect(() => {
+  const chargerMonProfil = async () => {
+    if (!token) return;
+
+    try {
+      const profilLocal = localStorage.getItem("monProfil");
+
+      if (profilLocal) {
+        const profil = JSON.parse(profilLocal);
+
+        setMonProfilId(profil._id);
+        return;
+      }
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message);
+      }
+
+      localStorage.setItem("monProfil", JSON.stringify(data));
+
+      setMonProfilId(data._id);
+    } catch (error) {
+      console.error("Erreur récupération profil :", error.message);
+    }
+  };
+
+  chargerMonProfil();
+}, [token]);
+
+useEffect(() => {
+  if (!monProfilId) return;
+
+  const registerUser = () => {
+    console.log("👤 Enregistrement socket :", monProfilId);
+
+    socket.emit("registerUser", monProfilId);
+  };
+
+  if (socket.connected) {
+    registerUser();
+  }
+
+  socket.on("connect", registerUser);
+
+  return () => {
+    socket.off("connect", registerUser);
+  };
+}, [monProfilId]);
 
   // routes où on cache header + footer
   const hideHeader =
