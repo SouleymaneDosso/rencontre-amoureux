@@ -123,11 +123,17 @@ function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setProfil((prev) => ({
-        ...prev,
-        photos: prev.photos.filter((photo) => photo.public_id !== public_id),
-        avatar: prev.avatar?.public_id === public_id ? null : prev.avatar,
-      }));
+      setProfil((prev) => {
+        const nouveauProfil = {
+          ...prev,
+          photos: prev.photos.filter((photo) => photo.public_id !== public_id),
+          avatar: prev.avatar?.public_id === public_id ? null : prev.avatar,
+        };
+
+        localStorage.setItem("monProfil", JSON.stringify(nouveauProfil));
+
+        return nouveauProfil;
+      });
     } catch (err) {
       console.error(err.message);
     }
@@ -157,6 +163,9 @@ function Home() {
       if (!res.ok) throw new Error(data.message);
 
       setProfil(data);
+      setInteret(data.centresInteret || []);
+
+      localStorage.setItem("monProfil", JSON.stringify(data));
     } catch (error) {
       console.error(error.message);
     }
@@ -190,15 +199,35 @@ function Home() {
       if (!res.ok) throw new Error(data.message);
 
       setProfil(data);
+      setInteret(data.centresInteret || []);
+
+      localStorage.setItem("monProfil", JSON.stringify(data));
     } catch (error) {
       console.error(error.message);
     }
 
     e.target.value = "";
   };
-  
 
   useEffect(() => {
+    if (!token) return;
+
+    const profilCache = localStorage.getItem("monProfil");
+
+    // 1️⃣ Affichage instantané du cache
+    if (profilCache) {
+      try {
+        const profilData = JSON.parse(profilCache);
+
+        setProfil(profilData);
+        setInteret(profilData.centresInteret || []);
+      } catch (error) {
+        console.error("Erreur cache profil :", error);
+        localStorage.removeItem("monProfil");
+      }
+    }
+
+    // 2️⃣ Toujours récupérer les données fraîches
     const fetchProfil = async () => {
       try {
         const res = await fetch(
@@ -216,16 +245,18 @@ function Home() {
           throw new Error(data.message || "Erreur chargement profil");
         }
 
+        // 3️⃣ Mettre à jour l'UI
         setProfil(data);
         setInteret(data.centresInteret || []);
+
+        // 4️⃣ Mettre à jour le cache
+        localStorage.setItem("monProfil", JSON.stringify(data));
       } catch (error) {
         console.error(error.message);
       }
     };
 
-    if (token) {
-      fetchProfil();
-    }
+    fetchProfil();
   }, [token]);
 
   useEffect(() => {
