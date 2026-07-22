@@ -870,7 +870,7 @@ const lancerAppel = () => {
     id,
     profilCible,
     messages,
-    conversationId: messages[0]?.conversationId || null,
+    conversationId: id,
   });
 };
   // swipe pour messages
