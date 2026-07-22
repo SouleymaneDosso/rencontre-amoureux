@@ -1,4 +1,5 @@
 import { useCallContext } from "../../context/CallContext";
+import { useEffect } from "react";
 import { socket } from "../../socket";
 import useAudioCall from "../hooks/useAudioCall";
 import CallModal from "../../pages/tchat/CallModal";
@@ -38,6 +39,20 @@ export default function CallManager() {
     profilCible: callTarget?.profilCible || null,
     messages: callTarget?.messages || [],
   });
+
+  useEffect(() => {
+  if (!callTarget?.id) return;
+
+  const lancerAppel = async () => {
+    try {
+      await startCall();
+    } catch (error) {
+      console.error("Erreur démarrage appel :", error);
+    }
+  };
+
+  lancerAppel();
+}, [callTarget?.id]);
 
   return (
     <>
