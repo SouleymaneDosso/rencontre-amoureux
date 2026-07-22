@@ -8,8 +8,8 @@ import { FaPhoneSlash, FaPhone } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
 import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
-import useAudioCall from "../../components/hooks/useAudioCall";
-import CallModal from "../../pages/tchat/CallModal";
+// import useAudioCall from "../../components/hooks/useAudioCall";
+// import CallModal from "../../pages/tchat/CallModal";
 import { useCallContext } from "../../context/CallContext";
 
 import { FaPhoneAlt } from "react-icons/fa";
@@ -889,30 +889,30 @@ function Tchat() {
   const [previewProgress, setPreviewProgress] = useState(0);
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
   const [draggingPreview, setDraggingPreview] = useState(false);
-  const {
-    calling,
-    incomingCall,
-    startCall,
-    acceptCall,
-    rejectCall,
-    cancelCall,
-    remoteAudioRef,
-    inCall,
-    endCall,
-    callDuration,
-    isMinimized,
-    minimizeCall,
-    maximizeCall,
-    isMuted,
-    toggleMute,
-  } = useAudioCall({
-    socket,
-    id,
-    token,
-    monProfilId,
-    profilCible,
-    messages,
-  });
+  // const {
+  //   calling,
+  //   incomingCall,
+  //   startCall,
+  //   acceptCall,
+  //   rejectCall,
+  //   cancelCall,
+  //   remoteAudioRef,
+  //   inCall,
+  //   endCall,
+  //   callDuration,
+  //   isMinimized,
+  //   minimizeCall,
+  //   maximizeCall,
+  //   isMuted,
+  //   toggleMute,
+  // } = useAudioCall({
+  //   socket,
+  //   id,
+  //   token,
+  //   monProfilId,
+  //   profilCible,
+  //   messages,
+  // });
 
  const lancerAppel = () => {
   setCallTarget({
@@ -1947,9 +1947,9 @@ function Tchat() {
 
   return (
     <Wrapper>
-      <audio ref={remoteAudioRef} autoPlay playsInline />
+      {/* <audio ref={remoteAudioRef} autoPlay playsInline /> */}
 
-      <CallModal
+      {/* <CallModal
         open={incomingCall || calling || inCall}
         incoming={!!incomingCall}
         calling={calling}
@@ -1964,16 +1964,16 @@ function Tchat() {
         maximizeCall={maximizeCall}
         isMuted={isMuted}
         toggleMute={toggleMute}
-      />
+      /> */}
       <HeaderChat
         navigate={navigate}
         profilCible={profilCible}
         isTyping={isTyping}
         isProfilCibleOnline={isProfilCibleOnline}
        startCall={lancerAppel}
-        calling={calling}
-        incomingCall={incomingCall}
-        inCall={inCall}
+        // calling={calling}
+        // incomingCall={incomingCall}
+        // inCall={inCall}
       />
 
       <MessagesContainer
