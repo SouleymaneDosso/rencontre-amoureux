@@ -9,7 +9,9 @@ export default function useAudioCall({
   profilCible,
   monProfilId,
 }) {
+  const [activeCallProfile, setActiveCallProfile] = useState(null);
   const monProfil = JSON.parse(localStorage.getItem("monProfil"));
+
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
@@ -249,12 +251,24 @@ export default function useAudioCall({
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
       console.log("📞 Appel entrant reçu :", from);
+
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.play();
 
       if (navigator.vibrate) {
         navigator.vibrate([500, 300, 500]);
       }
+
+      const callerProfile = {
+        _id: from.id,
+        pseudo: from.pseudo,
+        avatar: {
+          url: from.avatar,
+        },
+      };
+
+      setActiveCallProfile(callerProfile);
+
       setIncomingCall({
         from,
       });
@@ -328,29 +342,42 @@ export default function useAudioCall({
   };
 
   const startCall = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-    localStreamRef.current = stream;
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+  });
 
-    createPeerConnection();
-    stream.getTracks().forEach((track) => {
-      peerConnectionRef.current.addTrack(track, stream);
-    });
-    peerUserIdRef.current = id;
-    await createOffer();
-    setCalling(true);
-    callingToneRef.current.currentTime = 0;
-    callingToneRef.current.play();
-    socket.emit("callUser", {
-      to: id,
-      from: {
-        id: monProfilId,
-        pseudo: monProfil?.pseudo,
-        avatar: monProfil?.avatar?.url,
-      },
-    });
-  };
+  localStreamRef.current = stream;
+
+  setActiveCallProfile({
+    _id: profilCible?._id,
+    pseudo: profilCible?.pseudo,
+    avatar: profilCible?.avatar,
+  });
+
+  createPeerConnection();
+
+  stream.getTracks().forEach((track) => {
+    peerConnectionRef.current.addTrack(track, stream);
+  });
+
+  peerUserIdRef.current = id;
+
+  await createOffer();
+
+  setCalling(true);
+
+  callingToneRef.current.currentTime = 0;
+  callingToneRef.current.play();
+
+  socket.emit("callUser", {
+    to: id,
+    from: {
+      id: monProfilId,
+      pseudo: monProfil?.pseudo,
+      avatar: monProfil?.avatar?.url,
+    },
+  });
+};
 
   const cancelCall = async () => {
     stopSounds();
@@ -402,6 +429,7 @@ export default function useAudioCall({
     inCall,
     endCall,
     incomingCall,
+    activeCallProfile,
     acceptCall,
     rejectCall,
     cancelCall,

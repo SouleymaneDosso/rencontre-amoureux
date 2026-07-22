@@ -18,6 +18,7 @@ export default function CallManager() {
   const {
     calling,
     incomingCall,
+    activeCallProfile,
     startCall,
     acceptCall,
     rejectCall,
@@ -63,17 +64,7 @@ export default function CallManager() {
         incoming={!!incomingCall}
         calling={calling}
         inCall={inCall}
-        profilCible={
-          incomingCall?.from
-            ? {
-                _id: incomingCall.from.id,
-                pseudo: incomingCall.from.pseudo,
-                avatar: {
-                  url: incomingCall.from.avatar,
-                },
-              }
-            : callTarget?.profilCible || null
-        }
+       profilCible={activeCallProfile}
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
