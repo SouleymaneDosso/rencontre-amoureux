@@ -162,6 +162,11 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
+    console.log("📞 END CALL", {
+      id,
+      conversationId,
+      monProfilId,
+    });
     stopSounds();
     cleanupCall();
 
@@ -171,7 +176,7 @@ export default function useAudioCall({
     });
 
     const message = await creerMessageAppel(token, {
-     conversationId: conversationId,
+      conversationId: conversationId,
       destinataire: id,
       status: "ended",
     });
@@ -343,42 +348,42 @@ export default function useAudioCall({
   };
 
   const startCall = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: true,
-  });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-  localStreamRef.current = stream;
+    localStreamRef.current = stream;
 
-  setActiveCallProfile({
-    _id: profilCible?._id,
-    pseudo: profilCible?.pseudo,
-    avatar: profilCible?.avatar,
-  });
+    setActiveCallProfile({
+      _id: profilCible?._id,
+      pseudo: profilCible?.pseudo,
+      avatar: profilCible?.avatar,
+    });
 
-  createPeerConnection();
+    createPeerConnection();
 
-  stream.getTracks().forEach((track) => {
-    peerConnectionRef.current.addTrack(track, stream);
-  });
+    stream.getTracks().forEach((track) => {
+      peerConnectionRef.current.addTrack(track, stream);
+    });
 
-  peerUserIdRef.current = id;
+    peerUserIdRef.current = id;
 
-  await createOffer();
+    await createOffer();
 
-  setCalling(true);
+    setCalling(true);
 
-  callingToneRef.current.currentTime = 0;
-  callingToneRef.current.play();
+    callingToneRef.current.currentTime = 0;
+    callingToneRef.current.play();
 
-  socket.emit("callUser", {
-    to: id,
-    from: {
-      id: monProfilId,
-      pseudo: monProfil?.pseudo,
-      avatar: monProfil?.avatar?.url,
-    },
-  });
-};
+    socket.emit("callUser", {
+      to: id,
+      from: {
+        id: monProfilId,
+        pseudo: monProfil?.pseudo,
+        avatar: monProfil?.avatar?.url,
+      },
+    });
+  };
 
   const cancelCall = async () => {
     stopSounds();
@@ -386,7 +391,7 @@ export default function useAudioCall({
 
     try {
       const message = await creerMessageAppel(token, {
-       conversationId: conversationId,
+        conversationId: conversationId,
         destinataire: id,
         status: "cancelled",
       });

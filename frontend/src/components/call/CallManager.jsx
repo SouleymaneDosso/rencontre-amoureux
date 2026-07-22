@@ -15,6 +15,12 @@ export default function CallManager() {
 
   const id = callTarget?.id || null;
 
+  console.log("📞 CALL MANAGER", {
+    id,
+    conversationId: callTarget?.conversationId,
+    callTarget,
+  });
+
   const {
     calling,
     incomingCall,
