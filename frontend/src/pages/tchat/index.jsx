@@ -1971,9 +1971,9 @@ function Tchat() {
         isTyping={isTyping}
         isProfilCibleOnline={isProfilCibleOnline}
        startCall={lancerAppel}
-        // calling={calling}
-        // incomingCall={incomingCall}
-        // inCall={inCall}
+        calling={calling}
+        incomingCall={incomingCall}
+        inCall={inCall}
       />
 
       <MessagesContainer
