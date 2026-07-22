@@ -255,7 +255,7 @@ export default function useAudioCall({
   }, []);
 
   useEffect(() => {
-    const handleIncomingCall = ({ from }) => {
+    const handleIncomingCall = ({ from, conversationId }) => {
       console.log("📞 Appel entrant reçu :", from);
 
       ringtoneRef.current.currentTime = 0;
@@ -277,6 +277,7 @@ export default function useAudioCall({
 
       setIncomingCall({
         from,
+        conversationId,
       });
     };
 
@@ -377,6 +378,7 @@ export default function useAudioCall({
 
     socket.emit("callUser", {
       to: id,
+      conversationId,
       from: {
         id: monProfilId,
         pseudo: monProfil?.pseudo,
@@ -413,7 +415,7 @@ export default function useAudioCall({
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-        conversationId: conversationId,
+       conversationId: incomingCall.conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });
