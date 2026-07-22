@@ -9,6 +9,7 @@ export default function useAudioCall({
   profilCible,
   monProfilId,
 }) {
+  const monProfil = JSON.parse(localStorage.getItem("monProfil"));
   const [calling, setCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [offer, setOffer] = useState(null);
@@ -247,7 +248,7 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
-       console.log("📞 Appel entrant reçu :", from);
+      console.log("📞 Appel entrant reçu :", from);
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.play();
 
@@ -345,8 +346,8 @@ export default function useAudioCall({
       to: id,
       from: {
         id: monProfilId,
-        pseudo: profilCible?.pseudo,
-        avatar: profilCible?.avatar?.url,
+        pseudo: monProfil?.pseudo,
+        avatar: monProfil?.avatar?.url,
       },
     });
   };
