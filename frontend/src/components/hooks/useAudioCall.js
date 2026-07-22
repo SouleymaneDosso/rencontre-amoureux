@@ -171,8 +171,8 @@ export default function useAudioCall({
     });
 
     const message = await creerMessageAppel(token, {
-      conversationId,
-      destinataire: peerUserIdRef.current,
+     conversationId: conversationId,
+      destinataire: id,
       status: "ended",
     });
 
@@ -386,7 +386,7 @@ export default function useAudioCall({
 
     try {
       const message = await creerMessageAppel(token, {
-       conversationId,
+       conversationId: conversationId,
         destinataire: id,
         status: "cancelled",
       });
@@ -408,7 +408,7 @@ export default function useAudioCall({
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-        conversationId,
+        conversationId: conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });

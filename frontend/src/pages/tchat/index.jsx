@@ -6,10 +6,7 @@ import { FaMicrophone } from "react-icons/fa";
 import { keyframes } from "styled-components";
 import { FaPhoneSlash, FaPhone } from "react-icons/fa";
 import { MdCallMade, MdCallReceived } from "react-icons/md";
-import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
-// import useAudioCall from "../../components/hooks/useAudioCall";
-// import CallModal from "../../pages/tchat/CallModal";
 import { useCallContext } from "../../context/CallContext";
 
 import { FaPhoneAlt } from "react-icons/fa";
@@ -18,9 +15,7 @@ import {
   FaTrash,
   FaArrowLeft,
   FaPaperPlane,
-  FaUserCircle,
   FaExclamationTriangle,
-  FaCircle,
   FaImage,
   FaTimes,
   FaPlay,
@@ -779,26 +774,7 @@ const CallIcon = styled.div`
   }};
 `;
 
-const CallAvatar = styled.div`
-  width: 56px;
-  height: 56px;
 
-  border-radius: 50%;
-
-  overflow: hidden;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #f3f4f6;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
 
 const CallInfos = styled.div`
   display: flex;
@@ -889,36 +865,12 @@ function Tchat() {
   const [previewProgress, setPreviewProgress] = useState(0);
   const [previewCurrentTime, setPreviewCurrentTime] = useState(0);
   const [draggingPreview, setDraggingPreview] = useState(false);
-  // const {
-  //   calling,
-  //   incomingCall,
-  //   startCall,
-  //   acceptCall,
-  //   rejectCall,
-  //   cancelCall,
-  //   remoteAudioRef,
-  //   inCall,
-  //   endCall,
-  //   callDuration,
-  //   isMinimized,
-  //   minimizeCall,
-  //   maximizeCall,
-  //   isMuted,
-  //   toggleMute,
-  // } = useAudioCall({
-  //   socket,
-  //   id,
-  //   token,
-  //   monProfilId,
-  //   profilCible,
-  //   messages,
-  // });
 const lancerAppel = () => {
   setCallTarget({
     id,
     profilCible,
     messages,
-    conversationId: id,
+    conversationId: messages[0]?.conversationId || null,
   });
 };
   // swipe pour messages
