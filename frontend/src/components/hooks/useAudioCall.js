@@ -247,6 +247,7 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleIncomingCall = ({ from }) => {
+       console.log("📞 Appel entrant reçu :", from);
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.play();
 
