@@ -8,6 +8,7 @@ export default function useAudioCall({
   messages,
   profilCible,
   monProfilId,
+  conversationId,
 }) {
   const [activeCallProfile, setActiveCallProfile] = useState(null);
   const monProfil = JSON.parse(localStorage.getItem("monProfil"));
@@ -170,7 +171,7 @@ export default function useAudioCall({
     });
 
     const message = await creerMessageAppel(token, {
-      conversationId: messages[0]?.conversationId,
+      conversationId,
       destinataire: id,
       status: "ended",
     });
@@ -385,7 +386,7 @@ export default function useAudioCall({
 
     try {
       const message = await creerMessageAppel(token, {
-        conversationId: messages[0]?.conversationId,
+       conversationId,
         destinataire: id,
         status: "cancelled",
       });
@@ -407,7 +408,7 @@ export default function useAudioCall({
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-        conversationId: messages[0]?.conversationId,
+        conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });

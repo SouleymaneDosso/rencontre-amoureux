@@ -38,7 +38,7 @@ export default function CallManager() {
     token,
     monProfilId,
     profilCible: callTarget?.profilCible || null,
-    messages: callTarget?.messages || [],
+    conversationId: callTarget?.conversationId || null,
   });
   useEffect(() => {
     if (!callTarget?.id) return;
