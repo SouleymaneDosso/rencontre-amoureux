@@ -49,7 +49,17 @@ export default function CallManager() {
         incoming={!!incomingCall}
         calling={calling}
         inCall={inCall}
-        profilCible={callTarget?.profilCible || null}
+        profilCible={
+  incomingCall?.from
+    ? {
+        _id: incomingCall.from.id,
+        pseudo: incomingCall.from.pseudo,
+        avatar: {
+          url: incomingCall.from.avatar,
+        },
+      }
+    : callTarget?.profilCible || null
+}
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
