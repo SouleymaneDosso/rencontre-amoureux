@@ -40,34 +40,26 @@ export default function CallManager() {
     messages: callTarget?.messages || [],
   });
 
-  useEffect(() => {
-  if (!callTarget?.id) return;
-
-  const lancerAppel = async () => {
-    try {
-      await startCall();
-    } catch (error) {
-      console.error("Erreur démarrage appel :", error);
-    }
-  };
-
-  lancerAppel();
-}, [callTarget?.id]);
-
   return (
     <>
-      <audio
-        ref={remoteAudioRef}
-        autoPlay
-        playsInline
-      />
+      <audio ref={remoteAudioRef} autoPlay playsInline />
 
       <CallModal
         open={incomingCall || calling || inCall}
         incoming={!!incomingCall}
         calling={calling}
         inCall={inCall}
-        profilCible={callTarget?.profilCible || null}
+        profilCible={
+          incomingCall?.from
+            ? {
+                _id: incomingCall.from.id,
+                pseudo: incomingCall.from.pseudo,
+                avatar: {
+                  url: incomingCall.from.avatar,
+                },
+              }
+            : callTarget?.profilCible || null
+        }
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
