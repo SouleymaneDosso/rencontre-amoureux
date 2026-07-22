@@ -1,23 +1,18 @@
-import { useLocation } from "react-router-dom";
-
+import { useCallContext } from "../../context/CallContext";
 import { socket } from "../../socket";
 import useAudioCall from "../hooks/useAudioCall";
 import CallModal from "../../pages/tchat/CallModal";
 
 export default function CallManager() {
-  const location = useLocation();
+  const { callTarget } = useCallContext();
 
-  // Récupère l'utilisateur de la conversation actuelle
-  const id = location.pathname.startsWith("/tchat/")
-    ? location.pathname.split("/tchat/")[1]
-    : null;
-
-  // Récupère ton profil depuis le localStorage
   const monProfil = JSON.parse(localStorage.getItem("monProfil"));
 
   const monProfilId = monProfil?._id || null;
 
   const token = localStorage.getItem("token");
+
+  const id = callTarget?.id || null;
 
   const {
     calling,
@@ -40,8 +35,8 @@ export default function CallManager() {
     id,
     token,
     monProfilId,
-    profilCible: null,
-    messages: [],
+    profilCible: callTarget?.profilCible || null,
+    messages: callTarget?.messages || [],
   });
 
   return (
@@ -57,7 +52,7 @@ export default function CallManager() {
         incoming={!!incomingCall}
         calling={calling}
         inCall={inCall}
-        profilCible={null}
+        profilCible={callTarget?.profilCible || null}
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
@@ -71,4 +66,3 @@ export default function CallManager() {
     </>
   );
 }
-
