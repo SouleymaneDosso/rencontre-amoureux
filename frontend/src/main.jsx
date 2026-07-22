@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -24,11 +24,12 @@ import Video from "./pages/videos";
 import { socket } from "./socket";
 import Videopublic from "./pages/videospublic";
 import { ConversationProvider } from "./context/ConversationContext";
+import CallManager from "./components/call/CallManager";
 
 // 🔥 Layout principal
 function Layout() {
   const location = useLocation();
- const [monProfilId, setMonProfilId] = useState(null);
+  const [monProfilId, setMonProfilId] = useState(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -42,70 +43,68 @@ function Layout() {
       socket.connect();
     }
 
-    return () => {
-     
-    };
+    return () => {};
   }, [token]);
 
   useEffect(() => {
-  const chargerMonProfil = async () => {
-    if (!token) return;
+    const chargerMonProfil = async () => {
+      if (!token) return;
 
-    try {
-      const profilLocal = localStorage.getItem("monProfil");
+      try {
+        const profilLocal = localStorage.getItem("monProfil");
 
-      if (profilLocal) {
-        const profil = JSON.parse(profilLocal);
+        if (profilLocal) {
+          const profil = JSON.parse(profilLocal);
 
-        setMonProfilId(profil._id);
-        return;
-      }
+          setMonProfilId(profil._id);
+          return;
+        }
 
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/mesInfos/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        },
-      );
+        );
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message);
+        if (!res.ok) {
+          throw new Error(data.message);
+        }
+
+        localStorage.setItem("monProfil", JSON.stringify(data));
+
+        setMonProfilId(data._id);
+      } catch (error) {
+        console.error("Erreur récupération profil :", error.message);
       }
+    };
 
-      localStorage.setItem("monProfil", JSON.stringify(data));
+    chargerMonProfil();
+  }, [token]);
 
-      setMonProfilId(data._id);
-    } catch (error) {
-      console.error("Erreur récupération profil :", error.message);
+  useEffect(() => {
+    if (!monProfilId) return;
+
+    const registerUser = () => {
+      console.log("👤 Enregistrement socket :", monProfilId);
+
+      socket.emit("registerUser", monProfilId);
+    };
+
+    if (socket.connected) {
+      registerUser();
     }
-  };
 
-  chargerMonProfil();
-}, [token]);
+    socket.on("connect", registerUser);
 
-useEffect(() => {
-  if (!monProfilId) return;
-
-  const registerUser = () => {
-    console.log("👤 Enregistrement socket :", monProfilId);
-
-    socket.emit("registerUser", monProfilId);
-  };
-
-  if (socket.connected) {
-    registerUser();
-  }
-
-  socket.on("connect", registerUser);
-
-  return () => {
-    socket.off("connect", registerUser);
-  };
-}, [monProfilId]);
+    return () => {
+      socket.off("connect", registerUser);
+    };
+  }, [monProfilId]);
 
   // routes où on cache header + footer
   const hideHeader =
@@ -118,16 +117,15 @@ useEffect(() => {
   const hideFooter =
     location.pathname.startsWith("/tchat") ||
     location.pathname === "/connexion" ||
-    location.pathname === "/inscription"||
+    location.pathname === "/inscription" ||
     location.pathname === "/videos" ||
     location.pathname === "/publicdeo";
- 
 
   return (
     <>
       {!hideHeader && <Header />}
       {!hideFooter && <FooterNav />}
-
+      <CallManager />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/:id" element={<Home />} />
@@ -148,14 +146,12 @@ useEffect(() => {
   );
 }
 
-
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ConversationProvider>
-    <Router>
-      <Layout />
-
-    </Router>
+      <Router>
+        <Layout />
+      </Router>
     </ConversationProvider>
   </StrictMode>,
 );
