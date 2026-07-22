@@ -919,6 +919,7 @@ function Tchat() {
     id,
     profilCible,
     messages,
+    conversationId: messages[0]?.conversationId || null,
   });
 };
   // swipe pour messages

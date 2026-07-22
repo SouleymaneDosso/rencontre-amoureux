@@ -172,7 +172,7 @@ export default function useAudioCall({
 
     const message = await creerMessageAppel(token, {
       conversationId,
-      destinataire: id,
+      destinataire: peerUserIdRef.current,
       status: "ended",
     });
 

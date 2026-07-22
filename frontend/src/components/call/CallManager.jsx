@@ -14,6 +14,7 @@ export default function CallManager() {
   const token = localStorage.getItem("token");
 
   const id = callTarget?.id || null;
+  const conversationId = callTarget?.conversationId || null;
 
   const {
     calling,
@@ -38,7 +39,8 @@ export default function CallManager() {
     token,
     monProfilId,
     profilCible: callTarget?.profilCible || null,
-    conversationId: callTarget?.conversationId || null,
+    messages: callTarget?.messages || [],
+    conversationId,
   });
   useEffect(() => {
     if (!callTarget?.id) return;
@@ -64,7 +66,7 @@ export default function CallManager() {
         incoming={!!incomingCall}
         calling={calling}
         inCall={inCall}
-       profilCible={activeCallProfile}
+        profilCible={activeCallProfile}
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
