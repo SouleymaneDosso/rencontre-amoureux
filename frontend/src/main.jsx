@@ -25,6 +25,7 @@ import { socket } from "./socket";
 import Videopublic from "./pages/videospublic";
 import { ConversationProvider } from "./context/ConversationContext";
 import CallManager from "./components/call/CallManager";
+import { CallProvider } from "./context/CallContext";
 
 // 🔥 Layout principal
 function Layout() {
@@ -149,9 +150,11 @@ function Layout() {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ConversationProvider>
+      <CallProvider>
       <Router>
         <Layout />
       </Router>
+      </CallProvider>
     </ConversationProvider>
   </StrictMode>,
 );

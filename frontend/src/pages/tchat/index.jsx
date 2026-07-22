@@ -10,6 +10,7 @@ import MessageItem from "../../components/chat/MessageItem";
 import HeaderChat from "../../components/chat/HeaderChat";
 import useAudioCall from "../../components/hooks/useAudioCall";
 import CallModal from "../../pages/tchat/CallModal";
+import { useCallContext } from "../../context/CallContext";
 
 import { FaPhoneAlt } from "react-icons/fa";
 const API_URL = import.meta.env.VITE_API_URL;
@@ -835,6 +836,7 @@ function Tchat() {
   const previewProgressRef = useRef(null);
   const audioRefs = useRef({});
   const previewAudioRef = useRef(null);
+  const { setCallTarget } = useCallContext();
 
   const progressRefs = useRef({});
   const recordingStartRef = useRef(null);
@@ -911,6 +913,16 @@ function Tchat() {
     profilCible,
     messages,
   });
+
+  const lancerAppel = async () => {
+  setCallTarget({
+    id,
+    profilCible,
+    messages,
+  });
+
+  await startCall();
+};
   // swipe pour messages
 
   const finSwipeReponse = (e, msg) => {
@@ -1960,7 +1972,7 @@ function Tchat() {
         profilCible={profilCible}
         isTyping={isTyping}
         isProfilCibleOnline={isProfilCibleOnline}
-        startCall={startCall}
+       startCall={lancerAppel}
         calling={calling}
         incomingCall={incomingCall}
         inCall={inCall}
