@@ -14,7 +14,6 @@ export default function CallManager() {
   const token = localStorage.getItem("token");
 
   const id = callTarget?.id || null;
-  const conversationId = callTarget?.conversationId || null;
 
   const {
     calling,
@@ -40,7 +39,7 @@ export default function CallManager() {
     monProfilId,
     profilCible: callTarget?.profilCible || null,
     messages: callTarget?.messages || [],
-    conversationId,
+    conversationId: callTarget?.conversationId || null,
   });
   useEffect(() => {
     if (!callTarget?.id) return;

@@ -913,13 +913,12 @@ function Tchat() {
   //   profilCible,
   //   messages,
   // });
-
- const lancerAppel = () => {
+const lancerAppel = () => {
   setCallTarget({
     id,
     profilCible,
     messages,
-    conversationId: messages[0]?.conversationId || null,
+    conversationId: id,
   });
 };
   // swipe pour messages
