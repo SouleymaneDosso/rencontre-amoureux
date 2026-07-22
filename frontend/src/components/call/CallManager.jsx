@@ -5,7 +5,7 @@ import useAudioCall from "../hooks/useAudioCall";
 import CallModal from "../../pages/tchat/CallModal";
 
 export default function CallManager() {
-  const { callTarget } = useCallContext();
+  const { callTarget, callRequestId } = useCallContext();
 
   const monProfil = JSON.parse(localStorage.getItem("monProfil"));
 
@@ -39,7 +39,21 @@ export default function CallManager() {
     profilCible: callTarget?.profilCible || null,
     messages: callTarget?.messages || [],
   });
+  useEffect(() => {
+    if (!callTarget?.id) return;
 
+    console.log("📞 Nouvelle demande d'appel :", callTarget.id);
+
+    const lancerAppel = async () => {
+      try {
+        await startCall();
+      } catch (error) {
+        console.error("❌ Erreur démarrage appel :", error);
+      }
+    };
+
+    lancerAppel();
+  }, [callRequestId]);
   return (
     <>
       <audio ref={remoteAudioRef} autoPlay playsInline />
@@ -50,16 +64,16 @@ export default function CallManager() {
         calling={calling}
         inCall={inCall}
         profilCible={
-  incomingCall?.from
-    ? {
-        _id: incomingCall.from.id,
-        pseudo: incomingCall.from.pseudo,
-        avatar: {
-          url: incomingCall.from.avatar,
-        },
-      }
-    : callTarget?.profilCible || null
-}
+          incomingCall?.from
+            ? {
+                _id: incomingCall.from.id,
+                pseudo: incomingCall.from.pseudo,
+                avatar: {
+                  url: incomingCall.from.avatar,
+                },
+              }
+            : callTarget?.profilCible || null
+        }
         onAccept={acceptCall}
         onReject={rejectCall}
         onCancel={inCall ? endCall : cancelCall}
