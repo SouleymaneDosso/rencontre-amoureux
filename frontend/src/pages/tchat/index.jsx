@@ -914,14 +914,12 @@ function Tchat() {
     messages,
   });
 
-  const lancerAppel = async () => {
+ const lancerAppel = () => {
   setCallTarget({
     id,
     profilCible,
     messages,
   });
-
-  await startCall();
 };
   // swipe pour messages
 
