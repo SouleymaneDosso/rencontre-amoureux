@@ -68,6 +68,53 @@ exports.getMyVideos = async (req, res) => {
   }
 };
 
+
+
+exports.supprimerMesVideos = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const { videoId } = req.params;
+
+    // 1. Trouver la vidéo
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      return res.status(404).json({
+        message: "Vidéo introuvable",
+      });
+    }
+
+    // 2. Vérifier que la vidéo appartient à l'utilisateur connecté
+    if (video.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message: "Vous n'êtes pas autorisé à supprimer cette vidéo",
+      });
+    }
+
+    // 3. Supprimer la vidéo de Cloudinary
+    await cloudinary.uploader.destroy(video.public_id, {
+      resource_type: "video",
+    });
+
+    // 4. Supprimer la vidéo de MongoDB
+    await Video.findByIdAndDelete(videoId);
+
+    // 5. Réponse
+    return res.status(200).json({
+      message: "Vidéo supprimée avec succès",
+      videoId,
+    });
+  } catch (error) {
+    console.error("Erreur supprimerMesVideos :", error);
+
+    return res.status(500).json({
+      message: "Erreur serveur",
+    });
+  }
+};
+
+
+
 exports.getAllVideos = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
