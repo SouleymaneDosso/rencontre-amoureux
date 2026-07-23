@@ -120,20 +120,38 @@ export default function useAudioCall({
     };
 
     peerConnectionRef.current.ontrack = async (event) => {
-      console.log("🎧 FLUX DISTANT REÇU :", event.streams[0]);
-
+      const stream = event.streams[0];
       const audio = remoteAudioRef.current;
+
+      console.log("🎧 FLUX DISTANT REÇU :", stream);
+
+      console.log("🎵 PISTES AUDIO :", stream.getAudioTracks());
+
+      console.log("🎵 NOMBRE PISTES AUDIO :", stream.getAudioTracks().length);
+
+      console.log("🎵 ÉTAT PISTE :", stream.getAudioTracks()[0]?.readyState);
+
+      console.log("🎵 TRACK ENABLED :", stream.getAudioTracks()[0]?.enabled);
+
+      console.log("🎵 TRACK MUTED :", stream.getAudioTracks()[0]?.muted);
 
       if (!audio) {
         console.error("❌ remoteAudioRef.current est null");
         return;
       }
 
-      audio.srcObject = event.streams[0];
+      audio.srcObject = stream;
+      audio.volume = 1;
+      audio.muted = false;
 
       try {
         await audio.play();
+
         console.log("🔊 Lecture audio distante démarrée");
+
+        console.log("🔊 AUDIO VOLUME :", audio.volume);
+        console.log("🔇 AUDIO MUTED :", audio.muted);
+        console.log("▶️ AUDIO PAUSED :", audio.paused);
       } catch (error) {
         console.error("❌ Impossible de lire le flux distant :", error);
       }
