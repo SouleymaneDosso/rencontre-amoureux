@@ -74,7 +74,18 @@ export default function CallManager() {
         profilCible={activeCallProfile}
         onAccept={acceptCall}
         onReject={rejectCall}
-        onCancel={inCall ? endCall : cancelCall}
+        onCancel={() => {
+          console.log("📞 BOUTON FIN APPEL", {
+            inCall,
+            calling,
+          });
+
+          if (inCall) {
+            endCall();
+          } else {
+            cancelCall();
+          }
+        }}
         callDuration={callDuration}
         isMinimized={isMinimized}
         minimizeCall={minimizeCall}
