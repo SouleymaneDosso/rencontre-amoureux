@@ -166,8 +166,6 @@ function FooterNav() {
             <UnreadBadge>{unreadCount > 99 ? "99+" : unreadCount}</UnreadBadge>
           )}
         </MessageIconWrapper>
-
-        <span>Messages</span>
         <span>Messages</span>
       </NavItem>
 
