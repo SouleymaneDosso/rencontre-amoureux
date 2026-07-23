@@ -162,6 +162,11 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
+     console.log("📞 END CALL DATA", {
+    incomingCall,
+    id,
+    conversationId,
+  });
   const targetId = incomingCall?.from?.id || id;
   const targetConversationId =
     incomingCall?.conversationId || conversationId;
