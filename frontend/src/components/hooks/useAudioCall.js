@@ -119,9 +119,24 @@ export default function useAudioCall({
       console.log("ICE :", peerConnectionRef.current.iceConnectionState);
     };
 
-    peerConnectionRef.current.ontrack = (event) => {
-      console.log("Flux distant reçu :", event.streams[0]);
-      remoteAudioRef.current.srcObject = event.streams[0];
+    peerConnectionRef.current.ontrack = async (event) => {
+      console.log("🎧 FLUX DISTANT REÇU :", event.streams[0]);
+
+      const audio = remoteAudioRef.current;
+
+      if (!audio) {
+        console.error("❌ remoteAudioRef.current est null");
+        return;
+      }
+
+      audio.srcObject = event.streams[0];
+
+      try {
+        await audio.play();
+        console.log("🔊 Lecture audio distante démarrée");
+      } catch (error) {
+        console.error("❌ Impossible de lire le flux distant :", error);
+      }
     };
 
     peerConnectionRef.current.onicecandidate = (event) => {
@@ -167,12 +182,6 @@ export default function useAudioCall({
 
     const targetConversationId =
       activeCallDataRef.current?.conversationId || conversationId;
-
-    console.log("📞 END CALL FINAL DATA", {
-      targetId,
-      targetConversationId,
-    });
-
     stopSounds();
 
     socket.emit("endCall", {
@@ -268,8 +277,6 @@ export default function useAudioCall({
 
   useEffect(() => {
     const handleIncomingCall = ({ from, conversationId }) => {
-      console.log("📞 Appel entrant reçu :", from);
-
       activeCallDataRef.current = {
         id: from.id,
         conversationId,
