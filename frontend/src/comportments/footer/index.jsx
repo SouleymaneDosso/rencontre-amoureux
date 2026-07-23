@@ -4,6 +4,7 @@ import { FaFire, FaCompass, FaComments, FaUser } from "react-icons/fa";
 import { FaVideo } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { socket } from "../../socket";
+const API_URL = import.meta.env.VITE_API_URL;
 const FooterContainer = styled.footer`
   position: fixed;
   bottom: 0;
@@ -102,6 +103,7 @@ function FooterNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const token = localStorage.getItem("token");
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
@@ -119,6 +121,35 @@ function FooterNav() {
       socket.off("unreadMessagesCount", handleUnreadMessagesCount);
     };
   }, []);
+  useEffect(() => {
+    const getUnreadCount = async () => {
+      try {
+        const res = await fetch(
+          `${API_URL}/api/clients/messages/non-lus/count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error("❌ Erreur récupération compteur :", data.message);
+          return;
+        }
+
+        setUnreadCount(data.count);
+      } catch (error) {
+        console.error("❌ Impossible de récupérer le compteur :", error);
+      }
+    };
+
+    if (token) {
+      getUnreadCount();
+    }
+  }, [token]);
 
   useEffect(() => {
     const handleNewMessage = (message) => {
@@ -166,6 +197,7 @@ function FooterNav() {
             <UnreadBadge>{unreadCount > 99 ? "99+" : unreadCount}</UnreadBadge>
           )}
         </MessageIconWrapper>
+
         <span>Messages</span>
       </NavItem>
 
