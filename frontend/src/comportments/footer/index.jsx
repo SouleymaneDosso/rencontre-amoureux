@@ -148,21 +148,7 @@ function FooterNav() {
     }
   }, [token]);
 
-  useEffect(() => {
-    const handleNewMessage = (message) => {
-      if (location.pathname.startsWith("/conversations")) {
-        return;
-      }
 
-      setUnreadCount((prev) => prev + 1);
-    };
-
-    socket.on("newMessage", handleNewMessage);
-
-    return () => {
-      socket.off("newMessage", handleNewMessage);
-    };
-  }, [location.pathname]);
   return (
     <FooterContainer>
       <NavItem active={isActive("/matchs")} onClick={() => navigate("/matchs")}>
@@ -181,7 +167,6 @@ function FooterNav() {
       <NavItem
         active={isActive("/conversations")}
         onClick={() => {
-          setUnreadCount(0);
           navigate("/conversations");
         }}
       >
