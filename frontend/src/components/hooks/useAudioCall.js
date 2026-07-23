@@ -122,18 +122,12 @@ export default function useAudioCall({
     peerConnectionRef.current.ontrack = async (event) => {
       const stream = event.streams[0];
       const audio = remoteAudioRef.current;
+      const remoteTrack = stream.getAudioTracks()[0];
 
       console.log("🎧 FLUX DISTANT REÇU :", stream);
-
-      console.log("🎵 PISTES AUDIO :", stream.getAudioTracks());
-
-      console.log("🎵 NOMBRE PISTES AUDIO :", stream.getAudioTracks().length);
-
-      console.log("🎵 ÉTAT PISTE :", stream.getAudioTracks()[0]?.readyState);
-
-      console.log("🎵 TRACK ENABLED :", stream.getAudioTracks()[0]?.enabled);
-
-      console.log("🎵 TRACK MUTED :", stream.getAudioTracks()[0]?.muted);
+      console.log("🎵 TRACK DISTANTE :", remoteTrack);
+      console.log("🎵 TRACK MUTED :", remoteTrack?.muted);
+      console.log("🎵 TRACK READY :", remoteTrack?.readyState);
 
       if (!audio) {
         console.error("❌ remoteAudioRef.current est null");
@@ -144,16 +138,20 @@ export default function useAudioCall({
       audio.volume = 1;
       audio.muted = false;
 
+      remoteTrack.onunmute = () => {
+        console.log("🔊 TRACK DISTANTE UNMUTED");
+      };
+
+      remoteTrack.onmute = () => {
+        console.log("🔇 TRACK DISTANTE MUTED");
+      };
+
       try {
         await audio.play();
 
-        console.log("🔊 Lecture audio distante démarrée");
-
-        console.log("🔊 AUDIO VOLUME :", audio.volume);
-        console.log("🔇 AUDIO MUTED :", audio.muted);
-        console.log("▶️ AUDIO PAUSED :", audio.paused);
+        console.log("▶️ LECTURE AUDIO DÉMARRÉE");
       } catch (error) {
-        console.error("❌ Impossible de lire le flux distant :", error);
+        console.error("❌ ERREUR PLAY AUDIO :", error);
       }
     };
 
