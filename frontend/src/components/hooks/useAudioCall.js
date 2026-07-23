@@ -362,7 +362,14 @@ export default function useAudioCall({
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
+      console.log("🎤 FLUX LOCAL PC :", stream);
+      console.log("🎤 PISTES AUDIO LOCALES :", stream.getAudioTracks());
 
+      const localAudioTrack = stream.getAudioTracks()[0];
+
+      console.log("🎤 LOCAL TRACK ENABLED :", localAudioTrack?.enabled);
+      console.log("🎤 LOCAL TRACK MUTED :", localAudioTrack?.muted);
+      console.log("🎤 LOCAL TRACK READY :", localAudioTrack?.readyState);
       localStreamRef.current = stream;
       createPeerConnection();
 
@@ -392,7 +399,14 @@ export default function useAudioCall({
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
+    console.log("🎤 FLUX LOCAL TÉLÉPHONE :", stream);
+    console.log("🎤 PISTES AUDIO LOCALES :", stream.getAudioTracks());
 
+    const localAudioTrack = stream.getAudioTracks()[0];
+
+    console.log("🎤 LOCAL TRACK ENABLED :", localAudioTrack?.enabled);
+    console.log("🎤 LOCAL TRACK MUTED :", localAudioTrack?.muted);
+    console.log("🎤 LOCAL TRACK READY :", localAudioTrack?.readyState);
     localStreamRef.current = stream;
 
     setActiveCallProfile({
