@@ -211,6 +211,9 @@ io.on("connection", (socket) => {
     // 🔥 envoyer au destinataire
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("receiveMessage", messageData);
+      io.to(receiverSocketId).emit("unreadMessageIncrement", {
+        increment: 1,
+      });
       Conversation.findByIdAndUpdate(messageData.conversationId, {
         dernierMessageStatut: "delivered",
       }).catch(console.error);
