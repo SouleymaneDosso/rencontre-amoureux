@@ -122,6 +122,17 @@ function FooterNav() {
     };
   }, []);
   useEffect(() => {
+    const handleUnreadIncrement = ({ increment }) => {
+      setUnreadCount((prev) => prev + increment);
+    };
+
+    socket.on("unreadMessageIncrement", handleUnreadIncrement);
+
+    return () => {
+      socket.off("unreadMessageIncrement", handleUnreadIncrement);
+    };
+  }, [socket]);
+  useEffect(() => {
     const getUnreadCount = async () => {
       try {
         const res = await fetch(`${API_URL}/api/tchat/messages/non-lus/count`, {
