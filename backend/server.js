@@ -158,8 +158,12 @@ io.on("connection", (socket) => {
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
     const messagesNonLus = await Message.countDocuments({
       destinataire: userId,
-      statut: { $in: ["sent", "delivered"] },
+      statut: { $ne: "seen" },
+      supprimePourTous: false,
+      supprimePourMoi: { $ne: userId },
     });
+
+    console.log(`🔴 Messages non lus pour ${userId} :`, messagesNonLus);
 
     io.to(socket.id).emit("unreadMessagesCount", {
       count: messagesNonLus,
