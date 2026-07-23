@@ -124,14 +124,11 @@ function FooterNav() {
   useEffect(() => {
     const getUnreadCount = async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/api/clients/messages/non-lus/count`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const res = await fetch(`${API_URL}/api/tchat/messages/non-lus/count`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         const data = await res.json();
 
@@ -153,8 +150,6 @@ function FooterNav() {
 
   useEffect(() => {
     const handleNewMessage = (message) => {
-      // Si l'utilisateur est déjà dans les conversations,
-      // on ne compte pas comme nouveau ici.
       if (location.pathname.startsWith("/conversations")) {
         return;
       }
