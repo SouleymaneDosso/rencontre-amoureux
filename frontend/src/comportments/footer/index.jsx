@@ -2,7 +2,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { FaFire, FaCompass, FaComments, FaUser } from "react-icons/fa";
 import { FaVideo } from "react-icons/fa";
-
+import { useEffect, useState } from "react";
+import { socket } from "../../socket";
 const FooterContainer = styled.footer`
   position: fixed;
   bottom: 0;
@@ -45,19 +46,101 @@ const NavItem = styled.button`
   }
 `;
 
+const MessageBadge = styled.span`
+  position: absolute;
+  top: -10px;
+  right: -14px;
+
+  min-width: 20px;
+  height: 20px;
+
+  padding: 0 5px;
+
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ef4444;
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  border: 2px solid white;
+`;
+const MessageIconWrapper = styled.div`
+  position: relative;
+  display: flex;
+`;
+
+const UnreadBadge = styled.span`
+  position: absolute;
+  top: -8px;
+  right: -10px;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 5px;
+
+  border-radius: 999px;
+
+  background: #ef4444;
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 function FooterNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
+  useEffect(() => {
+    const handleUnreadMessagesCount = ({ count }) => {
+      setUnreadCount(count);
+    };
+
+    socket.on("unreadMessagesCount", handleUnreadMessagesCount);
+
+    return () => {
+      socket.off("unreadMessagesCount", handleUnreadMessagesCount);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleNewMessage = (message) => {
+      // Si l'utilisateur est déjà dans les conversations,
+      // on ne compte pas comme nouveau ici.
+      if (location.pathname.startsWith("/conversations")) {
+        return;
+      }
+
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [location.pathname]);
   return (
     <FooterContainer>
       <NavItem active={isActive("/matchs")} onClick={() => navigate("/matchs")}>
-         <FaFire />
+        <FaFire />
         <span>Matchs</span>
       </NavItem>
 
@@ -71,9 +154,20 @@ function FooterNav() {
 
       <NavItem
         active={isActive("/conversations")}
-        onClick={() => navigate("/conversations")}
+        onClick={() => {
+          setUnreadCount(0);
+          navigate("/conversations");
+        }}
       >
-        <FaComments />
+        <MessageIconWrapper>
+          <FaComments />
+
+          {unreadCount > 0 && (
+            <UnreadBadge>{unreadCount > 99 ? "99+" : unreadCount}</UnreadBadge>
+          )}
+        </MessageIconWrapper>
+
+        <span>Messages</span>
         <span>Messages</span>
       </NavItem>
 
