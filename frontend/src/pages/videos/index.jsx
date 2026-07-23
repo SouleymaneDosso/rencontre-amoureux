@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-
+import { FaTrash } from "react-icons/fa";
 import { FaHeart, FaCommentDots } from "react-icons/fa";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +53,6 @@ const Header = styled.div`
 `;
 
 const LeftHeader = styled.div``;
-
 
 const UploadButton = styled.label`
   position: fixed;
@@ -485,6 +484,37 @@ function Video() {
     }
   };
 
+  const supprimerVideo = async (videoId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/clients/videos/${videoId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Suppression impossible");
+        return;
+      }
+
+      // Supprime la vidéo de la liste affichée
+      setMesdeos((prev) => prev.filter((video) => video._id !== videoId));
+
+      // Ferme le modal si la vidéo supprimée était ouverte
+      if (selectedVideo?._id === videoId) {
+        setSelectedVideo(null);
+      }
+
+      alert("Vidéo supprimée avec succès");
+    } catch (error) {
+      console.error("❌ Erreur suppression vidéo :", error);
+      alert("Suppression impossible");
+    }
+  };
+
   const getvideos = async () => {
     try {
       const res = await fetch(`${API_URL}/api/clients/mesvideos`, {
@@ -651,6 +681,13 @@ function Video() {
               <IconBox>
                 <FaCommentDots />
                 <span>{selectedVideo.comments?.length || 0}</span>
+              </IconBox>
+              <IconBox
+                onClick={() => supprimerVideo(selectedVideo._id)}
+                style={{ cursor: "pointer" }}
+              >
+                <FaTrash />
+                <span>Supprimer</span>
               </IconBox>
             </ModalActions>
           </ModalContent>
