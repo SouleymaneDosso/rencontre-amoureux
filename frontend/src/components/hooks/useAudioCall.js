@@ -162,28 +162,35 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
+    const targetId = incomingCall?.from?.id || id;
+    const targetConversationId = incomingCall?.conversationId || conversationId;
+
     console.log("📞 END CALL", {
       id,
       conversationId,
+      targetId,
+      targetConversationId,
       monProfilId,
     });
+
     stopSounds();
     cleanupCall();
 
     socket.emit("endCall", {
-      to: id,
+      to: targetId,
       from: monProfilId,
     });
 
     const message = await creerMessageAppel(token, {
-      conversationId: conversationId,
-      destinataire: id,
+      conversationId: targetConversationId,
+      destinataire: targetId,
       status: "ended",
     });
 
     socket.emit("sendMessage", message);
   };
 
+  
   useEffect(() => {
     const handleEndCall = () => {
       stopSounds();
@@ -329,7 +336,7 @@ export default function useAudioCall({
       stream.getTracks().forEach((track) => {
         peerConnectionRef.current.addTrack(track, stream);
       });
-      peerUserIdRef.current = id;
+      peerUserIdRef.current = incomingCall.from.id;
 
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(offer),
@@ -415,7 +422,7 @@ export default function useAudioCall({
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-       conversationId: incomingCall.conversationId,
+        conversationId: incomingCall.conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });
