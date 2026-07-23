@@ -65,9 +65,6 @@ export default function useAudioCall({
     callingToneRef.current.pause();
     callingToneRef.current.currentTime = 0;
 
-    if (navigator.vibrate) {
-      navigator.vibrate(0);
-    }
   };
 
   // durée d'appelle
@@ -300,10 +297,6 @@ export default function useAudioCall({
 
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.play();
-
-      if (navigator.vibrate) {
-        navigator.vibrate([500, 300, 500]);
-      }
 
       const callerProfile = {
         _id: from.id,
