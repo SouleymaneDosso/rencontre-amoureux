@@ -111,17 +111,6 @@ function FooterNav() {
   };
 
   useEffect(() => {
-    const handleUnreadMessagesCount = ({ count }) => {
-      setUnreadCount(count);
-    };
-
-    socket.on("unreadMessagesCount", handleUnreadMessagesCount);
-
-    return () => {
-      socket.off("unreadMessagesCount", handleUnreadMessagesCount);
-    };
-  }, []);
-  useEffect(() => {
     const handleUnreadIncrement = ({ increment }) => {
       setUnreadCount((prev) => prev + increment);
     };
@@ -159,21 +148,6 @@ function FooterNav() {
     }
   }, [token]);
 
-  useEffect(() => {
-    const handleNewMessage = (message) => {
-      if (location.pathname.startsWith("/conversations")) {
-        return;
-      }
-
-      setUnreadCount((prev) => prev + 1);
-    };
-
-    socket.on("newMessage", handleNewMessage);
-
-    return () => {
-      socket.off("newMessage", handleNewMessage);
-    };
-  }, [location.pathname]);
   return (
     <FooterContainer>
       <NavItem active={isActive("/matchs")} onClick={() => navigate("/matchs")}>
