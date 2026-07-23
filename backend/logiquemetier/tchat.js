@@ -578,3 +578,26 @@ exports.createCallMessage = async (req, res) => {
     });
   }
 };
+
+exports.compterMessagesNonLus = async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    const count = await Message.countDocuments({
+      destinataire: userId,
+      statut: { $ne: "seen" },
+      supprimePourTous: false,
+      supprimePourMoi: { $ne: userId },
+    });
+
+    res.status(200).json({
+      count,
+    });
+  } catch (error) {
+    console.error("❌ Erreur compteur messages non lus :", error);
+
+    res.status(500).json({
+      message: "Impossible de récupérer le nombre de messages non lus",
+    });
+  }
+};
