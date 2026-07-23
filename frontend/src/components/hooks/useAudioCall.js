@@ -161,17 +161,12 @@ export default function useAudioCall({
     setInCall(false);
   };
 
-  const endCall = async () => {
-     console.log("📞 END CALL DATA", {
-    incomingCall,
-    id,
-    conversationId,
-  });
+const endCall = async () => {
   const targetId = incomingCall?.from?.id || id;
   const targetConversationId =
     incomingCall?.conversationId || conversationId;
 
-  console.log("📞 END CALL", {
+  console.log("📞 END CALL FINAL DATA", {
     targetId,
     targetConversationId,
     incomingCall,
@@ -191,15 +186,21 @@ export default function useAudioCall({
       conversationId: targetConversationId,
       destinataire: targetId,
       status: "ended",
+      duration: callDuration,
     });
 
     socket.emit("sendMessage", message);
   } catch (error) {
-    console.error("❌ Erreur création message appel terminé :", error);
+    console.error(
+      "❌ Erreur création message appel terminé :",
+      error,
+    );
   }
 
   cleanupCall();
 };
+
+
   useEffect(() => {
     const handleEndCall = () => {
       stopSounds();

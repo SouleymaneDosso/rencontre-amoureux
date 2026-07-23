@@ -14,13 +14,6 @@ export default function CallManager() {
   const token = localStorage.getItem("token");
 
   const id = callTarget?.id || null;
-
-  console.log("📞 CALL MANAGER", {
-    id,
-    conversationId: callTarget?.conversationId,
-    callTarget,
-  });
-
   const {
     calling,
     incomingCall,
@@ -74,18 +67,7 @@ export default function CallManager() {
         profilCible={activeCallProfile}
         onAccept={acceptCall}
         onReject={rejectCall}
-        onCancel={() => {
-          console.log("📞 BOUTON FIN APPEL", {
-            inCall,
-            calling,
-          });
-
-          if (inCall) {
-            endCall();
-          } else {
-            cancelCall();
-          }
-        }}
+        onCancel={inCall ? endCall : cancelCall}
         callDuration={callDuration}
         isMinimized={isMinimized}
         minimizeCall={minimizeCall}
