@@ -33,6 +33,7 @@ export default function useAudioCall({
   const peerConnectionRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const peerUserIdRef = useRef(null);
+  const activeCallDataRef = useRef(null);
 
   const minimizeCall = () => {
     setIsMinimized(true);
@@ -155,51 +156,45 @@ export default function useAudioCall({
     if (remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = null;
     }
-
+    activeCallDataRef.current = null;
     setCalling(false);
     setIncomingCall(null);
     setInCall(false);
   };
 
-const endCall = async () => {
-  const targetId = incomingCall?.from?.id || id;
-  const targetConversationId =
-    incomingCall?.conversationId || conversationId;
+  const endCall = async () => {
+    const targetId = activeCallDataRef.current?.id || id;
 
-  console.log("📞 END CALL FINAL DATA", {
-    targetId,
-    targetConversationId,
-    incomingCall,
-    id,
-    conversationId,
-  });
+    const targetConversationId =
+      activeCallDataRef.current?.conversationId || conversationId;
 
-  stopSounds();
-
-  socket.emit("endCall", {
-    to: targetId,
-    from: monProfilId,
-  });
-
-  try {
-    const message = await creerMessageAppel(token, {
-      conversationId: targetConversationId,
-      destinataire: targetId,
-      status: "ended",
-      duration: callDuration,
+    console.log("📞 END CALL FINAL DATA", {
+      targetId,
+      targetConversationId,
     });
 
-    socket.emit("sendMessage", message);
-  } catch (error) {
-    console.error(
-      "❌ Erreur création message appel terminé :",
-      error,
-    );
-  }
+    stopSounds();
 
-  cleanupCall();
-};
+    socket.emit("endCall", {
+      to: targetId,
+      from: monProfilId,
+    });
 
+    try {
+      const message = await creerMessageAppel(token, {
+        conversationId: targetConversationId,
+        destinataire: targetId,
+        status: "ended",
+        duration: callDuration,
+      });
+
+      socket.emit("sendMessage", message);
+    } catch (error) {
+      console.error("❌ Erreur création message appel terminé :", error);
+    }
+
+    cleanupCall();
+  };
 
   useEffect(() => {
     const handleEndCall = () => {
@@ -274,6 +269,11 @@ const endCall = async () => {
   useEffect(() => {
     const handleIncomingCall = ({ from, conversationId }) => {
       console.log("📞 Appel entrant reçu :", from);
+
+      activeCallDataRef.current = {
+        id: from.id,
+        conversationId,
+      };
 
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.play();
@@ -432,7 +432,7 @@ const endCall = async () => {
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-       conversationId: incomingCall.conversationId,
+        conversationId: incomingCall.conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });
