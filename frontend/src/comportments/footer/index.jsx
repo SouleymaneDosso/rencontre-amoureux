@@ -47,30 +47,6 @@ const NavItem = styled.button`
   }
 `;
 
-const MessageBadge = styled.span`
-  position: absolute;
-  top: -10px;
-  right: -14px;
-
-  min-width: 20px;
-  height: 20px;
-
-  padding: 0 5px;
-
-  border-radius: 999px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #ef4444;
-  color: white;
-
-  font-size: 11px;
-  font-weight: 700;
-
-  border: 2px solid white;
-`;
 const MessageIconWrapper = styled.div`
   position: relative;
   display: flex;
@@ -121,6 +97,23 @@ function FooterNav() {
       socket.off("unreadMessageIncrement", handleUnreadIncrement);
     };
   }, [socket]);
+
+
+useEffect(() => {
+  const handleUnreadMessagesCount = ({ count }) => {
+    console.log("📩 Nombre réel de messages non lus :", count);
+    setUnreadCount(count);
+  };
+
+  socket.on("unreadMessagesCount", handleUnreadMessagesCount);
+
+  return () => {
+    socket.off("unreadMessagesCount", handleUnreadMessagesCount);
+  };
+}, []);
+
+
+
   useEffect(() => {
     const getUnreadCount = async () => {
       try {
