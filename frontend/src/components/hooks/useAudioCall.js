@@ -162,25 +162,26 @@ export default function useAudioCall({
   };
 
   const endCall = async () => {
-    const targetId = incomingCall?.from?.id || id;
-    const targetConversationId = incomingCall?.conversationId || conversationId;
+  const targetId = incomingCall?.from?.id || id;
+  const targetConversationId =
+    incomingCall?.conversationId || conversationId;
 
-    console.log("📞 END CALL", {
-      id,
-      conversationId,
-      targetId,
-      targetConversationId,
-      monProfilId,
-    });
+  console.log("📞 END CALL", {
+    targetId,
+    targetConversationId,
+    incomingCall,
+    id,
+    conversationId,
+  });
 
-    stopSounds();
-    cleanupCall();
+  stopSounds();
 
-    socket.emit("endCall", {
-      to: targetId,
-      from: monProfilId,
-    });
+  socket.emit("endCall", {
+    to: targetId,
+    from: monProfilId,
+  });
 
+  try {
     const message = await creerMessageAppel(token, {
       conversationId: targetConversationId,
       destinataire: targetId,
@@ -188,9 +189,12 @@ export default function useAudioCall({
     });
 
     socket.emit("sendMessage", message);
-  };
+  } catch (error) {
+    console.error("❌ Erreur création message appel terminé :", error);
+  }
 
-  
+  cleanupCall();
+};
   useEffect(() => {
     const handleEndCall = () => {
       stopSounds();
@@ -422,7 +426,7 @@ export default function useAudioCall({
     if (!incomingCall) return;
     try {
       const message = await creerMessageAppel(token, {
-        conversationId: incomingCall.conversationId,
+       conversationId: incomingCall.conversationId,
         destinataire: incomingCall.from.id,
         status: "rejected",
       });
